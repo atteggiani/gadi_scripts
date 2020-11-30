@@ -1,0 +1,61 @@
+#!/bin/bash
+
+PROGNAME=$0
+
+usage() {
+  cat << EOF
+Script to convert the UM model output to netCDF data.
+Usage: $PROGNAME [-i <input folder>] [-o <output folder>] [--id <experiment id>] ...
+
+List of keys/options:
+-i <path to folder> -> path to input folder (default is "/scratch/w48/dm5220/umui")
+-o <path to folder> -> path to the output folder
+-s <int> -> starting year (default is 1493)
+--id <experiment id> -> experiment id (if not provided, the last folder of the input path will be considered as id)
+EOF
+  exit 1
+}
+
+while getopts hi:o:s:-:g opt; do
+    case $opt in
+        -)
+            case "$OPTARG" in
+                id)
+                    options+=" --id ${!OPTIND}"
+                    OPTIND=$(( $OPTIND + 1 ))
+                    ;;
+                *)
+                echo "Uknown option --${OPTARG}"
+                usage
+            esac;;
+        i)
+	    options+=" -i $(readlink -f "$OPTARG")"
+            ;;
+        o)
+            options+=" -o $(readlink -m "$OPTARG")"
+	    out=$(basename $(readlink -m "$OPTARG"))
+            ;;
+        s)
+            options+=" -s ${OPTARG}"
+            ;;
+        *) usage
+    esac
+done
+
+cd /g/data3/w48/dm5220/scripts/um2nc
+
+script="submission_script"
+cat > "$script" <<EOF
+#!/bin/bash
+#PBS -l walltime=01:00:00
+#PBS -l ncpus=48
+#PBS -q normal
+#PBS -P w48
+#PBS -l storage=gdata/hh5+gdata/w48+scratch/w48
+#PBS -l mem=50gb
+#PBS -N um2nc.${out} 
+
+/g/data3/w48/dm5220/scripts/um2nc/convert_um2nc.py${options} --ncpus 48
+EOF
+
+qsub "$script"
