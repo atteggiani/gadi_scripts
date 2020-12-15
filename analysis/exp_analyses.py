@@ -309,10 +309,12 @@ data_4co2_solar_mi50 = add_evaporation(xr.open_mfdataset(os.path.join(input_fold
 
 #%%
 # ( DATA , TITLE , OUT_NAME )
-datas=[
+# datas=[
 #        (data_4co2, "4co2" , "4co2"),
 #        (data_4co2_fix_ctl , "4co2 + fixed control tsurf" , "4co2_fix_ctl"),
-#        (data_ctl_fix_4co2 , "control + fixed 4co2 tsurf" , "ctl_fix_4co2"),
+#        (data_ctl_fix_ctl_solar_pl50 , "control + fixed control + solar +50 W/m2" , "ctl_fix_ctl_solar_pl50"),
+#        (data_4co2_solar_mi50 , "4co2 + solar -50 W/m2" , "4co2_solar_mi50")]       
+#        (data_ctl_fix_4co2 , "control + fixed 4co2 tsurf" , "ctl_fix_4co2"),       
 #        (data_ctl_fix_ctl_greb , "control + fixed control tsurf + GREB" , "ctl_fix_ctl_greb"),
 #        (data_4co2_fix_4co2_greb , "4co2 + fixed 4co2 tsurf + GREB" , "4co2_fix_4co2_greb"),
 #        (data_4co2_fix_LAND_ctl , "4co2 + fixed control LAND" , "4co2_fix_ctl_LAND"),
@@ -321,101 +323,70 @@ datas=[
 #        (data_ctl_fix_SST_4co2 , "control + fixed 4co2 SST" , "ctl_fix_4co2_SST"),
 #        (data_ctl_fix_ctl_evap_sea_x085 , "control + fixed control tsurf + evap sea 0.85" , "ctl_fix_ctl_evap_sea_x0.85"),
 #        (data_ctl_fix_ctl_evap_x085 , "control + fixed control tsurf + evap 0.85" , "ctl_fix_ctl_evap_x0.85"),
-#        (data_ctl_solar_pl50 , "control + solar +50 W/m2" , "ctl_solar_pl50"),
-       (data_ctl_fix_ctl_solar_pl50 , "control + fixed control + solar +50 W/m2" , "ctl_fix_ctl_solar_pl50"),
-       (data_4co2_solar_mi50 , "4co2 + solar -50 W/m2" , "4co2_solar_mi50")]
+#        (data_ctl_solar_pl50 , "control + solar +50 W/m2" , "ctl_solar_pl50")]
 
-# #%%
-# #SINGLE FIGURES
-# exp_ = ["4co2","control + fixed 4co2 tsurf" , "control + fixed 4co2 SST" , "4co2 + fixed 4co2 tsurf + GREB",
-#         "control + solar +50 W/m2"]
-# for d,t,o in datas:
-#     m,mm = (-6,6) if t in exp_ else (-3,3)
-# #SURFACE TEMPERATURE
-#     var="surface_temperature"
-#     tit ="Surface temperature"
-#     outvar="surf_temp"
-#     plt.figure()
-#     plot_amean_pat(data=d,var=var,
-#         min=m,max=mm,
-#         title = "{} - {}".format(tit,t),
-#         units = "°C",
-#         outpath = "{}_{}_pat_amean.png".format(outvar,o),
-#         cmap = Constants.colormaps.Div_tsurf)
+#%%
+#SINGLE FIGURES
+exp_ = ["4co2","control + fixed 4co2 tsurf" , "control + fixed 4co2 SST" , "4co2 + fixed 4co2 tsurf + GREB",
+        "control + solar +50 W/m2"]
+for d,t,o in datas:
+    m,mm = (-6,6) if t in exp_ else (-3,3)
+#SURFACE TEMPERATURE
+    var="surface_temperature"
+    tit ="Surface temperature"
+    outvar="surf_temp"
+    plt.figure()
+    plot_amean_pat(data=d,var=var,
+        min=m,max=mm,
+        title = "{} - {}".format(tit,t),
+        units = "°C",
+        ttest=True,
+        outpath = "{}_{}_pat_amean.png".format(outvar,o),
+        cmap = Constants.colormaps.Div_tsurf)
 
-# #AIR TEMPERATURE
-#     var="air_temperature"
-#     tit ="Air temperature"
-#     outvar="air_temp"
-#     plt.figure()
-#     plot_levels(data=d,var=var,
-#         min=m,max=mm,
-#         title = "{} - {}".format(tit,t),
-#         units = "°C",
-#         outpath = "{}_{}_lev.png".format(outvar,o),
-#         cmap = Constants.colormaps.Div_tsurf)
-#     plt.figure()
-#     plot_amean_lev(data=d,var=var,
-#         min=m,max=mm,
-#         title = "{} - {}".format(tit,t),
-#         units = "°C",
-#         outpath = "{}_{}_lev_amean.png".format(outvar,o),
-#         cmap = Constants.colormaps.Div_tsurf)
+#AIR TEMPERATURE
+    var="air_temperature"
+    tit ="Air temperature"
+    outvar="air_temp"
+    plt.figure()
+    plot_levels(data=d,var=var,
+        min=m,max=mm,
+        title = "{} - {}".format(tit,t),
+        units = "°C",
+        ttest=True,
+        outpath = "{}_{}_lev.png".format(outvar,o),
+        cmap = Constants.colormaps.Div_tsurf)
+    plt.figure()
+    plot_amean_lev(data=d,var=var,
+        min=m,max=mm,
+        title = "{} - {}".format(tit,t),
+        units = "°C",
+        ttest=True,
+        outpath = "{}_{}_lev_amean.png".format(outvar,o),
+        cmap = Constants.colormaps.Div_tsurf)
 
-#     plt.figure()
-#     plot_levels_zoom(data=d,var=var,
-#         min=m,max=mm,
-#         title = "{} (zoom) - {}".format(tit,t),
-#         units = "°C",
-#         outpath = "{}_{}_lev_zoom.png".format(outvar,o),
-#         cmap = Constants.colormaps.Div_tsurf)
-#     plt.figure()
-#     plot_amean_lev(data=d,var=var,
-#         min=m,max=mm,
-#         title = "{} - {}".format(tit,t),
-#         units = "°C",
-#         cmap = Constants.colormaps.Div_tsurf)
-#     plt.ylim([1000,800])
-#     plt.yticks(ticks=[1000,900,800],labels=["1000","900","800"])
-#     plt.savefig(os.path.join(output_folder,"{}_{}_lev_zoom_amean.png".format(outvar,o)),bbox_inches='tight',dpi=300)
-
-#     plt.figure()
-#     plot_patterns(data=d,var=var,
-#         min=m,max=mm,
-#         title = "{} - {}".format(tit,t),
-#         units = "°C",
-#         outpath = "{}_{}_pat.png".format(outvar,o),
-#         cmap = Constants.colormaps.Div_tsurf,
-#         fun=lambda x: x.sel(pressure=slice(199,1001)))
-#     plt.figure()  
-#     plot_amean_pat(data=d,var=var,
-#         min=m,max=mm,
-#         title = "{} - {}".format(tit,t),
-#         units = "°C",
-#         outpath = "{}_{}_pat_amean.png".format(outvar,o),
-#         cmap = Constants.colormaps.Div_tsurf,
-#         fun=lambda x: x.sel(pressure=slice(199,1001)))
-
-# #PRECIPITATION
-#     var="precipitation_flux"
-#     tit ="Precipitation"
-#     outvar="precip"
-#     plt.figure()
-#     plot_patterns(data=d,var=var,
-#         a=alpha_precip,
-#         min=-2,max=2,du=0.5,
-#         title = "{} - {}".format(tit,t),
-#         units = "mm/day",
-#         outpath = "{}_{}_pat.png".format(outvar,o),
-#         cmap = Constants.colormaps.Div_precip)
-#     plt.figure() 
-#     plot_amean_pat(data=d,var=var,
-#         a=alpha_precip,
-#         min=-2,max=2,du=0.5,
-#         title = "{} - {}".format(tit,t),
-#         units = "mm/day",
-#         outpath = "{}_{}_pat_amean.png".format(outvar,o),
-#         cmap = Constants.colormaps.Div_precip)
+#PRECIPITATION
+    var="precipitation_flux"
+    tit ="Precipitation"
+    outvar="precip"
+    plt.figure()
+    plot_patterns(data=d,var=var,
+        a=alpha_precip,
+        min=-2,max=2,du=0.5,
+        title = "{} - {}".format(tit,t),
+        units = "mm/day",
+        ttest=True,
+        outpath = "{}_{}_pat.png".format(outvar,o),
+        cmap = Constants.colormaps.Div_precip)
+    plt.figure() 
+    plot_amean_pat(data=d,var=var,
+        a=alpha_precip,
+        min=-2,max=2,du=0.5,
+        title = "{} - {}".format(tit,t),
+        units = "mm/day",
+        ttest=True,
+        outpath = "{}_{}_pat_amean.png".format(outvar,o),
+        cmap = Constants.colormaps.Div_precip)
 
 # #HUMIDITY
 #     var="relative_humidity"
@@ -535,49 +506,76 @@ datas=[
 #         outpath = "{}_{}_pat_amean.png".format(outvar,o),
 #         cmap = Constants.colormaps.Div_precip)
 
+#%% DIFFERENCES
+output_folder_diff = os.path.join(output_folder,"differences")
 
-# DIFFERENCES
-#%%
-def diff(data1,data2,var=None):
-    data = DataArray(data1[var] - data2[var])
-    p = DataArray(data1[var]).t_student_probability(data2[var])
-    return [data,p]
-
-#%%
+# data_4co2_fix_ctl - data_ctl_fix_ctl_solar_pl50
+data1=data_4co2_fix_ctl
+data2=data_ctl_fix_ctl_solar_pl50
+#TSURF
 var="surface_temperature"
-D=diff(data_4co2_fix_ctl,data_4co2_solar_mi50,var=var)
-d,p=D[0],D[1]
+d = DataArray(data1[var]-data2[var])
+p = DataArray(data1[var]).t_student_probability(data2[var])  
 plt.figure()
-d.annual_mean().plotvar(
-          cmap = Constants.colormaps.Seq_tsurf_hot,
-          levels = np.linspace(0,1.5,100),
-          cbar_kwargs={"ticks":np.arange(0,1.5+0.25,0.25)},
-        #   norm = colors.DivergingNorm(vmin=-1,vcenter=0,vmax=2),
-          title = "(4co2 fix tsurf) - (4co2 solar -50W) | Surface Temperature",
-          units = "°C",
+d.annual_mean(240).plotvar(
+          cmap = Constants.colormaps.Div_tsurf,
+          levels = np.linspace(-2,2,100),
+          cbar_kwargs={"ticks":np.arange(-2,2+0.5,0.5)},
+#           norm = colors.DivergingNorm(vmin=-1,vcenter=0,vmax=2),
           t_student=p,
-          outpath = os.path.join(output_folder,"diff_4co2fix_4co2solar50m.png"))
+          title = "(4co2 fix) - (fix sol50+) | Surface Temperature",
+          units = "°C",
+          outpath = os.path.join(output_folder_diff,"diff_4co2fix_fixs50p_tsurf.png"))
 
-# #%%
-# plt.figure()
-# DataArray(f("precipitation_flux")*alpha_precip).annual_mean().plotvar(
-#           cmap = Constants.colormaps.Div_precip,
-#           levels = np.linspace(-2,2,100),
-#           title = "Difference 4co2 and solar +50W - Precipitation",
-#           units = "mm/day",
-#           cbar_kwargs={"ticks":np.arange(-2,2+0.5,0.5)},
-#           outpath = os.path.join(output_folder,"diff_4co2_4co2fix_precip.png"))
+#TAIR
+var="air_temperature"
+d = DataArray(data1[var].mean("longitude_0") - data2[var].mean("longitude_0"))
+p = DataArray(data1[var].mean("longitude_0")).t_student_probability(data2[var].mean("longitude_0"))
+plt.figure()
+d.annual_mean(240).plotlev(
+          cmap = Constants.colormaps.Div_tsurf,
+          levels = np.linspace(-2,2,100),
+          cbar_kwargs={"ticks":np.arange(-2,2+0.5,0.5)},
+#           norm = colors.DivergingNorm(vmin=-1,vcenter=0,vmax=2),
+          t_student=p,
+          title = "(4co2 fix) - (fix sol50+) | Air Temperature",
+          units = "°C",
+          outpath = os.path.join(output_folder_diff,"diff_4co2fix_fixs50p_tair.png"))
 
+# data_4co2_fix_ctl - data_4co2_solar_mi50
+data1=data_4co2_fix_ctl
+data2=data_4co2_solar_mi50
+#TSURF
+var="surface_temperature"
+d = DataArray(data1[var]-data2[var])
+p = DataArray(data1[var]).t_student_probability(data2[var]) 
+plt.figure()
+d.annual_mean(240).plotvar(
+          cmap = Constants.colormaps.Div_tsurf,
+          levels = np.linspace(-2,2,100),
+          cbar_kwargs={"ticks":np.arange(-2,2+0.5,0.5)},
+#           norm = colors.DivergingNorm(vmin=-1,vcenter=0,vmax=2),
+          t_student=p,
+          title = "(4co2 fix) - (4co2 sol50-) | Surface Temperature",
+          units = "°C",
+          outpath = os.path.join(output_folder_diff,"diff_4co2fix_4co2s50m_tsurf.png"))
 
-# plt.figure()
-# DataArray(f("air_temperature")).mean(["time","longitude_0"]).plotlev(
-#           units = "°C",
-#           cmap = Constants.colormaps.Div_tsurf,
-#           levels = np.linspace(-2,2,100),
-#           cbar_kwargs={"ticks":np.arange(-2,2+0.5,0.5)},
-#           ylim=[1000,50],
-#           yscale="log")
-# plt.yticks(ticks=[1000,800,600,400,200,50],labels=["1000","800","600","400","200","50"])
-# plt.title("Difference 4co2 and solar +50W - Air Temperature")
+#TAIR
+var="air_temperature"
+d = DataArray(data1[var].mean("longitude_0") - data2[var].mean("longitude_0"))
+p = DataArray(data1[var].mean("longitude_0")).t_student_probability(data2[var].mean("longitude_0")) 
+plt.figure()
+d.annual_mean(240).plotlev(
+          cmap = Constants.colormaps.Div_tsurf,
+          levels = np.linspace(-2,2,100),
+          cbar_kwargs={"ticks":np.arange(-2,2+0.5,0.5)},
+#           norm = colors.DivergingNorm(vmin=-1,vcenter=0,vmax=2),
+          t_student=p,
+          title = "(4co2 fix) - (4co2 sol50-) | Air Temperature",
+          units = "°C",
+          outpath = os.path.join(output_folder_diff,"diff_4co2fix_4co2s50m_tair.png"))
+
 
 # %%
+#VERTICAL PROFILES
+
