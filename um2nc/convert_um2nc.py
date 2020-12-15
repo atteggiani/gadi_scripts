@@ -7,7 +7,6 @@ parser=ArgumentParser()
 parser.add_argument('-i','--input',type=str,default="/scratch/w48/dm5220/umui")
 parser.add_argument('-o','--output',type=str)
 parser.add_argument('--id','--exp_id',type=str)
-parser.add_argument('-s','--start',type=int,default=1493)
 parser.add_argument('--ncpus',type=int)
 args=parser.parse_args()
 
@@ -22,7 +21,6 @@ import glob
 input_folder=args.input
 output_folder=args.output
 exp_id=args.id
-start=args.start
 ncpus=args.ncpus
 if exp_id is None: input_folder,exp_id = os.path.split(input_folder)
 if ncpus is None: ncpus = cpu_count()
@@ -37,7 +35,7 @@ def convert(input_folder,exp_id,year,output_folder):
             x=iris.load(os.path.join(input_folder,exp_id,"{}a@p{}{}*".format(exp_id,s,year)))  
         except OSError:
             continue
-        iris.save(x,os.path.join(output_folder,'{}_p{}{}.nc'.format(exp_id,s,Constants.um.from_um_filename_years(year))))
+        iris.save(x,os.path.join(output_folder,'{}_p{}{}.nc'.format(exp_id,s,Constants.um.from_um_filename_years( ))))
 
 def main(input_folder=None,output_folder=None,exp_id=None,years=None):
     p=Pool(processes=ncpus)

@@ -10,8 +10,8 @@ Usage: $PROGNAME [-i <input folder>] [-o <output folder>] [--id <experiment id>]
 List of keys/options:
 -i <path to folder> -> path to input folder (default is "/scratch/w48/dm5220/umui")
 -o <path to folder> -> path to the output folder
--s <int> -> starting year (default is 1493)
 --id <experiment id> -> experiment id (if not provided, the last folder of the input path will be considered as id)
+
 EOF
   exit 1
 }
@@ -34,9 +34,6 @@ while getopts hi:o:s:-:g opt; do
         o)
             options+=" -o $(readlink -m "$OPTARG")"
 	    out=$(basename $(readlink -m "$OPTARG"))
-            ;;
-        s)
-            options+=" -s ${OPTARG}"
             ;;
         *) usage
     esac
