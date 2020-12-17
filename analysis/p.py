@@ -17,6 +17,8 @@ data_test = my.add_evaporation(xr.open_mfdataset(os.path.join(input_folder,"test
            concat_dim="time",parallel=True))        
 # %%
 var="surface_temperature"
-c=my.DataArray(data_ctl[var])
+c=my.DataArray(data_ctl[var]).isel(time=slice(0,60))
 t=my.DataArray(data_test[var])
 # %%
+p=c.t_student_probability(t)
+(c.annual_mean()-t.annual_mean()).plotvar(t_student=p)

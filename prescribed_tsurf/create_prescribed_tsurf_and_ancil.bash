@@ -104,7 +104,7 @@ do
   NLEV = 38,
   NO3LEV = 38,
   LLEVSTOREUP = .TRUE.,
-  NAM_VERT = "/projects/access/umdir/vn7.3/ctldata/vert/vertlevs_G3",
+  NAM_VERT = "/g/data/access/projects/access/umdir/vn7.3/ctldata/vert/vertlevs_G3",
   IOVERT = 0,
   LDEEPSOIL = .FALSE.
  /
@@ -325,13 +325,13 @@ EOF
 #PBS -l ncpus=4
 #PBS -q normal
 #PBS -P w48
-#PBS -l storage=gdata/hh5+gdata/w48+scratch/w48+scratch/access
+#PBS -l storage=gdata/hh5+gdata/w48+scratch/w48+gdata/access
 #PBS -l mem=50gb
 
 echo "Writing Surface Temperature netCDF file: ${in}"
 /g/data3/w48/dm5220/scripts/prescribed_tsurf/${filetype[$i]}.py${options}
-/scratch/access/apps/xancil/0.57/mkancil < "$xancil_namelist"
+/g/data/access/projects/access/apps/xancil/0.57/mkancil < "$xancil_namelist"
 EOF
-    ~access/apps/pythonlib/umfile_utils/fix_polar_anom.py "$out" #fix polar errors
+    /g/data/access/projects/access/apps/pythonlib/umfile_utils/fix_polar_anom.py "$out" #fix polar errors
     qsub "$script"
 done

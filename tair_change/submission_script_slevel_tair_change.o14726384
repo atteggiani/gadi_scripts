@@ -1,0 +1,17 @@
+ Writing Single-level User ancillary file 
+ /g/data/w48/dm5220/ancil/user_slevel/tair_change/tac_slab
+ End of mkancil
+ 
+
+======================================================================================
+                  Resource Usage on 2020-12-17 17:50:10:
+   Job Id:             14726384.gadi-pbs
+   Project:            w48
+   Exit Status:        0
+   Service Units:      55.62
+   NCPUs Requested:    1                      NCPUs Used: 1               
+                                           CPU Time Used: 02:13:11                                   
+   Memory Requested:   50.0GB                Memory Used: 1.29GB          
+   Walltime requested: 10:00:00            Walltime Used: 02:13:30        
+   JobFS requested:    100.0MB                JobFS used: 0B              
+======================================================================================

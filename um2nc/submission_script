@@ -7,4 +7,4 @@
 #PBS -l mem=50gb
 #PBS -N um2nc.test 
 
-/g/data3/w48/dm5220/scripts/um2nc/convert_um2nc.py -o /g/data/w48/dm5220/data/exp_precip_change/test --id vabua --ncpus 48
+/g/data3/w48/dm5220/scripts/um2nc/convert_um2nc.py --id vabua -o /g/data/w48/dm5220/data/exp_precip_change/test --ncpus 48

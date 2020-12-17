@@ -176,12 +176,12 @@ cat > "$script" <<EOF
 #PBS -l ncpus=4
 #PBS -q normal
 #PBS -P w48
-#PBS -l storage=gdata/hh5+gdata/w48+scratch/w48+scratch/access
+#PBS -l storage=gdata/hh5+gdata/w48+scratch/w48+gdata/access
 #PBS -l mem=50gb
 
 echo "Writing Sea Surface Temperature netCDF file: ${in}"
 /g/data3/w48/dm5220/scripts/prescribed_tsurf/${filetype}.py${options}
-/scratch/access/apps/xancil/0.57/mkancil < "$xancil_namelist"
+/g/data/access/projects/access/apps/xancil/0.57/mkancil < "$xancil_namelist"
 EOF
 
 qsub "$script"

@@ -35,7 +35,7 @@ def convert(input_folder,exp_id,year,output_folder):
             x=iris.load(os.path.join(input_folder,exp_id,"{}a@p{}{}*".format(exp_id,s,year)))  
         except OSError:
             continue
-        iris.save(x,os.path.join(output_folder,'{}_p{}{}.nc'.format(exp_id,s,Constants.um.from_um_filename_years( ))))
+        iris.save(x,os.path.join(output_folder,'{}_p{}{}.nc'.format(exp_id,s,Constants.um.from_um_filename_years(year))))
 
 def main(input_folder=None,output_folder=None,exp_id=None,years=None):
     p=Pool(processes=ncpus)

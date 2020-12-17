@@ -1,0 +1,15 @@
+ Writing Single-level User ancillary file 
+ /g/data/w48/dm5220/ancil/user_slevel/tair_change/tac_slab
+
+======================================================================================
+                  Resource Usage on 2020-12-17 17:56:58:
+   Job Id:             14731919.gadi-pbs
+   Project:            w48
+   Exit Status:        271 (Linux Signal 15 SIGTERM Termination)
+   Service Units:      25.31
+   NCPUs Requested:    4                      NCPUs Used: 4               
+                                           CPU Time Used: 01:00:14                                   
+   Memory Requested:   50.0GB                Memory Used: 1.72GB          
+   Walltime requested: 01:00:00            Walltime Used: 01:00:44        
+   JobFS requested:    100.0MB                JobFS used: 0B              
+======================================================================================

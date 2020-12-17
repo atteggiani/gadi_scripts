@@ -1,0 +1,30 @@
+/g/data3/hh5/public/apps/miniconda3/envs/analysis3-20.10/lib/python3.8/typing.py:901: FutureWarning: xarray subclass Dataset should explicitly define __slots__
+  super().__init_subclass__(*args, **kwargs)
+/g/data3/w48/dm5220/scripts/python_modules/myfuncs.py:342: FutureWarning: xarray subclass DataArray should explicitly define __slots__
+  class DataArray(xr.DataArray):
+=>> PBS: job killed: walltime 3633 exceeded limit 3600
+forrtl: error (78): process killed (SIGTERM)
+Image              PC                Routine            Line        Source             
+mkancil0.57        0000000000479684  for__signal_handl     Unknown  Unknown
+libpthread-2.28.s  0000151C45028DD0  Unknown               Unknown  Unknown
+libz.so.1.2.11     0000151C42F2B2B9  Unknown               Unknown  Unknown
+libz.so.1.2.11     0000151C42F2BB4C  inflate               Unknown  Unknown
+libhdf5.so.103.1.  0000151C434303E3  Unknown               Unknown  Unknown
+libhdf5.so.103.1.  0000151C4342F471  H5Z_pipeline          Unknown  Unknown
+libhdf5.so.103.1.  0000151C431E51BC  Unknown               Unknown  Unknown
+libhdf5.so.103.1.  0000151C431E6AD2  Unknown               Unknown  Unknown
+libhdf5.so.103.1.  0000151C43204EC4  H5D__read             Unknown  Unknown
+libhdf5.so.103.1.  0000151C43205703  H5Dread               Unknown  Unknown
+libnetcdf.so.15.1  0000151C44548BB2  NC4_get_vars          Unknown  Unknown
+libnetcdf.so.15.1  0000151C4454762A  NC4_get_vara          Unknown  Unknown
+libnetcdf.so.15.1  0000151C444E83D4  NC_get_vara           Unknown  Unknown
+libnetcdf.so.15.1  0000151C444E921C  NCDEFAULT_get_var     Unknown  Unknown
+libnetcdf.so.15.1  0000151C444E9519  Unknown               Unknown  Unknown
+libnetcdf.so.15.1  0000151C444EA585  nc_get_varm_doubl     Unknown  Unknown
+libnetcdff.so.7.0  0000151C455F7C11  nf_get_varm_doubl     Unknown  Unknown
+mkancil0.57        000000000042D6E5  Unknown               Unknown  Unknown
+mkancil0.57        0000000000461D77  Unknown               Unknown  Unknown
+mkancil0.57        0000000000411BBE  Unknown               Unknown  Unknown
+mkancil0.57        000000000040AC22  Unknown               Unknown  Unknown
+libc-2.28.so       0000151C44C776A3  __libc_start_main     Unknown  Unknown
+mkancil0.57        000000000040AB2E  Unknown               Unknown  Unknown
