@@ -271,7 +271,7 @@ def plot_amean_pat(data,var,a=1,title=None,outpath=None,min=None,max=None,du=1,u
         plt.savefig(os.path.join(output_folder,outpath),dpi=300,bbox_inches="tight")
 
 #%%
-input_folder="/g/data/w48/dm5220/data/exp_precip_change"
+input_folder="/g/data/w48/dm5220/data"
 output_folder=input_folder+"/figures/analysis"
 alpha_precip=86400
 
@@ -342,7 +342,7 @@ for d,t,o in datas:
         units = "°C",
         ttest=True,
         outpath = "{}_{}_pat_amean.png".format(outvar,o),
-        cmap = Constants.colormaps.Div_tsurf)
+        cmap = Constants.colormaps.div_tsurf)
 
 #AIR TEMPERATURE
     var="air_temperature"
@@ -355,7 +355,7 @@ for d,t,o in datas:
         units = "°C",
         ttest=True,
         outpath = "{}_{}_lev.png".format(outvar,o),
-        cmap = Constants.colormaps.Div_tsurf)
+        cmap = Constants.colormaps.div_tsurf)
     plt.figure()
     plot_amean_lev(data=d,var=var,
         min=m,max=mm,
@@ -363,7 +363,7 @@ for d,t,o in datas:
         units = "°C",
         ttest=True,
         outpath = "{}_{}_lev_amean.png".format(outvar,o),
-        cmap = Constants.colormaps.Div_tsurf)
+        cmap = Constants.colormaps.div_tsurf)
 
 #PRECIPITATION
     var="precipitation_flux"
@@ -377,7 +377,7 @@ for d,t,o in datas:
         units = "mm/day",
         ttest=True,
         outpath = "{}_{}_pat.png".format(outvar,o),
-        cmap = Constants.colormaps.Div_precip)
+        cmap = Constants.colormaps.div_precip)
     plt.figure() 
     plot_amean_pat(data=d,var=var,
         a=alpha_precip,
@@ -386,7 +386,7 @@ for d,t,o in datas:
         units = "mm/day",
         ttest=True,
         outpath = "{}_{}_pat_amean.png".format(outvar,o),
-        cmap = Constants.colormaps.Div_precip)
+        cmap = Constants.colormaps.div_precip)
 
 # #HUMIDITY
 #     var="relative_humidity"
@@ -518,7 +518,7 @@ d = DataArray(data1[var]-data2[var])
 p = DataArray(data1[var]).t_student_probability(data2[var])  
 plt.figure()
 d.annual_mean(240).plotvar(
-          cmap = Constants.colormaps.Div_tsurf,
+          cmap = Constants.colormaps.div_tsurf,
           levels = np.linspace(-2,2,100),
           cbar_kwargs={"ticks":np.arange(-2,2+0.5,0.5)},
 #           norm = colors.DivergingNorm(vmin=-1,vcenter=0,vmax=2),
@@ -533,7 +533,7 @@ d = DataArray(data1[var].mean("longitude_0") - data2[var].mean("longitude_0"))
 p = DataArray(data1[var].mean("longitude_0")).t_student_probability(data2[var].mean("longitude_0"))
 plt.figure()
 d.annual_mean(240).plotlev(
-          cmap = Constants.colormaps.Div_tsurf,
+          cmap = Constants.colormaps.div_tsurf,
           levels = np.linspace(-2,2,100),
           cbar_kwargs={"ticks":np.arange(-2,2+0.5,0.5)},
 #           norm = colors.DivergingNorm(vmin=-1,vcenter=0,vmax=2),
@@ -551,7 +551,7 @@ d = DataArray(data1[var]-data2[var])
 p = DataArray(data1[var]).t_student_probability(data2[var]) 
 plt.figure()
 d.annual_mean(240).plotvar(
-          cmap = Constants.colormaps.Div_tsurf,
+          cmap = Constants.colormaps.div_tsurf,
           levels = np.linspace(-2,2,100),
           cbar_kwargs={"ticks":np.arange(-2,2+0.5,0.5)},
 #           norm = colors.DivergingNorm(vmin=-1,vcenter=0,vmax=2),
@@ -566,7 +566,7 @@ d = DataArray(data1[var].mean("longitude_0") - data2[var].mean("longitude_0"))
 p = DataArray(data1[var].mean("longitude_0")).t_student_probability(data2[var].mean("longitude_0")) 
 plt.figure()
 d.annual_mean(240).plotlev(
-          cmap = Constants.colormaps.Div_tsurf,
+          cmap = Constants.colormaps.div_tsurf,
           levels = np.linspace(-2,2,100),
           cbar_kwargs={"ticks":np.arange(-2,2+0.5,0.5)},
 #           norm = colors.DivergingNorm(vmin=-1,vcenter=0,vmax=2),

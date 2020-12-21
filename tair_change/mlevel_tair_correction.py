@@ -2,12 +2,26 @@
 
 import warnings
 warnings.simplefilter("ignore")
+from argparse import ArgumentParser
+import os
+import numpy as np
+
+## PARSE ARGUMENTS
+parser=ArgumentParser()
+# parser.add_argument('-i','--input',type=str)
+parser.add_argument('-o','--output',type=str)
+parser.add_argument('-c','--change',type=np.float)
+# parser.add_argument('--id','--exp_id',type=str)
+args=parser.parse_args()
+
+# input_folder=args.input
+out_file=args.output
+change=args.change
+
 import myfuncs as my
 import xarray as xr
 from importlib import reload
 from cftime import Datetime360Day as dt360
-import numpy as np
-from dask.diagnostics import ProgressBar
 
 #Create base xarray with all values equal 0
 time = [dt360(0,m,16) for m in range(1,13)]
@@ -17,7 +31,7 @@ levs = my.Constants.um.hybrid_height
 coords=(time,levs,lat,lon)
 b=np.zeros([len(x) for x in coords],dtype=np.float32)
 tac=xr.DataArray(data=b, dims=("time","hybrid_ht","latitude","longitude") ,coords=coords,name="tair_corrections")
-
+tac+=change
 # tac[:,1:2,...] = -0.03
 # tac[:,3,...] = -0.015
 # tac[:,5,...] = 0.05
@@ -26,7 +40,6 @@ tac=xr.DataArray(data=b, dims=("time","hybrid_ht","latitude","longitude") ,coord
 # tac[:,12:17,...] = 0.03
 # tac[:,18:25,...] = 0.05
 
-output_file = "/g/data/w48/dm5220/data/exp_precip_change/ancil/tair_change_chen.nc"
+output_file = "/g/data/w48/dm5220/ancil/user_mlevel/tair_change/files_for_xancil/{}.nc".format(out_file)
 encoding = {tac.name: {'zlib':True,'shuffle':True,'complevel':4,'chunksizes': [1,8,73,96]}}
-with ProgressBar():
-    tac.to_netcdf(output_file,encoding=encoding)
+tac.to_netcdf(output_file,encoding=encoding)

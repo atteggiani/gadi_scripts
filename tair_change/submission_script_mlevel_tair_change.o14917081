@@ -1,0 +1,18 @@
+ Writing Multi-level User ancillary file 
+ /g/data/w48/dm5220/ancil/user_mlevel/tair_change/tac_0.1
+ ERROR: in procedure open_ncfile 1 : NetCDF error number            2 : 
+ No such file or directory : 
+ /g/data/w48/dm5220/data/exp_precip_change/ancil/tac_0.1.nc
+
+======================================================================================
+                  Resource Usage on 2020-12-21 15:24:19:
+   Job Id:             14917081.gadi-pbs
+   Project:            w48
+   Exit Status:        1
+   Service Units:      0.12
+   NCPUs Requested:    1                      NCPUs Used: 1               
+                                           CPU Time Used: 00:00:07                                   
+   Memory Requested:   50.0GB                Memory Used: 1003.92MB       
+   Walltime requested: 10:00:00            Walltime Used: 00:00:17        
+   JobFS requested:    100.0MB                JobFS used: 0B              
+======================================================================================

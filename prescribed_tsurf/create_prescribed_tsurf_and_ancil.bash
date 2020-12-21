@@ -331,7 +331,8 @@ EOF
 echo "Writing Surface Temperature netCDF file: ${in}"
 /g/data3/w48/dm5220/scripts/prescribed_tsurf/${filetype[$i]}.py${options}
 /g/data/access/projects/access/apps/xancil/0.57/mkancil < "$xancil_namelist"
+/g/data/w48/dm5220/scripts/util/fix_polar_anom.py "$out" #fix polar errors
 EOF
-    /g/data/access/projects/access/apps/pythonlib/umfile_utils/fix_polar_anom.py "$out" #fix polar errors
+    
     qsub "$script"
 done

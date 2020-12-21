@@ -1,9 +1,36 @@
 #!/bin/bash
 
-cd /g/data3/w48/dm5220/scripts/tair_change
+PROGNAME=$0
 
-in="/g/data/w48/dm5220/data/exp_precip_change/ancil/tair_change_chen.nc"
-out="/g/data/w48/dm5220/ancil/user_mlevel/tair_change/tac"
+usage() {
+  cat << EOF
+Script to generate the tair change um ancillary file for tair change experiment.
+Usage: $PROGNAME [-o <output file>]
+
+List of keys/options:
+-o <path to file> -> path to output file
+-c <change> 
+EOF
+  exit 1
+}
+
+while getopts ho:c: opt; do
+    case $opt in
+      o)
+	    options+=" -o ${OPTARG}"
+      name="$OPTARG"
+      ;;
+      c)
+	    options+=" -c ${OPTARG}"
+      ;;
+      *) usage
+    esac
+done
+
+in="/g/data/w48/dm5220/ancil/user_mlevel/tair_change/files_for_xancil/${name}.nc"
+out="/g/data/w48/dm5220/ancil/user_mlevel/tair_change/${name}"
+
+cd /g/data3/w48/dm5220/scripts/tair_change
 
 xancil_namelist="/g/data3/w48/dm5220/scripts/tair_change/xancil.namelist_mlevel_tair_change"
 cat > "$xancil_namelist" <<EOF
@@ -137,8 +164,9 @@ cat > "$script" <<EOF
 #PBS -l storage=gdata/hh5+gdata/w48+scratch/w48+gdata/access
 #PBS -l mem=50gb
 
-/g/data3/w48/dm5220/scripts/tair_change/mlevel_tair_correction.py
+/g/data3/w48/dm5220/scripts/tair_change/mlevel_tair_correction.py${options}
 /g/data/access/projects/access/apps/xancil/0.57/mkancil < "$xancil_namelist"
+/g/data/w48/dm5220/scripts/util/fix_polar_anom.py "$out" #fix polar errors
 EOF
 
 qsub "$script"

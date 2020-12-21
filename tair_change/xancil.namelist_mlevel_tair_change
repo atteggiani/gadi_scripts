@@ -7,7 +7,7 @@
   LWFIO = .TRUE.,
   IWFIO_SIZE = 2048,
   NNCFILES = 1
-  NCFILES = "/g/data/w48/dm5220/data/exp_precip_change/ancil/tair_change_chen.nc"
+  NCFILES = "/g/data/w48/dm5220/ancil/user_mlevel/tair_change/files_for_xancil/tac3.nc"
  /
 
  &nam_gridconfig
@@ -62,7 +62,7 @@
 
  &nam_ausrmulti
   LAUSRMULTI = .TRUE.,
-  AUSRMULTI_FILEOUT = "/g/data/w48/dm5220/ancil/user_mlevel/tair_change/tac",
+  AUSRMULTI_FILEOUT = "/g/data/w48/dm5220/ancil/user_mlevel/tair_change/tac3",
   LAUSRMULTI_PERIODIC = .TRUE.,
   LAUSRMULTI_CAL_INDEP = .FALSE.,
   IAUSRMULTI_TIMEUSAGE1 = 1,
