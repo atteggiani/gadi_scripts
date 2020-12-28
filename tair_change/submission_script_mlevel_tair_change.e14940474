@@ -1,4 +1,0 @@
-Traceback (most recent call last):
-  File "/g/data/w48/dm5220/scripts/util/fix_polar_anom.py", line 9, in <module>
-    from um_fileheaders import *
-ModuleNotFoundError: No module named 'um_fileheaders'

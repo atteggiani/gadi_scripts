@@ -1,8 +1,0 @@
-/g/data3/hh5/public/apps/miniconda3/envs/analysis3-20.10/lib/python3.8/typing.py:901: FutureWarning: xarray subclass Dataset should explicitly define __slots__
-  super().__init_subclass__(*args, **kwargs)
-/g/data3/w48/dm5220/scripts/python_modules/myfuncs.py:342: FutureWarning: xarray subclass DataArray should explicitly define __slots__
-  class DataArray(xr.DataArray):
-Traceback (most recent call last):
-  File "/g/data/w48/dm5220/scripts/util/fix_polar_anom.py", line 9, in <module>
-    from um_fileheaders import *
-ModuleNotFoundError: No module named 'um_fileheaders'

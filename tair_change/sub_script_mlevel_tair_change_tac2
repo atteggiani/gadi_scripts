@@ -1,0 +1,11 @@
+#!/bin/bash
+#PBS -l walltime=10:00:00
+#PBS -l ncpus=1
+#PBS -q normal
+#PBS -P w48
+#PBS -l storage=gdata/hh5+gdata/w48+scratch/w48+gdata/access
+#PBS -l mem=50gb
+
+/g/data3/w48/dm5220/scripts/tair_change/mlevel_tair_correction.py -o tac2 -c 0.002
+/g/data/access/projects/access/apps/xancil/0.57/mkancil < "/g/data3/w48/dm5220/scripts/tair_change/xancil.namelist_mlevel_tair_change"
+/g/data/w48/dm5220/scripts/util/fix_polar_anom "/g/data/w48/dm5220/ancil/user_mlevel/tair_change/tac2" #fix polar errors

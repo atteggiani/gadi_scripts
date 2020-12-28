@@ -8,8 +8,8 @@ Script to generate the tair change um ancillary file for tair change experiment.
 Usage: $PROGNAME [-o <output file>]
 
 List of keys/options:
--o <path to file> -> path to output file
--c <change> 
+-o <name of file> -> name of the output file
+-c <change>  -> value to be assigned to the m-level file
 EOF
   exit 1
 }
@@ -154,7 +154,7 @@ cat > "$xancil_namelist" <<EOF
 
 EOF
 
-script="submission_script_mlevel_tair_change"
+script="sub_script_mlevel_tair_change_${name}"
 cat > "$script" <<EOF
 #!/bin/bash
 #PBS -l walltime=10:00:00
@@ -166,7 +166,7 @@ cat > "$script" <<EOF
 
 /g/data3/w48/dm5220/scripts/tair_change/mlevel_tair_correction.py${options}
 /g/data/access/projects/access/apps/xancil/0.57/mkancil < "$xancil_namelist"
-/g/data/w48/dm5220/scripts/util/fix_polar_anom.py "$out" #fix polar errors
+/g/data/w48/dm5220/scripts/util/fix_polar_anom "$out" #fix polar errors
 EOF
 
 qsub "$script"

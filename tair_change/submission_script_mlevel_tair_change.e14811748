@@ -1,4 +1,0 @@
-  File "/g/data/access/projects/access/apps/pythonlib/umfile_utils/fix_polar_anom.py", line 19
-    print "Usage: fix_polar_anom [-v] ifile "
-                                            ^
-SyntaxError: Missing parentheses in call to 'print'. Did you mean print("Usage: fix_polar_anom [-v] ifile ")?

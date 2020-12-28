@@ -4,14 +4,14 @@
  
 
 ======================================================================================
-                  Resource Usage on 2020-12-21 22:49:35:
-   Job Id:             14941023.gadi-pbs
+                  Resource Usage on 2020-12-28 12:53:28:
+   Job Id:             15135868.gadi-pbs
    Project:            w48
-   Exit Status:        1
-   Service Units:      0.19
+   Exit Status:        0
+   Service Units:      0.06
    NCPUs Requested:    1                      NCPUs Used: 1               
-                                           CPU Time Used: 00:00:07                                   
-   Memory Requested:   50.0GB                Memory Used: 1015.63MB       
-   Walltime requested: 10:00:00            Walltime Used: 00:00:27        
+                                           CPU Time Used: 00:00:06                                   
+   Memory Requested:   50.0GB                Memory Used: 177.72MB        
+   Walltime requested: 10:00:00            Walltime Used: 00:00:08        
    JobFS requested:    100.0MB                JobFS used: 0B              
 ======================================================================================
