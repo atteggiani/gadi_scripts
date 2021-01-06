@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/g/data3/w48/dm5220/scripts/um2nc/convert_um2nc.py", line 29, in <module>
+    os.makedirs(output_folder,exist_ok=True)
+  File "/g/data3/hh5/public/apps/miniconda3/envs/analysis3-20.10/lib/python3.8/os.py", line 208, in makedirs
+    head, tail = path.split(name)
+  File "/g/data3/hh5/public/apps/miniconda3/envs/analysis3-20.10/lib/python3.8/posixpath.py", line 103, in split
+    p = os.fspath(p)
+TypeError: expected str, bytes or os.PathLike object, not NoneType

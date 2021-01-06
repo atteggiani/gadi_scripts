@@ -32,14 +32,8 @@ coords=(time,levs,lat,lon)
 b=np.zeros([len(x) for x in coords],dtype=np.float32)
 tac=xr.DataArray(data=b, dims=("time","hybrid_ht","latitude","longitude") ,coords=coords,name="tair_corrections")
 tac+=change
-# tac[:,1:2,...] = -0.03
-# tac[:,3,...] = -0.015
-# tac[:,5,...] = 0.05
-# tac[:,6:8,...] = 0.12
-# tac[:,9:11,...] = 0.06
-# tac[:,12:17,...] = 0.03
-# tac[:,18:25,...] = 0.05
 
 output_file = "/g/data/w48/dm5220/ancil/user_mlevel/tair_change/files_for_xancil/{}.nc".format(out_file)
 encoding = {tac.name: {'zlib':True,'shuffle':True,'complevel':4,'chunksizes': [1,8,73,96]}}
 tac.to_netcdf(output_file,encoding=encoding)
+

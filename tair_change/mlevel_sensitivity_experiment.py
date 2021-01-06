@@ -1,0 +1,40 @@
+#!/g/data3/hh5/public/apps/miniconda3/envs/analysis3-20.10/bin/python3
+
+import warnings
+warnings.simplefilter("ignore")
+import os
+import numpy as np
+import myfuncs as my
+import xarray as xr
+from importlib import reload
+from cftime import Datetime360Day as dt360
+from itertools import tee
+
+def pairwise(iterable):
+    "s -> (s0,s1), (s1,s2), (s2, s3), ..."
+    a, b = tee(iterable)
+    next(b, None)
+    return zip(a, b)
+
+#Create base xarray with all values equal 0
+time = [dt360(0,m,16) for m in range(1,13)]
+lat = my.Constants.um.latitude
+lon = my.Constants.um.longitude 
+levs = my.Constants.um.hybrid_height
+coords=(time,levs,lat,lon)
+b=np.zeros([len(x) for x in coords],dtype=np.float32)
+tac=xr.DataArray(data=b, dims=("time","hybrid_ht","latitude","longitude") ,coords=coords,name="tair_corrections")
+
+lat = np.arange(-90,90+30,30)
+ilat=[np.where(tac.latitude == i)[0][0] for i in lat]
+levs=[1,5,8,10,17,25,30,38]
+plevs=[1000,900,850,750,500,200,100,20]
+
+for il,l in zip(pairwise(ilat),pairwise(lat)):
+    for ll,pl in zip(pairwise(levs),pairwise(plevs)):
+        tac[:,ll[0]:ll[1],il[0]:il[1],:]+=0.01
+        
+        output_file = "/g/data/w48/dm5220/ancil/user_mlevel/tair_change/sensitivity_exp/files_for_xancil/lat.{}_{}.plev.{}_{}.nc".format(l[0],l[1],pl[0],pl[1])
+        encoding = {tac.name: {'zlib':True,'shuffle':True,'complevel':4,'chunksizes': [1,8,73,96]}}
+        tac.to_netcdf(output_file,encoding=encoding)
+        print("Created {}".format(os.path.split(output_file)[1]))

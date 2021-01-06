@@ -1,0 +1,58 @@
+
+------------------------------------------------------------------------
+Job 15149353 has exceeded memory allocation on node gadi-cpu-clx-1393.gadi.nci.org.au
+Process "bash", pid 1079359, rss 3506176, vmem 238637056
+Process "15149353.gadi-p", pid 1079660, rss 3211264, vmem 228114432
+Process "convert_um2nc.p", pid 1079665, rss 169832448, vmem 2226286592
+Process "convert_um2nc.p", pid 1079669, rss 1083027456, vmem 6158598144
+Process "convert_um2nc.p", pid 1079670, rss 1100787712, vmem 6182805504
+Process "convert_um2nc.p", pid 1079671, rss 1110970368, vmem 6182080512
+Process "convert_um2nc.p", pid 1079672, rss 1096073216, vmem 6182502400
+Process "convert_um2nc.p", pid 1079673, rss 1115758592, vmem 6181650432
+Process "convert_um2nc.p", pid 1079674, rss 1102417920, vmem 6167040000
+Process "convert_um2nc.p", pid 1079675, rss 1111310336, vmem 6181707776
+Process "convert_um2nc.p", pid 1079676, rss 1113374720, vmem 6182260736
+Process "convert_um2nc.p", pid 1079677, rss 1113436160, vmem 6167072768
+Process "convert_um2nc.p", pid 1079678, rss 1094447104, vmem 6166204416
+Process "convert_um2nc.p", pid 1079679, rss 1109073920, vmem 6167867392
+Process "convert_um2nc.p", pid 1079680, rss 1075355648, vmem 6166106112
+Process "convert_um2nc.p", pid 1079681, rss 1117175808, vmem 6180147200
+Process "convert_um2nc.p", pid 1079682, rss 1101574144, vmem 6167056384
+Process "convert_um2nc.p", pid 1079683, rss 1100541952, vmem 6182518784
+Process "convert_um2nc.p", pid 1079684, rss 1082920960, vmem 6166523904
+Process "convert_um2nc.p", pid 1079685, rss 1091948544, vmem 6166474752
+Process "convert_um2nc.p", pid 1079686, rss 1125523456, vmem 6184468480
+Process "convert_um2nc.p", pid 1079687, rss 1089978368, vmem 6179586048
+Process "convert_um2nc.p", pid 1079688, rss 1104871424, vmem 6182469632
+Process "convert_um2nc.p", pid 1079689, rss 1095548928, vmem 6166790144
+Process "convert_um2nc.p", pid 1079690, rss 1087913984, vmem 6166827008
+Process "convert_um2nc.p", pid 1079691, rss 1098461184, vmem 6166822912
+Process "convert_um2nc.p", pid 1079692, rss 1101119488, vmem 6166511616
+Process "convert_um2nc.p", pid 1079693, rss 1103708160, vmem 6182518784
+Process "convert_um2nc.p", pid 1079694, rss 1106235392, vmem 6166183936
+Process "convert_um2nc.p", pid 1079695, rss 1121914880, vmem 6182531072
+Process "convert_um2nc.p", pid 1079696, rss 1092067328, vmem 6182531072
+Process "convert_um2nc.p", pid 1079697, rss 1106599936, vmem 6184452096
+Process "convert_um2nc.p", pid 1079698, rss 1099530240, vmem 6182531072
+Process "convert_um2nc.p", pid 1079699, rss 1101369344, vmem 6182121472
+Process "convert_um2nc.p", pid 1079700, rss 1104732160, vmem 6182563840
+Process "convert_um2nc.p", pid 1079701, rss 1118380032, vmem 6182264832
+Process "convert_um2nc.p", pid 1079702, rss 1081454592, vmem 6166827008
+Process "convert_um2nc.p", pid 1079703, rss 1084874752, vmem 6166806528
+Process "convert_um2nc.p", pid 1079704, rss 1103486976, vmem 6166663168
+Process "convert_um2nc.p", pid 1079705, rss 1083101184, vmem 6166540288
+Process "convert_um2nc.p", pid 1079706, rss 1074540544, vmem 6166413312
+Process "convert_um2nc.p", pid 1079707, rss 1110945792, vmem 6184144896
+Process "convert_um2nc.p", pid 1079708, rss 1117224960, vmem 6182739968
+Process "convert_um2nc.p", pid 1079709, rss 1094168576, vmem 6166491136
+Process "convert_um2nc.p", pid 1079710, rss 1116205056, vmem 6182055936
+Process "convert_um2nc.p", pid 1079711, rss 1085181952, vmem 6166540288
+Process "convert_um2nc.p", pid 1079712, rss 1093492736, vmem 6166495232
+Process "convert_um2nc.p", pid 1079713, rss 1118662656, vmem 6182473728
+Process "convert_um2nc.p", pid 1079714, rss 1107628032, vmem 6182838272
+Process "convert_um2nc.p", pid 1079715, rss 1077489664, vmem 6167068672
+Process "convert_um2nc.p", pid 1079716, rss 1114112000, vmem 6182834176
+------------------------------------------------------------------------
+For more information visit https://opus.nci.org.au/x/SwGRAQ
+------------------------------------------------------------------------
+=>> PBS: job killed: walltime 3635 exceeded limit 3600
