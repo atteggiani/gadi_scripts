@@ -25,16 +25,21 @@ coords=(time,levs,lat,lon)
 b=np.zeros([len(x) for x in coords],dtype=np.float32)
 tac=xr.DataArray(data=b, dims=("time","hybrid_ht","latitude","longitude") ,coords=coords,name="tair_corrections")
 
+ref_levs=[1,5,8,10,17,25,30,38]
 lat = np.arange(-90,90+30,30)
-ilat=[np.where(tac.latitude == i)[0][0] for i in lat]
-levs=[1,5,8,10,17,25,30,38]
+levs=[tac.hybrid_ht.values[l-1] for l in ref_levs]
 plevs=[1000,900,850,750,500,200,100,20]
 
-for il,l in zip(pairwise(ilat),pairwise(lat)):
+for l in pairwise(lat):
     for ll,pl in zip(pairwise(levs),pairwise(plevs)):
-        tac[:,ll[0]:ll[1],il[0]:il[1],:]+=0.01
+        cond_lat = np.logical_and(tac.latitude>=l[0],
+                                  tac.latitude<=l[1])
+        cond_lev = np.logical_and(tac.hybrid_ht>=ll[0],
+                                  tac.hybrid_ht<=ll[1])
+        cond = ~np.logical_and(cond_lat,cond_lev)
+        new_tac=tac.where(cond,0.01)
         
-        output_file = "/g/data/w48/dm5220/ancil/user_mlevel/tair_change/sensitivity_exp/files_for_xancil/lat.{}_{}.plev.{}_{}.nc".format(l[0],l[1],pl[0],pl[1])
-        encoding = {tac.name: {'zlib':True,'shuffle':True,'complevel':4,'chunksizes': [1,8,73,96]}}
-        tac.to_netcdf(output_file,encoding=encoding)
+        output_file = "/g/data/w48/dm5220/ancil/user_mlevel/tair_change/sex/files_for_xancil/lat.{}_{}.plev.{}_{}.nc".format(l[0],l[1],pl[0],pl[1])
+        encoding = {new_tac.name: {'zlib':True,'shuffle':True,'complevel':4,'chunksizes': [1,8,73,96]}}
+        new_tac.to_netcdf(output_file,encoding=encoding)
         print("Created {}".format(os.path.split(output_file)[1]))
