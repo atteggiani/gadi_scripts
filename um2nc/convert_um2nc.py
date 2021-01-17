@@ -25,16 +25,19 @@ ncpus=args.ncpus
 if exp_id is None: input_folder,exp_id = os.path.split(input_folder)
 if ncpus is None: ncpus = cpu_count()
 
-years=set([os.path.split(x)[1][9:-2] for x in glob.glob(os.path.join(input_folder,exp_id,"{}a@pa*".format(exp_id)))])
+ind=len(exp_id)+4
+years=set([os.path.split(x)[1][ind:-2] for x in glob.glob(os.path.join(input_folder,exp_id,"{}a@pa*".format(exp_id)))])
 os.makedirs(output_folder,exist_ok=True)
 
 def convert(input_folder,exp_id,year,output_folder):
     streams=Constants.um.streams()
-    for s in streams:
-        try:
-            x=iris.load(os.path.join(input_folder,exp_id,"{}a@p{}{}*".format(exp_id,s,year)))  
-        except OSError:
-            continue
+    # for s in streams:
+        # try:
+        #     x=iris.load(os.path.join(input_folder,exp_id,"{}a@p{}{}*".format(exp_id,s,year)))  
+        # except OSError:
+        #     continue
+    for s in ["a","c","e"]:
+        x=iris.load(os.path.join(input_folder,exp_id,"{}a@p{}{}*".format(exp_id,s,year)))  
         iris.save(x,os.path.join(output_folder,'{}_p{}{}.nc'.format(exp_id,s,Constants.um.from_um_filename_years(year))))
 
 def main(input_folder=None,output_folder=None,exp_id=None,years=None):

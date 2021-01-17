@@ -40,17 +40,17 @@ do
                     usage
                 esac;;
             i)
-		arg=(${OPTARG})
-		if [[ ${#arg[@]} == 2 ]]; then
-			in=$(readlink -f arg[$i])
-	        else
-			in=$(readlink -f "$OPTARG")
-	        fi		    
+                arg=(${OPTARG})
+                if [[ ${#arg[@]} == 2 ]]; then
+                    in=$(readlink -f arg[$i])
+                else
+                    in=$(readlink -f "$OPTARG")
+                fi		    
                 options+=" -i $in"
                 ;;
             o)
                 arg=(${OPTARG})
-		out=$(readlink -m arg[$i])
+		        out=$(readlink -m arg[$i])
                 ;;
             s)
                 arg=(${OPTARG})

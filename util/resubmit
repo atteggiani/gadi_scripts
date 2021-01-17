@@ -1,0 +1,31 @@
+#!/bin/bash
+
+for exp in "$@"
+do
+	dir=$(readlink -f "$exp")
+	newdir="${dir}.restart"
+	cp -r "$dir" "$newdir"
+
+	# file="${newdir}/SUBMIT"
+	# line=$(grep -n "SUBMITID=" "$file" | cut -d: -f1 | head -1)
+	# sed -i ${line}"s/[[:blank:]]*$//" "$file"
+	# sed -i ${line}"s/$/.restart/" "$file"
+	# line=$(grep -n "TYPE=NRUN" "$file" | cut -d: -f1 | head -1)
+	# sed -i ${line}"s/TYPE=NRUN/TYPE=CRUN/" "$file"
+	# sed -i $(( "$line"+1 ))"s/2/4/" "$file"
+
+	file="${newdir}/umuisubmit_run"
+	sed -i "s/export TYPE=NRUN/export TYPE=CRUN/" "$file"
+	line=$(grep -n "export UMRUN_OUTPUT=" "$file" | cut -d: -f -1)
+	sed -i ${line}"s/[[:blank:]]*$//" "$file"
+	sed -i ${line}"s/$/.restart/" "$file"
+	line=$(grep -n "export JOBDIR=" "$file" | cut -d: -f -1)
+	sed -i ${line}"s/[[:blank:]]*$//" "$file"
+	sed -i ${line}"s/$/.restart/" "$file"
+	line=$(grep -n "export SUBMITID=" "$file" | cut -d: -f -1)
+	sed -i ${line}"s/[[:blank:]]*$//" "$file"
+	sed -i ${line}"s/$/.restart/" "$file"
+	
+	cd /home/565/dm5220/umui_runs
+	qsub "$file"
+done

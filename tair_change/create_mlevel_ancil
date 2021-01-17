@@ -5,25 +5,40 @@ PROGNAME=$0
 usage() {
   cat << EOF
 Script to generate the tair change um ancillary file for tair change experiment.
-Usage: $PROGNAME [-o <output file>]
+Usage: $PROGNAME [-o <output file>] [-c <global tair changes>]
 
 List of keys/options:
 -o <name of file> -> name of the output file
--c <change>  -> value to be assigned to the m-level file
+-c <change>  -> Air temperature global change
 EOF
   exit 1
 }
 
-while getopts ho:c: opt; do
+while getopts ho:c:s: opt; do
     case $opt in
-      o)
-	    options+=" -o ${OPTARG}"
+    s)
+      case "$OPTARG" in
+      [1-9])
+        options+=" -s${OPTARG} ${!OPTIND}"
+        OPTIND=$(( $OPTIND + 1 ))
+        ;;
+      [1-9][0-4])
+        options+=" -s${OPTARG} ${!OPTIND}"
+        OPTIND=$(( $OPTIND + 1 ))
+        ;;
+      *)
+        echo "Uknown option --${OPTARG}"
+        usage
+      esac
+      ;;
+    o)
+      options+=" -o ${OPTARG}"
       name="$OPTARG"
       ;;
-      c)
-	    options+=" -c ${OPTARG}"
+    c)
+      options+=" -c ${OPTARG}"
       ;;
-      *) usage
+    *) usage
     esac
 done
 
