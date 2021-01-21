@@ -4,17 +4,19 @@ PROGNAME=$0
 
 usage() {
   cat << EOF
-Script to generate the tair change um ancillary file for tair change experiment.
-Usage: $PROGNAME [-o <output file>] [-c <global tair changes>]
+Script to generate the multi-level um ancillary file for tair change experiment.
+Usage: $PROGNAME [-o <output file>] [-c <global tair changes>] [-s[1-24] <local tair change>]
 
 List of keys/options:
 -o <name of file> -> name of the output file
 -c <change>  -> Air temperature global change
+-s[1-24] <change> -> Air temperature local change depending on teh sensitivity exp
+-l <name of link> -> Create a symbolic link for shorter name
 EOF
   exit 1
 }
 
-while getopts ho:c:s: opt; do
+while getopts ho:c:s:l: opt; do
     case $opt in
     s)
       case "$OPTARG" in
@@ -22,7 +24,7 @@ while getopts ho:c:s: opt; do
         options+=" -s${OPTARG} ${!OPTIND}"
         OPTIND=$(( $OPTIND + 1 ))
         ;;
-      [1-9][0-4])
+      [1-9][0-9])
         options+=" -s${OPTARG} ${!OPTIND}"
         OPTIND=$(( $OPTIND + 1 ))
         ;;
@@ -38,16 +40,25 @@ while getopts ho:c:s: opt; do
     c)
       options+=" -c ${OPTARG}"
       ;;
+    l)
+      link_name="$OPTARG"
+    ;;
     *) usage
     esac
 done
 
-in="/g/data/w48/dm5220/ancil/user_mlevel/tair_change/files_for_xancil/${name}.nc"
-out="/g/data/w48/dm5220/ancil/user_mlevel/tair_change/${name}"
+output_dir="/g/data/w48/dm5220/ancil/user_mlevel/tair_change"
+
+in="${output_dir}/files_for_xancil/${name}.nc"
+out="${output_dir}/${name}"
+link="${output_dir}/${link_name}"
+if ! [ -z ${link_name} ]; then 
+  link_string="ln -s $out $link"
+fi
 
 cd /g/data3/w48/dm5220/scripts/tair_change
 
-xancil_namelist="/g/data3/w48/dm5220/scripts/tair_change/xancil.namelist_mlevel_tair_change"
+xancil_namelist="/g/data3/w48/dm5220/scripts/tair_change/xancil.namelist_mlevel_tair_change_$(basename $out)"
 cat > "$xancil_namelist" <<EOF
  &nam_config
   ICAL = 2,
@@ -169,7 +180,7 @@ cat > "$xancil_namelist" <<EOF
 
 EOF
 
-script="sub_script_mlevel_tair_change_${name}"
+script="sub_script_mlevel_tair_changes_$(basename $out)"
 cat > "$script" <<EOF
 #!/bin/bash
 #PBS -l walltime=10:00:00
@@ -182,6 +193,7 @@ cat > "$script" <<EOF
 /g/data3/w48/dm5220/scripts/tair_change/mlevel_tair_correction.py${options}
 /g/data/access/projects/access/apps/xancil/0.57/mkancil < "$xancil_namelist"
 /g/data/w48/dm5220/scripts/util/fix_polar_anom "$out" #fix polar errors
+$link_string
 EOF
 
 qsub "$script"

@@ -1,17 +1,17 @@
  Writing Multi-level User ancillary file 
- /g/data/w48/dm5220/ancil/user_mlevel/tair_change/test
+ /g/data/w48/dm5220/ancil/user_mlevel/tair_change/change5_fix
  End of mkancil
  
 
 ======================================================================================
-                  Resource Usage on 2021-01-17 14:40:10:
-   Job Id:             15764532.gadi-pbs
+                  Resource Usage on 2021-01-21 10:51:07:
+   Job Id:             15945128.gadi-pbs
    Project:            w48
    Exit Status:        0
-   Service Units:      0.13
+   Service Units:      0.11
    NCPUs Requested:    1                      NCPUs Used: 1               
                                            CPU Time Used: 00:00:09                                   
-   Memory Requested:   50.0GB                Memory Used: 1.01GB          
-   Walltime requested: 10:00:00            Walltime Used: 00:00:19        
+   Memory Requested:   50.0GB                Memory Used: 1018.21MB       
+   Walltime requested: 10:00:00            Walltime Used: 00:00:16        
    JobFS requested:    100.0MB                JobFS used: 0B              
 ======================================================================================

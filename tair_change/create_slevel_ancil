@@ -1,9 +1,43 @@
 #!/bin/bash
+PROGNAME=$0
+
+usage() {
+  cat << EOF
+Script to generate the single-level um ancillary file for tair change experiment.
+Usage: $PROGNAME [-o <output file>] [-c <global tair changes>] [-s[1-24] <local tair change>]
+
+List of keys/options:
+-i <path to folder> -> path to input folder
+-o <path to file> -> path to the output UM ancillary file
+-s <string> -> stream (default is "c" for 3h tsurf).
+-g -> add greb annual cycle tsurf response on top 
+
+EOF
+  exit 1
+}
+
+while getopts hi:o:s:g opt; do
+    case $opt in
+        i)
+          options+=" -i $(readlink -f "$OPTARG")"
+          ;;
+        o)
+	        out=$(readlink -m "$OPTARG")
+          ;;
+        s)
+          options+=" -s ${OPTARG}"
+          ;;
+        g)
+          options+=" -g"
+          ;;
+        *) usage
+    esac
+done
 
 cd /g/data3/w48/dm5220/scripts/tair_change
 
-# in="/g/data/w48/dm5220/data/exp_precip_change/ancil/tair_change_chen.nc"
-out="/g/data/w48/dm5220/ancil/user_slevel/tair_change/tac_slab"
+in="/g/data/w48/dm5220/ancil/user_slevel/tair_change/files_for_xancil/$(basename "$out").nc"
+options+=" -o $in"
 
 xancil_namelist="/g/data3/w48/dm5220/scripts/tair_change/xancil.namelist_slevel_tair_change"
 cat > "$xancil_namelist" <<EOF
@@ -16,7 +50,7 @@ cat > "$xancil_namelist" <<EOF
   LWFIO = .TRUE.,
   IWFIO_SIZE = 2048,
   NNCFILES = 3
-  NCFILES = "/g/data/w48/dm5220/ancil/user_slevel/tair_change/files_for_xancil/qflux_tair_change.nc","/g/data/w48/dm5220/ancil/user_slevel/tair_change/files_for_xancil/land_mask_tair_change.nc","/g/data/w48/dm5220/ancil/user_slevel/tair_change/files_for_xancil/tsurf_tair_change.nc"
+  NCFILES = "/g/data/w48/dm5220/ancil/user_slevel/tair_change/files_for_xancil/qflux_tac.nc","/g/data/w48/dm5220/ancil/user_slevel/tair_change/files_for_xancil/land_mask_tac_no_slab.nc","$in"
  /
 
  &nam_gridconfig
@@ -138,7 +172,7 @@ cat > "$xancil_namelist" <<EOF
 
 EOF
 
-script="submission_script_slevel_tair_change"
+script="sub_script_slevel_tair_change"
 cat > "$script" <<EOF
 #!/bin/bash
 #PBS -l walltime=10:00:00
@@ -148,9 +182,9 @@ cat > "$script" <<EOF
 #PBS -l storage=gdata/hh5+gdata/w48+scratch/w48+gdata/access
 #PBS -l mem=50gb
 
-/g/data3/w48/dm5220/scripts/tair_change/slevel_tair_correction.py
+/g/data3/w48/dm5220/scripts/tair_change/slevel_tair_correction.py${options}
 /g/data/access/projects/access/apps/xancil/0.57/mkancil < "$xancil_namelist"
-/g/data/w48/dm5220/scripts/util/fix_polar_anom.py "$out" #fix polar errors
+/g/data/w48/dm5220/scripts/util/fix_polar_anom "$out" #fix polar errors
 EOF
 
 qsub "$script"

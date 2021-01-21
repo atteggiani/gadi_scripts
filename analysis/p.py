@@ -11,96 +11,49 @@ input_folder="/g/data/w48/dm5220/data"
 alpha_precip=86400
 output_folder=input_folder+"/figures/tair_change"
 
-ctl = my.add_evaporation(xr.open_mfdataset(os.path.join(input_folder,"control/vabva_pa*.nc"),
+ctl = my.add_evaporation(xr.open_mfdataset(os.path.join(input_folder,"control/*_pa*.nc"),
            concat_dim="time",parallel=True)).isel(time=slice(120,None))
-fix=my.add_evaporation(xr.open_mfdataset(os.path.join(input_folder,"4co2_pres_control_tsurf/vabvc_pa*.nc"),
+tac_ctl = my.add_evaporation(xr.open_mfdataset(os.path.join(input_folder,"tac_control/*_pa*.nc"),
+           concat_dim="time",parallel=True)).isel(time=slice(120,None))                      
+
+def anomalies(data,var="air_temperature",data_ctl=tac_ctl,a=1,t=True,**kwargs):
+    kwargs_pred={}
+    if "levels" not in kwargs: kwargs_pred["levels"]=np.linspace(-6,6,50)
+    if "cmap" not in kwargs: kwargs_pred["cmap"]=my.Constants.colormaps.div_tsurf
+    if "cbar_kwargs" not in kwargs: kwargs_pred["cbar_kwargs"]={"ticks":np.arange(-6,6+1,1)}
+    if var in ["precipitation_flux"]: a=alpha_precip
+    d=data[var]*a
+    ctl=data_ctl[var]*a
+    if len(d.shape) == 4:
+        if t: t=my.DataArray(d.mean("longitude_0")).t_student_probability(ctl.mean("longitude_0"))
+        mean=lambda x: x.mean(["time","longitude_0"])
+        fun=lambda x:x.plotlev(**kwargs_pred,t_student=t,**kwargs)
+    elif len(d.shape) == 3:
+        if t: t=my.DataArray(d).t_student_probability(ctl)
+        mean=lambda x: x.mean(["time"])
+        fun=lambda x:x.plotvar(**kwargs_pred,t_student=t,**kwargs)
+    else:
+        raise Exception("Data shape mismatching!")
+    fun(my.DataArray((mean(d)-mean(ctl))))
+
+co2x4 = my.add_evaporation(xr.open_mfdataset(os.path.join(input_folder,"4co2/*_pa*.nc"),
            concat_dim="time",parallel=True)).isel(time=slice(120,None))
-tac_ctl = my.add_evaporation(xr.open_mfdataset(os.path.join(input_folder,"test/vabua_pa*.nc"),
-           concat_dim="time",parallel=True)).isel(time=slice(120,None))           
-tac_0_001 = my.add_evaporation(xr.open_mfdataset(os.path.join(input_folder,"test_0.001/vabxa_pa*.nc"),
-           concat_dim="time",parallel=True)).isel(time=slice(120,None))         
-tac_0_002 = my.add_evaporation(xr.open_mfdataset(os.path.join(input_folder,"test_0.002/vabxb_pa*.nc"),
+tac_4co2 = my.add_evaporation(xr.open_mfdataset(os.path.join(input_folder,"4co2_tac_nc/*_pa*.nc"),
+           concat_dim="time",parallel=True)).isel(time=slice(120,None))                    
+fix=my.add_evaporation(xr.open_mfdataset(os.path.join(input_folder,"4co2_pres_control_tsurf/*_pa*.nc"),
            concat_dim="time",parallel=True)).isel(time=slice(120,None))
+tac_4co2_offset = my.add_evaporation(xr.open_mfdataset(os.path.join(input_folder,"test_4co2_tac_offset/*_pa*.nc"),
+           concat_dim="time",parallel=True)).isel(time=slice(120,None))
+tac_4co2_offset_2 = my.add_evaporation(xr.open_mfdataset(os.path.join(input_folder,"test_4co2_tac_offset_2/*_pa*.nc"),
+           concat_dim="time",parallel=True)).isel(time=slice(120,None))
+tac_4co2_offset_3 = my.add_evaporation(xr.open_mfdataset(os.path.join(input_folder,"test_4co2_tac_offset_3/*_pa*.nc"),
+           concat_dim="time",parallel=True)).isel(time=slice(120,None))
+tac_4co2_offset_4 = my.add_evaporation(xr.open_mfdataset(os.path.join(input_folder,"test_4co2_tac_offset_4/*_pa*.nc"),
+           concat_dim="time",parallel=True)).isel(time=slice(120,None))                                 
+tac_4co2_offset_5 = my.add_evaporation(xr.open_mfdataset(os.path.join(input_folder,"test_4co2_tac_offset_5/*_pa*.nc"),
+           concat_dim="time",parallel=True)).isel(time=slice(120,None))                                            
+# tac_4co2_offset_6 = my.add_evaporation(xr.open_mfdataset(os.path.join(input_folder,"test_4co2_tac_offset_6/*_pa*.nc"),
+#            concat_dim="time",parallel=True)).isel(time=slice(120,None))                                            
+# test_ctl = my.add_evaporation(xr.open_mfdataset(os.path.join(input_folder,"test_control/*_pa*.nc"),
+#            concat_dim="time",parallel=True)).isel(time=slice(120,None))                      
 
-datas=[(tac_ctl, "air temperature change - control" , "tac_ctl"),
-       (fix, "4co2 + fixed control tsurf" , "4co2_Fctl"),
-       (tac_0_001, "air temperature change - 0.001" , "tac_0.001"),
-       (tac_0_002, "air temperature change - 0.002" , "tac_0.002")]
-
-fun = lambda x,var: my.DataArray(x[var]).annual_mean()
-
-def diff(data1,data2):
-    data=fun(data1,"air_temperature_0").mean('longitude')-fun(data2,"air_temperature_0").mean('longitude')
-    p=my.DataArray(data1["air_temperature_0"].mean('longitude')).t_student_probability(data2["air_temperature_0"].mean('longitude'))
-    data.plotlev(
-        levels=np.linspace(-3,3,100),
-        cbar_kwargs={'ticks':np.arange(-3,3+1),'label':"°C"},
-        title = "Air Temperature | Difference",
-        t_student=p,
-        cmap = my.Constants.colormaps.div_tsurf)
-
-for d,t,o in datas:
-    #SURFACE TEMPERATURE
-    var="surface_temperature"
-    data=fun(d,var)-fun(ctl,var)
-    p=my.DataArray(d[var]).t_student_probability(ctl[var])
-    tit ="Surface temperature"
-    outvar="tsurf"
-    plt.figure()
-    data.plotvar(
-        levels=np.linspace(-3,3,100),
-        cbar_kwargs={'ticks':np.arange(-3,3+1),'label':"°C"},
-        title = "{} | {}".format(tit,t),
-        t_student=p,
-        outpath = os.path.join(output_folder,"{}_{}_amean.png".format(outvar,o)),
-        cmap = my.Constants.colormaps.div_tsurf)
-    plt.show()
-
-    #AIR TEMPERATURE
-    var="air_temperature"
-    data=fun(d,var).mean('longitude_0')-fun(ctl,var).mean('longitude_0')
-    p=my.DataArray(d[var].mean('longitude_0')).t_student_probability(ctl[var].mean('longitude_0'))
-    tit ="Air temperature"
-    outvar="tair"
-    plt.figure()
-    data.plotlev(
-        levels=np.linspace(-3,3,100),
-        cbar_kwargs={'ticks':np.arange(-3,3+1),'label':"°C"},
-        title = "{} | {}".format(tit,t),
-        t_student=p,
-        outpath = os.path.join(output_folder,"{}_{}_amean.png".format(outvar,o)),
-        cmap = my.Constants.colormaps.div_tsurf)
-    plt.show()
-
-    #AIR TEMPERATURE in Model levels
-    var="air_temperature_0"
-    data=fun(d,var).mean('longitude')-fun(ctl,var).mean('longitude')
-    p=my.DataArray(d[var].mean('longitude')).t_student_probability(ctl[var].mean('longitude'))
-    tit ="Air temperature"
-    outvar="tair_0"
-    plt.figure()
-    data.plotlev(
-        levels=np.linspace(-3,3,100),
-        cbar_kwargs={'ticks':np.arange(-3,3+1),'label':"°C"},
-        title = "{} | {}".format(tit,t),
-        t_student=p,
-        outpath = os.path.join(output_folder,"{}_{}_amean.png".format(outvar,o)),
-        cmap = my.Constants.colormaps.div_tsurf)
-    plt.show()
-
-    #PRECIPITATION
-    var="precipitation_flux"
-    data=(fun(d,var)-fun(ctl,var))*alpha_precip
-    p=my.DataArray(d[var]).t_student_probability(ctl[var])
-    tit ="Precipitation"
-    outvar="precip"
-    plt.figure()
-    data.plotvar(
-        a=alpha_precip,
-        levels=np.linspace(-2,2,100),
-        cbar_kwargs={'ticks':np.arange(-2,2+0.5,0.5),'label':"mm/day"},
-        title = "{} | {}".format(tit,t),
-        t_student=p,
-        outpath = os.path.join(output_folder,"{}_{}_amean.png".format(outvar,o)),
-        cmap = my.Constants.colormaps.div_precip)
-    plt.show()
