@@ -10,50 +10,24 @@ Usage: $PROGNAME [-i <input folder>] [-o <output folder>]  ...
 List of keys/options:
 -i <path to folder> -> path to input folder
 -o <path to file> -> path to output UM ancillary file
--s <string> -> stream (default is "a" for monthly sst).
--g -> add greb annual cycle tsurf response on top
---id <experiment id> -> experiment id (if not provided, the last folder of the input path will be considered as id)
 EOF
   exit 1
 }
 filetype="monthly_sst"
-while getopts hi:o:s:-:g opt; do
+while getopts hi:o: opt; do
     case $opt in
-        -)
-            case "$OPTARG" in
-                id)
-                    options+=" --id ${!OPTIND}"
-		    id=${!OPTIND}
-		    OPTIND=$(( $OPTIND + 1 ))
-                    ;;
-                *)
-                echo "Uknown option --${OPTARG}"
-                usage
-            esac;;
         i)
-            in=$(readlink -f "$OPTARG")
-            options+=" -i $(readlink -f "$OPTARG")"
+            options+=" -i $(readlink -f ${OPTARG%/})"
             ;;
         o)
             out=$(readlink -m "$OPTARG")
             ;;
-        s)
-            options+=" -s ${OPTARG}"
-            ;;	    
-        g)  options+=" -g"
-            ;;	
         *) usage
     esac
 done
 
-if [[ -z $id ]]; then
-    id=$(basename "$in")
-    in="$(dirname $(dirname "$in"))/ancil/${id}_${filetype}.nc"
-else
-    in="$(dirname "$in")/ancil/${id}_${filetype}.nc"
-fi
-options+=" -o ${in}"
-mkdir -p $(dirname "$in")
+in="/g/data/w48/dm5220/ancil/sst/prescribed/files_for_xancil/$(basename "$out").nc"
+options+=" -o $in"
 cd /g/data3/w48/dm5220/scripts/prescribed_tsurf
 
 xancil_namelist="/g/data3/w48/dm5220/scripts/prescribed_tsurf/xancil.namelist_${filetype}"

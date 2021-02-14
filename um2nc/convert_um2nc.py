@@ -27,7 +27,7 @@ if ncpus is None: ncpus = cpu_count()
 
 ind=len(exp_id)+4
 years=set([os.path.split(x)[1][ind:-2] for x in glob.glob(os.path.join(input_folder,exp_id,"{}a@pa*".format(exp_id)))])
-os.makedirs(output_folder,exist_ok=True)
+os.makedirs(output_folder)
 
 def convert(input_folder,exp_id,year,output_folder):
     streams=Constants.um.streams()

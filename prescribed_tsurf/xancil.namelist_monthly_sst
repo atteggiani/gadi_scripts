@@ -1,0 +1,109 @@
+ &nam_config
+  ICAL = 2,
+  ISIZE = 64,
+  L32BIT = .FALSE.,
+  VERSION = 7.3,
+  LBIGENDOUT = .TRUE.,
+  LWFIO = .TRUE.,
+  IWFIO_SIZE = 2048,
+  NNCFILES = 1
+  NCFILES = "/g/data/w48/dm5220/ancil/sst/prescribed/files_for_xancil/tac_ctl.nc"
+ /
+
+ &nam_gridconfig
+  LVARGRID = .FALSE.,
+  IAVERT = 0,
+  IOVERT = 0,
+  LDEEPSOIL = .FALSE.
+ /
+
+ &nam_ozone
+ /
+
+ &nam_smow
+ /
+
+ &nam_slt
+ /
+
+ &nam_soil
+ /
+
+ &nam_veg
+ /
+
+ &nam_vegfrac
+ /
+
+ &nam_vegfunc
+ /
+
+ &nam_vegdist
+ /
+ 
+ &nam_sst
+  LSST = .TRUE.,
+  SST_FILEIN = "/g/data/w48/dm5220/ancil/sst/prescribed/files_for_xancil/tac_ctl.nc"
+  SST_NCNAME = "surface_temperature",
+  SST_FILEOUT = "/g/data/w48/dm5220/scripts/prescribed_tsurf/tac_ctl"
+  LSST_MIN = .TRUE.,
+  ASST_MIN = 271.4,
+  LSST_ICEVAL = .FALSE.,
+  LSST_PERIODIC = .TRUE.,
+  LSST_CAL_INDEP = .FALSE.,
+  ISST_MASK =-1,
+  ISST_TIMEUSAGE1 = 1,
+  ISST_TIMEUSAGE2 = 0,
+  ISST_STARTDATE(1) = 0000,
+  ISST_STARTDATE(2) = 1,
+  ISST_STARTDATE(3) = 16,
+  ISST_STARTDATE(4) = 0,
+  ISST_STARTDATE(5) = 0,
+  ISST_STARTDATE(6) = 0,
+  ISST_NTIMES = 12,
+  ISST_INTERVAL = 1,
+  ISST_INTUNIT = 1,
+  LSST_MM = .TRUE.
+ /
+ 
+ &nam_ice
+ /
+
+ &nam_orog
+ /
+
+ &nam_mask
+ /
+
+ &nam_lfrac
+ /
+
+ &nam_ausrmulti
+ /
+
+ &nam_ausrancil
+ /
+
+ &nam_ts1
+ /
+
+ &nam_flux
+ /
+
+ &nam_ousrmulti
+ /
+
+ &nam_ousrancil
+ /
+
+ &nam_genanc_config
+  NANCFILES = 1
+ /
+
+ &nam_genanc
+  LGENANC_FILE(1) = .FALSE.,
+ /
+
+ &nam_astart
+ /
+

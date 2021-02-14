@@ -1,0 +1,19 @@
+Writing Sea Surface Temperature netCDF file: /g/data/w48/dm5220/ancil/sst/prescribed/files_for_xancil/tac_ctl.nc
+[                                        ] | 0% Completed |  0.0s[##########                              ] | 25% Completed |  0.1s[####################                    ] | 51% Completed |  0.2s[###############################         ] | 78% Completed |  0.3s[########################################] | 100% Completed |  0.4s
+ Writing Sea Surface Temperature ancillary file 
+ /g/data/w48/dm5220/scripts/prescribed_tsurf/tac_ctl
+ End of mkancil
+ 
+
+======================================================================================
+                  Resource Usage on 2021-01-23 17:23:24:
+   Job Id:             16035790.gadi-pbs
+   Project:            w48
+   Exit Status:        0
+   Service Units:      0.15
+   NCPUs Requested:    4                      NCPUs Used: 4               
+                                           CPU Time Used: 00:00:15                                   
+   Memory Requested:   50.0GB                Memory Used: 3.75GB          
+   Walltime requested: 10:00:00            Walltime Used: 00:00:21        
+   JobFS requested:    100.0MB                JobFS used: 0B              
+======================================================================================

@@ -41,7 +41,7 @@ done
 
 cd /g/data3/w48/dm5220/scripts/um2nc
 
-script="submission_script"
+script="submission_script_${out}"
 cat > "$script" <<EOF
 #!/bin/bash
 #PBS -l walltime=01:00:00

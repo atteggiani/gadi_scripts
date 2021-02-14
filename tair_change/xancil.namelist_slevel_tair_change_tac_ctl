@@ -1,0 +1,129 @@
+  &nam_config
+  ICAL = 2,
+  ISIZE = 64,
+  L32BIT = .FALSE.,
+  VERSION = 7.3,
+  LBIGENDOUT = .TRUE.,
+  LWFIO = .TRUE.,
+  IWFIO_SIZE = 2048,
+  NNCFILES = 3
+  NCFILES = "/g/data/w48/dm5220/ancil/user_slevel/tair_change/files_for_xancil/qflux_tac.nc","","/g/data/w48/dm5220/ancil/user_slevel/tair_change/files_for_xancil/tac_ctl.nc"
+ /
+
+ &nam_gridconfig
+  LVARGRID = .FALSE.,
+  IAVERT = 0,
+  IOVERT = 0,
+  LDEEPSOIL = .FALSE.,
+ /
+
+ &nam_ozone
+ /
+
+ &nam_smow
+ /
+
+ &nam_slt
+ /
+
+ &nam_soil
+ /
+
+ &nam_veg
+ /
+
+ &nam_vegfrac
+ /
+
+ &nam_vegfunc
+ /
+
+ &nam_vegdist
+ /
+
+ &nam_sst
+ /
+
+ &nam_ice
+ /
+
+ &nam_orog
+ /
+
+ &nam_mask
+ /
+
+ &nam_lfrac
+ /
+
+ &nam_ausrmulti
+ /
+
+ &nam_ausrancil
+  LAUSRANCIL = .TRUE.,
+  AUSRANCIL_FILEOUT = "/g/data/w48/dm5220/ancil/user_slevel/tair_change/tac_ctl",
+  LAUSRANCIL_PERIODIC = .TRUE.,
+  LAUSRANCIL_CAL_INDEP = .FALSE.,
+  IAUSRANCIL_TIMEUSAGE1 = 1,
+  IAUSRANCIL_TIMEUSAGE2 = 0,
+  IAUSRANCIL_STARTDATE(1) = 0000,
+  IAUSRANCIL_STARTDATE(2) = 1,
+  IAUSRANCIL_STARTDATE(3) = 1,
+  IAUSRANCIL_STARTDATE(4) = 0,
+  IAUSRANCIL_STARTDATE(5) = 0,
+  IAUSRANCIL_STARTDATE(6) = 0,
+  IAUSRANCIL_NTIMES = 8640,
+  IAUSRANCIL_INTERVAL = 1,
+  IAUSRANCIL_INTUNIT = 3,
+  LAUSRANCIL_MM = .TRUE.
+  IAUSRANCIL_NFIELD = 3
+  IAUSRANCIL_FILEINID(1) = 1,
+  IAUSRANCIL_STASHCODE(1) = 301,
+  IAUSRANCIL_PPCODE(1) = 0,
+  AUSRANCIL_NCNAME(1) = "qflux",
+  IAUSRANCIL_GRIDTYPE(1) = 1,
+  IAUSRANCIL_DATATYPE(1) = 1,
+  IAUSRANCIL_MASKTYPE(1) = 0,
+  IAUSRANCIL_MASK(1) = 0,
+  IAUSRANCIL_FILEINID(2) = 2,
+  IAUSRANCIL_STASHCODE(2) = 302,
+  IAUSRANCIL_PPCODE(2) = 0,
+  AUSRANCIL_NCNAME(2) = "land_mask",
+  IAUSRANCIL_GRIDTYPE(2) = 1,
+  IAUSRANCIL_DATATYPE(2) = 1,
+  IAUSRANCIL_MASKTYPE(2) = 0,
+  IAUSRANCIL_MASK(2) = 0,
+  IAUSRANCIL_FILEINID(3) = 3,
+  IAUSRANCIL_STASHCODE(3) = 303,
+  IAUSRANCIL_PPCODE(3) = 0,
+  AUSRANCIL_NCNAME(3) = "tsurf",
+  IAUSRANCIL_GRIDTYPE(3) = 1,
+  IAUSRANCIL_DATATYPE(3) = 1,
+  IAUSRANCIL_MASKTYPE(3) = 0,
+  IAUSRANCIL_MASK(3) = 0,
+ /
+
+ &nam_ts1
+ /
+
+ &nam_flux
+ /
+
+ &nam_ousrmulti
+ /
+
+ &nam_ousrancil
+ /
+
+ &nam_genanc_config
+  NANCFILES = 1
+ /
+
+ &nam_genanc
+  LGENANC_FILE(1) = .FALSE.,
+
+ /
+
+ &nam_astart
+ /
+

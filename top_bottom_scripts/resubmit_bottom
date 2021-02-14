@@ -1,0 +1,27 @@
+#!/bin/bash
+totres=$(( $RESUB_INC_DAYS + $RESUB_INC_MONTHS*12 + $RESUB_INC_YEARS*360 ))
+totrun=$(( $RUN_LEN_DAYS + $RUN_LEN_MONTHS*12 + $RUN_LEN_YEARS*360 ))
+
+if [[ $TYPE == "NRUN" && -z $RESUB_FLAG && $totrun > $totres  ]]; then
+    export RESUB_FLAG=1
+    # sub_file=$JOBDIR/umuisubmit_run_resubmit
+    # cp $JOBDIR/umuisubmit_run $sub_file
+    # new_output=$(dirname $UMRUN_OUTPUT)/$CJOBN-resub.${UMRUN_OUTPUT#*.}
+    # sed -i "s|#PBS -N $RUNID.run|#PBS -N $RUNID-resub.run|" "$sub_file"
+	# sed -i "s|export TYPE=NRUN|export TYPE=CRUN|" "$sub_file"
+    # sed -i "s|export UMRUN_OUTPUT=$UMRUN_OUTPUT|export UMRUN_OUTPUT=$new_output|" "$sub_file"
+    
+	# qsub "$sub_file"
+    # rm -f $sub_file
+    cat>> /g/data/w48/dm5220/scripts/top_bottom_scriptss/$RUNID <<EOF
+    $(date)
+    Job got resubmitted
+
+EOF
+else
+cat>> /g/data/w48/dm5220/scripts/top_bottom_scripts/$RUNID <<EOF
+    $(date)
+    Job didn't get resubmitted
+    
+EOF
+fi

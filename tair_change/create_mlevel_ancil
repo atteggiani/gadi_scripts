@@ -53,7 +53,7 @@ in="${output_dir}/files_for_xancil/${name}.nc"
 out="${output_dir}/${name}"
 link="${output_dir}/${link_name}"
 if ! [ -z ${link_name} ]; then 
-  link_string="ln -s $out $link"
+  link_string="rm -f $link; in -s $out $link"
 fi
 
 cd /g/data3/w48/dm5220/scripts/tair_change

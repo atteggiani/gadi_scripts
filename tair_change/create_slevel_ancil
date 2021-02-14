@@ -4,31 +4,33 @@ PROGNAME=$0
 usage() {
   cat << EOF
 Script to generate the single-level um ancillary file for tair change experiment.
-Usage: $PROGNAME [-o <output file>] [-c <global tair changes>] [-s[1-24] <local tair change>]
+Usage: $PROGNAME [-i <input file>] [-o <output file>]
 
 List of keys/options:
--i <path to folder> -> path to input folder
+-i <path to folder> -> path to input folder (omit if you wanna create a no-change tsurf)
 -o <path to file> -> path to the output UM ancillary file
--s <string> -> stream (default is "c" for 3h tsurf).
--g -> add greb annual cycle tsurf response on top 
+--slab -> create mask so as to enable slab ocean 
 
 EOF
   exit 1
 }
 
-while getopts hi:o:s:g opt; do
+while getopts hi:o:-: opt; do
     case $opt in
+        -)
+          case "${OPTARG}" in
+            slab)
+              options+=" --slab"
+              mask_file="/g/data/w48/dm5220/ancil/user_slevel/tair_change/files_for_xancil/land_mask_tac_slab.nc"
+            ;;
+            *) usage
+          esac;;
         i)
-          options+=" -i $(readlink -f "$OPTARG")"
+          options+=" -i $(readlink -f ${OPTARG%/})"
+          mask_file="/g/data/w48/dm5220/ancil/user_slevel/tair_change/files_for_xancil/land_mask_tac_no_slab.nc"
           ;;
         o)
 	        out=$(readlink -m "$OPTARG")
-          ;;
-        s)
-          options+=" -s ${OPTARG}"
-          ;;
-        g)
-          options+=" -g"
           ;;
         *) usage
     esac
@@ -39,7 +41,9 @@ cd /g/data3/w48/dm5220/scripts/tair_change
 in="/g/data/w48/dm5220/ancil/user_slevel/tair_change/files_for_xancil/$(basename "$out").nc"
 options+=" -o $in"
 
-xancil_namelist="/g/data3/w48/dm5220/scripts/tair_change/xancil.namelist_slevel_tair_change"
+flux_file="/g/data/w48/dm5220/ancil/user_slevel/tair_change/files_for_xancil/qflux_tac.nc"
+
+xancil_namelist="/g/data3/w48/dm5220/scripts/tair_change/xancil.namelist_slevel_tair_change_$(basename "$out")"
 cat > "$xancil_namelist" <<EOF
   &nam_config
   ICAL = 2,
@@ -50,7 +54,7 @@ cat > "$xancil_namelist" <<EOF
   LWFIO = .TRUE.,
   IWFIO_SIZE = 2048,
   NNCFILES = 3
-  NCFILES = "/g/data/w48/dm5220/ancil/user_slevel/tair_change/files_for_xancil/qflux_tac.nc","/g/data/w48/dm5220/ancil/user_slevel/tair_change/files_for_xancil/land_mask_tac_no_slab.nc","$in"
+  NCFILES = "$flux_file","$mask_file","$in"
  /
 
  &nam_gridconfig
@@ -172,7 +176,7 @@ cat > "$xancil_namelist" <<EOF
 
 EOF
 
-script="sub_script_slevel_tair_change"
+script="sub_script_slevel_tair_change_$(basename "$out")"
 cat > "$script" <<EOF
 #!/bin/bash
 #PBS -l walltime=10:00:00

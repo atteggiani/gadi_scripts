@@ -1,0 +1,56 @@
+multiprocessing.pool.RemoteTraceback: 
+"""
+Traceback (most recent call last):
+  File "/g/data3/hh5/public/apps/miniconda3/envs/analysis3-20.10/lib/python3.8/multiprocessing/pool.py", line 125, in worker
+    result = (True, func(*args, **kwds))
+  File "/g/data3/hh5/public/apps/miniconda3/envs/analysis3-20.10/lib/python3.8/multiprocessing/pool.py", line 51, in starmapstar
+    return list(itertools.starmap(args[0], args[1]))
+  File "/g/data3/w48/dm5220/scripts/um2nc/convert_um2nc.py", line 40, in convert
+    x=iris.load(os.path.join(input_folder,exp_id,"{}a@p{}{}*".format(exp_id,s,year)))
+  File "/g/data3/hh5/public/apps/miniconda3/envs/analysis3-20.10/lib/python3.8/site-packages/iris/__init__.py", line 357, in load
+    return _load_collection(uris, constraints, callback).merged().cubes()
+  File "/g/data3/hh5/public/apps/miniconda3/envs/analysis3-20.10/lib/python3.8/site-packages/iris/__init__.py", line 325, in _load_collection
+    result = iris.cube._CubeFilterCollection.from_cubes(cubes, constraints)
+  File "/g/data3/hh5/public/apps/miniconda3/envs/analysis3-20.10/lib/python3.8/site-packages/iris/cube.py", line 157, in from_cubes
+    for cube in cubes:
+  File "/g/data3/hh5/public/apps/miniconda3/envs/analysis3-20.10/lib/python3.8/site-packages/iris/__init__.py", line 312, in _generate_cubes
+    for cube in iris.io.load_files(part_names, callback, constraints):
+  File "/g/data3/hh5/public/apps/miniconda3/envs/analysis3-20.10/lib/python3.8/site-packages/iris/io/__init__.py", line 193, in load_files
+    all_file_paths = expand_filespecs(filenames)
+  File "/g/data3/hh5/public/apps/miniconda3/envs/analysis3-20.10/lib/python3.8/site-packages/iris/io/__init__.py", line 176, in expand_filespecs
+    raise IOError(msg)
+OSError: One or more of the files specified did not exist:
+    * "/scratch/w48/dm5220/umui/vabuf/vabufa@pep14*" didn't match any files
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/g/data3/w48/dm5220/scripts/um2nc/convert_um2nc.py", line 50, in <module>
+    main(input_folder,output_folder,exp_id,years)
+  File "/g/data3/w48/dm5220/scripts/um2nc/convert_um2nc.py", line 45, in main
+    p.starmap(convert,zip(repeat(input_folder),repeat(exp_id),years,repeat(output_folder)))
+  File "/g/data3/hh5/public/apps/miniconda3/envs/analysis3-20.10/lib/python3.8/multiprocessing/pool.py", line 372, in starmap
+    return self._map_async(func, iterable, starmapstar, chunksize).get()
+  File "/g/data3/hh5/public/apps/miniconda3/envs/analysis3-20.10/lib/python3.8/multiprocessing/pool.py", line 771, in get
+    raise self._value
+  File "/g/data3/hh5/public/apps/miniconda3/envs/analysis3-20.10/lib/python3.8/multiprocessing/pool.py", line 125, in worker
+    result = (True, func(*args, **kwds))
+  File "/g/data3/hh5/public/apps/miniconda3/envs/analysis3-20.10/lib/python3.8/multiprocessing/pool.py", line 51, in starmapstar
+    return list(itertools.starmap(args[0], args[1]))
+  File "/g/data3/w48/dm5220/scripts/um2nc/convert_um2nc.py", line 40, in convert
+    x=iris.load(os.path.join(input_folder,exp_id,"{}a@p{}{}*".format(exp_id,s,year)))  
+  File "/g/data3/hh5/public/apps/miniconda3/envs/analysis3-20.10/lib/python3.8/site-packages/iris/__init__.py", line 357, in load
+    return _load_collection(uris, constraints, callback).merged().cubes()
+  File "/g/data3/hh5/public/apps/miniconda3/envs/analysis3-20.10/lib/python3.8/site-packages/iris/__init__.py", line 325, in _load_collection
+    result = iris.cube._CubeFilterCollection.from_cubes(cubes, constraints)
+  File "/g/data3/hh5/public/apps/miniconda3/envs/analysis3-20.10/lib/python3.8/site-packages/iris/cube.py", line 157, in from_cubes
+    for cube in cubes:
+  File "/g/data3/hh5/public/apps/miniconda3/envs/analysis3-20.10/lib/python3.8/site-packages/iris/__init__.py", line 312, in _generate_cubes
+    for cube in iris.io.load_files(part_names, callback, constraints):
+  File "/g/data3/hh5/public/apps/miniconda3/envs/analysis3-20.10/lib/python3.8/site-packages/iris/io/__init__.py", line 193, in load_files
+    all_file_paths = expand_filespecs(filenames)
+  File "/g/data3/hh5/public/apps/miniconda3/envs/analysis3-20.10/lib/python3.8/site-packages/iris/io/__init__.py", line 176, in expand_filespecs
+    raise IOError(msg)
+OSError: One or more of the files specified did not exist:
+    * "/scratch/w48/dm5220/umui/vabuf/vabufa@pep14*" didn't match any files

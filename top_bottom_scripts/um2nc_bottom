@@ -1,0 +1,96 @@
+#!/bin/bash
+
+um_year() {
+    local year=$1
+    local y2=${year: -2}
+    local y1
+    case ${year:0:-2} in
+        10) y1=a;;
+        11) y1=b;;
+        12) y1=c;;
+        13) y1=d;;
+        14) y1=e;;
+        15) y1=f;;
+        16) y1=g;;
+        17) y1=h;;
+        18) y1=i;;
+        19) y1=j;;
+        20) y1=k;;
+        21) y1=l;;
+        22) y1=m;;
+        23) y1=n;;
+        24) y1=o;;
+        25) y1=p;;
+        26) y1=q;;
+        27) y1=r;;
+        28) y1=s;;
+        29) y1=t;;
+        30) y1=u;;
+        31) y1=v;;
+        32) y1=w;;
+        33) y1=x;;
+        34) y1=y;;
+        35) y1=z;;
+        *) echo "Error!! Year too small/big for um reference"
+           exit 1;;
+    esac
+    echo $y1$y2
+}
+um_month() {
+    local month=$1
+    local mm
+    case $month in
+        1) mm="ja";;
+        2) mm="fb";;
+        3) mm="mr";;
+        4) mm="ar";;
+        5) mm="my";;
+        6) mm="jn";;
+        7) mm="jl";;
+        8) mm="ag";;
+        9) mm="sp";;
+        10) mm="ot";;
+        11) mm="nv";;
+        12) mm="dc";;
+        *) echo "Error!! Month value must be between 1-12"
+           exit 1;;
+    esac
+    echo $mm
+}
+
+IFS=',' read -ra basis_time <<< $(grep "MODEL_BASIS_TIME=" $JOBDIR/CNTLALL)
+yst=$(awk '{print $2}' <<< ${basis_time[0]})
+mst=${basis_time[1]}
+dst=${basis_time[2]}
+
+days=$(($dst+$RUN_LEN_DAYS-1))
+months=$(($mst+$RUN_LEN_MONTHS))
+years=$(($yst+$RUN_LEN_YEARS))
+
+tot=$(( $days + $months*12 + $years*360 ))
+
+y=$(( $tot/360 ))
+res=$(( $tot%360 ))
+m=$(( $res%12 ))
+d=$(( $res/12 ))
+if [[ $d == 0 ]]; then
+    d=30
+    (( m-=1 ))
+fi
+if [[ $m == 0 ]]; then
+    m=12
+    (( y-=1 ))
+fi
+ref=$(um_year $y)$(um_month $m)
+file=$DATAW/$RUNID*a$ref
+if [ -f $file ]; then
+    outdir=/g/data/w48/dm5220/data/$RUNID
+    if [ -d $outdir ]; then
+        i=2
+        while [ -d ${outdir}_${i} ] ; do
+            ((i++))
+        done
+        outdir=${outdir}_${i}
+    fi
+    /g/data/w48/dm5220/scripts/um2nc/um2nc --id $RUNID -o $outdir
+fi

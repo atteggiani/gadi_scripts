@@ -1,0 +1,11 @@
+#!/bin/bash
+if [[ -z $DELETE_DIR ]]; then
+    for file in /home/565/dm5220/um_output/$RUNID*; do
+        if [[ $file != $UMRUN_OUTPUT.stdout.gz ]]; then rm -f $file; fi
+    done
+    for dir in /home/565/dm5220/umui_runs/$RUNID*; do
+        if [[ $dir != $JOBDIR ]]; then rm -rf $dir; fi
+    done    
+    rm -f /scratch/w48/dm5220/umui/$RUNID/$RUNID*
+    export DELETE_DIR=1
+fi
