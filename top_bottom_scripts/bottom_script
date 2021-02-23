@@ -1,3 +1,3 @@
 #!/bin/bash
-. /g/data/w48/dm5220/scripts/top_bottom_scripts/resubmit_bottom
+# . /g/data/w48/dm5220/scripts/top_bottom_scripts/resubmit_bottom
 . /g/data/w48/dm5220/scripts/top_bottom_scripts/um2nc_bottom

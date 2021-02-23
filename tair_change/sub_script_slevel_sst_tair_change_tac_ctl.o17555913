@@ -1,0 +1,22 @@
+ Writing Single-level User ancillary file 
+ /g/data/w48/dm5220/ancil/user_slevel/tair_change/tac_ctl
+ End of mkancil
+ 
+ Writing Sea Surface Temperature ancillary file 
+ /g/data/w48/dm5220/ancil/sst/tair_change/tac_ctl
+ ERROR: in procedure open_ncfile 1 : NetCDF error number            2 : 
+ No such file or directory : 
+ /g/data/w48/dm5220/ancil/sst/prescibed/files_for_xancil/tac_ctl.nc
+
+======================================================================================
+                  Resource Usage on 2021-02-14 20:18:05:
+   Job Id:             17555913.gadi-pbs
+   Project:            w48
+   Exit Status:        0
+   Service Units:      101.77
+   NCPUs Requested:    4                      NCPUs Used: 4               
+                                           CPU Time Used: 02:33:33                                   
+   Memory Requested:   50.0GB                Memory Used: 35.42GB         
+   Walltime requested: 10:00:00            Walltime Used: 04:04:15        
+   JobFS requested:    100.0MB                JobFS used: 0B              
+======================================================================================

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+
+
 um_year() {
     local year=$1
     local y2=${year: -2}
@@ -36,8 +38,17 @@ um_year() {
     esac
     echo $y1$y2
 }
+
 um_month() {
+    cat >> $script <<EOF
+um_month before = $1
+EOF
+
     local month=$1
+    cat >> $script <<EOF
+um_month after = $month
+
+EOF
     local mm
     case $month in
         1) mm="ja";;
@@ -52,27 +63,72 @@ um_month() {
         10) mm="ot";;
         11) mm="nv";;
         12) mm="dc";;
-        *) echo "Error!! Month value must be between 1-12"
+        *) echo "Error!! ${month} not a valid value. Month value must be between 1-12"
            exit 1;;
     esac
     echo $mm
 }
 
-IFS=',' read -ra basis_time <<< $(grep "MODEL_BASIS_TIME=" $JOBDIR/CNTLALL)
+# RUNID=vabua
+# JOBDIR=/home/565/dm5220/umui_runs/vabua-047092940
+# RUN_LEN_DAYS=0
+# RUN_LEN_MONTHS=2
+# RUN_LEN_YEARS=0
+# DATAW=/scratch/w48/dm5220/umui/vabua
+
+script=/g/data/w48/dm5220/data/${RUNID}_um2nc_bottom
+
+cat >> $script <<EOF
+read = $read
+EOF
+
+cat $JOBDIR/CNTLALL >> $script
+
+IFS=',' read -a basis_time <<< $(grep "MODEL_BASIS_TIME=" $JOBDIR/CNTLALL)
+
+cat >> $script <<EOF
+
+basis time = ${basis_time[@]}
+EOF
+
+cat >> $script <<EOF
+
+$(grep "MODEL_BASIS_TIME=" $JOBDIR/CNTLALL)
+EOF
+
 yst=$(awk '{print $2}' <<< ${basis_time[0]})
 mst=${basis_time[1]}
 dst=${basis_time[2]}
 
 days=$(($dst+$RUN_LEN_DAYS-1))
+cat >> $script <<EOF
+days = $days
+EOF
 months=$(($mst+$RUN_LEN_MONTHS))
+cat >> $script <<EOF
+months = $months
+EOF
 years=$(($yst+$RUN_LEN_YEARS))
+cat >> $script <<EOF
+years = $years
+EOF
 
-tot=$(( $days + $months*12 + $years*360 ))
+tot=$(( $days + $months*30 + $years*360 ))
 
 y=$(( $tot/360 ))
+cat >> $script <<EOF
+y before = $y
+EOF
 res=$(( $tot%360 ))
-m=$(( $res%12 ))
-d=$(( $res/12 ))
+m=$(( $res/30 ))
+cat >> $script <<EOF
+m before = $m
+EOF
+d=$(( $res%30 ))
+cat >> $script <<EOF
+d before = $d
+EOF
+
 if [[ $d == 0 ]]; then
     d=30
     (( m-=1 ))
@@ -81,8 +137,31 @@ if [[ $m == 0 ]]; then
     m=12
     (( y-=1 ))
 fi
+
+cat >> $script <<EOF
+d after = $d
+EOF
+cat >> $script <<EOF
+m after = $m
+EOF
+cat >> $script <<EOF
+y after = $y
+EOF
+
 ref=$(um_year $y)$(um_month $m)
-file=$DATAW/$RUNID*a$ref
+file=$DATAW/${RUNID}*a$ref
+
+cat >> /g/data/w48/dm5220/data/${RUNID}_um2nc_bottom<<EOF
+RUNID=$RUNID
+JOBDIR=$JOBDIR
+RUN_LEN_DAYS=$RUN_LEN_DAYS
+RUN_LEN_MONTHS=$RUN_LEN_MONTHS
+RUN_LEN_YEARS=$RUN_LEN_YEARS
+DATAW=$DATAW
+
+Checking $file
+EOF
+
 if [ -f $file ]; then
     outdir=/g/data/w48/dm5220/data/$RUNID
     if [ -d $outdir ]; then
@@ -92,5 +171,11 @@ if [ -f $file ]; then
         done
         outdir=${outdir}_${i}
     fi
-    /g/data/w48/dm5220/scripts/um2nc/um2nc --id $RUNID -o $outdir
+    # /g/data/w48/dm5220/scripts/um2nc/um2nc --id $RUNID -o $outdir
+    
+    cat >> /g/data/w48/dm5220/data/${RUNID}_um2nc_bottom<<EOF
+$file found:
+/g/data/w48/dm5220/scripts/um2nc/um2nc --id $RUNID -o $outdir
+EOF
+
 fi

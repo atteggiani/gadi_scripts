@@ -23,21 +23,25 @@ while getopts hi:o:s:-:g opt; do
                 id)
                     options+=" --id ${!OPTIND}"
                     OPTIND=$(( $OPTIND + 1 ))
+                    status=ok
                     ;;
                 *)
-                echo "Uknown option --${OPTARG}"
-                usage
+                    echo "Uknown option --${OPTARG}"
+                    usage
             esac;;
         i)
-	    options+=" -i $(readlink -f "$OPTARG")"
+            options+=" -i $(readlink -f "$OPTARG")"
+            status=ok
             ;;
         o)
             options+=" -o $(readlink -m "$OPTARG")"
-	    out=$(basename $(readlink -m "$OPTARG"))
+	        out=$(basename $(readlink -m "$OPTARG"))
             ;;
         *) usage
     esac
 done
+
+if [ -z $status ]; then echo "No input given!!"; exit 1; fi
 
 cd /g/data3/w48/dm5220/scripts/um2nc
 

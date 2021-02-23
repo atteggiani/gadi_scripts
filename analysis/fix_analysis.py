@@ -14,45 +14,56 @@ import matplotlib.cm as cm
 from scipy.stats import pearsonr as corr
 from scipy.signal import correlate2d as corr2d
 
+#%%
 input_folder="/g/data/w48/dm5220/data"
 alpha_precip=86400
 
 def new_name(x):
     return x.rename_vars({"m01s09i231":"combined_cloud_amount"})
 
-ctl = new_name(my.add_evaporation(xr.open_mfdataset(os.path.join(input_folder,"control_new_var/*_pa*.nc"),
+ctl = new_name(my.add_evaporation(xr.open_mfdataset(os.path.join(input_folder,"ctl/*_pa*.nc"),
            concat_dim="time",parallel=True)))
-fix = new_name(my.add_evaporation(xr.open_mfdataset(os.path.join(input_folder,"4co2_fix_ctl_tsurf_new_var/*_pa*.nc"),
+co2x4 = new_name(my.add_evaporation(xr.open_mfdataset(os.path.join(input_folder,"4co2/*_pa*.nc"),
            concat_dim="time",parallel=True)))
-solar_up_fix = new_name(my.add_evaporation(xr.open_mfdataset(os.path.join(input_folder,"ctl_fix_ctl_tsurf_solar_+50W_new_var/*_pa*.nc"),
-           concat_dim="time",parallel=True)))                      
-co2x4 = new_name(my.add_evaporation(xr.open_mfdataset(os.path.join(input_folder,"4co2_new_var/*_pa*.nc"),
-           concat_dim="time",parallel=True)))          
-solar_down_4co2 = new_name(my.add_evaporation(xr.open_mfdataset(os.path.join(input_folder,"4co2_solar_-50W_new_var/*_pa*.nc"),
+fix = new_name(my.add_evaporation(xr.open_mfdataset(os.path.join(input_folder,"4co2_fix_tsurf/*_pa*.nc"),
+           concat_dim="time",parallel=True)))
+solar_up_fix = new_name(my.add_evaporation(xr.open_mfdataset(os.path.join(input_folder,"ctl_fix_tsurf_solar50+/*_pa*.nc"),
+           concat_dim="time",parallel=True)))
+solar_down_4co2 = new_name(my.add_evaporation(xr.open_mfdataset(os.path.join(input_folder,"4co2_solar50-/*_pa*.nc"),
+           concat_dim="time",parallel=True)))                              
+ctl_fix = new_name(my.add_evaporation(xr.open_mfdataset(os.path.join(input_folder,"ctl_fix_tsurf/*_pa*.nc"),
            concat_dim="time",parallel=True)))                              
 
-def anomalies(data,var="air_temperature",a=1,t=True,**kwargs):
+ctl_2 = xr.open_mfdataset(os.path.join(input_folder,"old_experiments/ctl/*_pa*.nc"),
+           concat_dim="time",parallel=True)
+
+solar = xr.open_mfdataset(os.path.join(input_folder,"old_experiments/control_solar_plus50W/*_pa*.nc"),
+           concat_dim="time",parallel=True)
+
+def anomalies(data,var="air_temperature",control=ctl,a=1,t=True,**kwargs):
     kwargs_pred={}
-    if var in ["air_temperature","air_temperature_0"]:
-        if "levels" not in kwargs: kwargs_pred["levels"]=np.linspace(-3,3,50)
+    if var in ["air_temperature","air_temperature_0","surface_temperature"]:
+        if "levels" not in kwargs: kwargs_pred["levels"]=np.linspace(-3,3,100)
         if "cmap" not in kwargs: kwargs_pred["cmap"]=my.Constants.colormaps.div_tsurf
-        if ("add_colorbar" not in kwargs) and ("cbar_kwargs" not in kwargs) and ("levels" not in kwargs): kwargs_pred["cbar_kwargs"]={"ticks":np.arange(-3,3+0.5,0.5)}
+        if ("add_colorbar" not in kwargs) and ("cbar_kwargs" not in kwargs) and ("levels" not in kwargs): kwargs_pred["cbar_kwargs"]={"ticks":np.arange(-3,3+1,1),"label":"°C"}
     elif var in ["precipitation_flux","deep_convective_precipitation_rate","mid_level_convective_precipitation_rate","shallow_convective_precipitation_rate"]: 
         a=alpha_precip
+        if "levels" not in kwargs: kwargs_pred["levels"]=np.linspace(-2,2,100)
         if "cmap" not in kwargs: kwargs_pred["cmap"]=my.Constants.colormaps.div_precip        
+        if ("add_colorbar" not in kwargs) and ("cbar_kwargs" not in kwargs) and ("levels" not in kwargs): kwargs_pred["cbar_kwargs"]={"ticks":np.arange(-2,2+0.5,0.5), "label":"mm/day"}
     elif var in ["high_type_cloud_area_fraction","low_type_cloud_area_fraction","medium_type_cloud_area_fraction"]: 
         if "cmap" not in kwargs: kwargs_pred["cmap"]=cm.PRGn
-        if "levels" not in kwargs: kwargs_pred["levels"]=np.linspace(-0.2,0.2,50)                        
+        if "levels" not in kwargs: kwargs_pred["levels"]=np.linspace(-0.2,0.2,100)                        
         if ("add_colorbar" not in kwargs) and ("cbar_kwargs" not in kwargs) and ("levels" not in kwargs): kwargs_pred["cbar_kwargs"]={"ticks":np.arange(-0.2,0.2+0.05,0.05),"label":None}
     elif var in ["m01s09i231", "combined_cloud_amount"]: 
         if "title" not in kwargs: kwargs_pred["title"]=""
         if "cmap" not in kwargs: kwargs_pred["cmap"]=cm.PRGn
-        if "levels" not in kwargs: kwargs_pred["levels"]=np.linspace(-0.02,0.02,50)                        
+        if "levels" not in kwargs: kwargs_pred["levels"]=np.linspace(-0.02,0.02,100)                        
         if ("add_colorbar" not in kwargs) and ("cbar_kwargs" not in kwargs) and ("levels" not in kwargs): kwargs_pred["cbar_kwargs"]={"ticks":np.arange(-0.02,0.02+0.005,0.005),"label":None}
     # select just last 30 years
     sel=lambda x: x.isel(time=slice(-12*30,None))
     d=my.DataArray(sel(data[var]*a))
-    data_ctl=my.DataArray(sel(ctl[var]*a))
+    data_ctl=my.DataArray(sel(control[var]*a))
     lat0,lon0=data_ctl.get_spatial_coords()
     lat,lon=d.get_spatial_coords()
     if len(d.shape) == 4:
@@ -215,9 +226,9 @@ def correlation(data,var1="precipitation_flux",var2="high_type_cloud_area_fracti
     fig.title(title,y=0.9)
 
 #%%
-datas=(co2x4,fix,solar_up_fix,solar_down_4co2)
-labels=("4co2","4co2 + fix ctl","fix ctl + solar 50+","4co2 + solar 50-")
-colors=("blue","orange","green","red")
+datas=(co2x4,ctl_fix,fix,solar_up_fix,solar_down_4co2)
+labels=("4co2","ctl + fix ctl","4co2 + fix ctl","fix ctl + solar 50+","4co2 + solar 50-")
+colors=("blue","darkorchid","orange","green","red")
 
 #%%
 # # PLOT CONVECTIVE CLOUDS 
@@ -232,19 +243,19 @@ colors=("blue","orange","green","red")
 #     convection_rate(d,title="{}".format(l))
 
 #%%
-# # PLOT ANNUAL MEAN ANOMALIES 
-# # SURFACE TEMPERATURE
-# for d,l in zip(datas,labels):
-#     plt.figure()
-#     anomalies(d,var="surface_temperature",title="Surface Temperature | {}".format(l))
-# # PRECIPITATION
-# for d,l in zip(datas,labels):
-#     plt.figure()
-#     anomalies(d,var="precipitation_flux",title="Precipitation | {}".format(l))
+# PLOT ANNUAL MEAN ANOMALIES 
+# SURFACE TEMPERATURE
+for d,l in zip(datas,labels):
+    plt.figure()
+    anomalies(d,var="surface_temperature",title="Surface Temperature | {}".format(l))
+# PRECIPITATION
+for d,l in zip(datas,labels):
+    plt.figure()
+    anomalies(d,var="precipitation_flux",title="Precipitation | {}".format(l))
 # # AIR TEMPERATURE
-# for d,l in zip(datas,labels):
-#     plt.figure()
-#     anomalies(d,title="Air Temperature | {}".format(l))
+for d,l in zip(datas,labels):
+    plt.figure()
+    anomalies(d,title="Air Temperature | {}".format(l))
 # # DEEP CONVECTIVE PRECIPITATION
 # for d,l in zip(datas,labels):
 #     plt.figure()
@@ -314,3 +325,13 @@ colors=("blue","orange","green","red")
 # plt.legend()
 
 # %%
+# # ESTIMATE NOISE
+# var="precipitation_flux"
+# s1=lambda x: x[var].isel(time=slice(-10*12,None)).mean("time")
+# s2=lambda x: x[var].isel(time=slice(-30*12,-20*12)).mean("time")
+# plt.figure()
+# my.DataArray((s1(ctl)-s2(ctl))*alpha_precip).plotvar(title="ctl",
+#             levels=np.linspace(-1,1,50),cmap=my.Constants.colormaps.div_precip)
+# plt.figure()
+# my.DataArray((s1(ctl_fix)-s2(ctl_fix))*alpha_precip).plotvar(title="ctl_fix",
+#             levels=np.linspace(-1,1,50),cmap=my.Constants.colormaps.div_precip)

@@ -7,7 +7,7 @@
   LWFIO = .TRUE.,
   IWFIO_SIZE = 2048,
   NNCFILES = 3
-  NCFILES = "/g/data/w48/dm5220/ancil/user_slevel/tair_change/files_for_xancil/qflux_tac.nc","/g/data/w48/dm5220/ancil/user_slevel/tair_change/files_for_xancil/land_mask_tac_no_slab.nc","/g/data/w48/dm5220/ancil/user_slevel/tair_change/files_for_xancil/tac_ctl.nc"
+  NCFILES = "/g/data/w48/dm5220/ancil/user_slevel/tair_change/files_for_xancil/qflux_tac.nc","/g/data/w48/dm5220/ancil/user_slevel/tair_change/files_for_xancil/land_mask_tac_no_slab.nc","/g/data/w48/dm5220/ancil/user_slevel/tair_change/files_for_xancil/tac_ctl_corr_0.0001.nc"
  /
 
  &nam_gridconfig
