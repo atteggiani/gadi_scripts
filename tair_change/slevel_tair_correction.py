@@ -42,9 +42,9 @@ def create_mask(t):
 
 def create_tsurf(t):
     if input_folder is None:
-        ts=xr.DataArray(data=np.zeros((len(t),len(my.Constants.um.latitude),len(my.Constants.um.longitude))),
+        ts=xr.DataArray(data=np.zeros((len(t),len(my.UM.latitude),len(my.UM.longitude))),
                                        dims=("time","latitude","longitude"),
-                                       coords=(t,my.Constants.um.latitude,my.Constants.um.longitude))
+                                       coords=(t,my.UM.latitude,my.UM.longitude))
     else:
         data=xr.open_mfdataset(os.path.join(input_folder,"*_pe*.nc"),chunks={"time":1000},
                             combine='nested', concat_dim="time", parallel=True, decode_times=False).surface_temperature
@@ -55,7 +55,7 @@ def create_tsurf(t):
         time_mi = pd.MultiIndex.from_arrays((year.values, hour_of_year.values), names=('year','h_year'))
         data.coords['time'] = time_mi
         annual_cycle = data.unstack('time').isel(year=slice(-30,None),h_year=slice(0,None,2)).mean('year').rename({'h_year':'time'}).assign_coords(time=t)
-        land_mask=xr.open_dataarray(my.Constants.um.land_mask_file())
+        land_mask=xr.open_dataarray(my.UM.land_mask_file())
         ts=annual_cycle.where(land_mask==1,0).astype(np.float32)
         ts.attrs['units'] = 'K' ; ts.attrs['long_name'] = 'Surface Temperature'
 

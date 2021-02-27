@@ -20,7 +20,7 @@ stream=args.stream
 greb=args.greb
 if exp_id is None: input_folder,exp_id = os.path.split(input_folder)
 
-from myfuncs import Constants
+from myfuncs import UM
 import xarray as xr
 import numpy as np
 from dask.diagnostics import ProgressBar
@@ -48,12 +48,12 @@ if greb:
     g=g.interp(coords={'latitude':annual_cycle.latitude},kwargs={'fill_value':'extrapolate'})
     annual_cycle=(g+annual_cycle)
 
-land_mask=xr.open_dataarray(Constants.um.land_mask_file())
+land_mask=xr.open_dataarray(UM.land_mask_file())
 ts=annual_cycle.where(land_mask==1,0).chunk({'time':1})
 del ts["surface"]; del ts['t']
 ts.attrs['units'] = 'K' ; ts.attrs['long_name'] = 'Surface Temperature' ; ts.name='surface_temperature'
 
-ts=ts.expand_dims({'hybrid_ht':Constants.um.hybrid_height}).transpose('time','hybrid_ht','latitude','longitude').astype(np.float32)
+ts=ts.expand_dims({'hybrid_ht':UM.hybrid_height}).transpose('time','hybrid_ht','latitude','longitude').astype(np.float32)
 
 encoding = {ts.name: {'zlib':True,'shuffle':True,'complevel':4,'chunksizes': [1,8,73,96]}}
 with ProgressBar():

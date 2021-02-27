@@ -6,8 +6,5 @@
 #PBS -l storage=gdata/hh5+gdata/w48+scratch/w48+gdata/access
 #PBS -l mem=50gb
 
-#/g/data3/w48/dm5220/scripts/tair_change/slevel_tair_correction.py -i /g/data/w48/dm5220/data/ctl -o /g/data/w48/dm5220/ancil/user_slevel/tair_change/files_for_xancil/tac_ctl.nc
-#/g/data/access/projects/access/apps/xancil/0.57/mkancil < "/g/data3/w48/dm5220/scripts/tair_change/xancil.namelist_slevel_tair_change_tac_ctl"
-#/g/data/w48/dm5220/scripts/util/fix_polar_anom "/g/data/w48/dm5220/ancil/user_slevel/tair_change/tac_ctl" #fix polar errors
-/g/data/w48/dm5220/scripts/prescribed_tsurf/monthly_sst.py -i /g/data/w48/dm5220/data/ctl -o /g/data/w48/dm5220/ancil/sst/tair_change/files_for_xancil/tac_ctl.nc
-/g/data/access/projects/access/apps/xancil/0.57/mkancil < "/g/data3/w48/dm5220/scripts/tair_change/xancil.namelist_sst_tair_change_tac_ctl"
+/g/data/access/projects/access/apps/xancil/0.57/mkancil < "/g/data3/w48/dm5220/scripts/tair_change/xancil.namelist_slevel_tair_change_tac_ctl_2"
+/g/data/w48/dm5220/scripts/util/fix_polar_anom "/g/data/w48/dm5220/ancil/user_slevel/tair_change/tac_ctl_2" #fix polar errors

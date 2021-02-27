@@ -44,12 +44,12 @@ def anomalies(data,var="air_temperature",control=ctl,a=1,t=True,**kwargs):
     kwargs_pred={}
     if var in ["air_temperature","air_temperature_0","surface_temperature"]:
         if "levels" not in kwargs: kwargs_pred["levels"]=np.linspace(-3,3,100)
-        if "cmap" not in kwargs: kwargs_pred["cmap"]=my.Constants.colormaps.div_tsurf
+        if "cmap" not in kwargs: kwargs_pred["cmap"]=my.Colormaps.div_tsurf
         if ("add_colorbar" not in kwargs) and ("cbar_kwargs" not in kwargs) and ("levels" not in kwargs): kwargs_pred["cbar_kwargs"]={"ticks":np.arange(-3,3+1,1),"label":"°C"}
     elif var in ["precipitation_flux","deep_convective_precipitation_rate","mid_level_convective_precipitation_rate","shallow_convective_precipitation_rate"]: 
         a=alpha_precip
         if "levels" not in kwargs: kwargs_pred["levels"]=np.linspace(-2,2,100)
-        if "cmap" not in kwargs: kwargs_pred["cmap"]=my.Constants.colormaps.div_precip        
+        if "cmap" not in kwargs: kwargs_pred["cmap"]=my.Colormaps.div_precip        
         if ("add_colorbar" not in kwargs) and ("cbar_kwargs" not in kwargs) and ("levels" not in kwargs): kwargs_pred["cbar_kwargs"]={"ticks":np.arange(-2,2+0.5,0.5), "label":"mm/day"}
     elif var in ["high_type_cloud_area_fraction","low_type_cloud_area_fraction","medium_type_cloud_area_fraction"]: 
         if "cmap" not in kwargs: kwargs_pred["cmap"]=cm.PRGn
@@ -81,11 +81,11 @@ def anomalies(data,var="air_temperature",control=ctl,a=1,t=True,**kwargs):
 def seasonal_cycle(data,var="air_temperature",a=1,**kwargs):
     kwargs_pred={}
     if "levels" not in kwargs: kwargs_pred["levels"]=np.linspace(-3,3,50)
-    if "cmap" not in kwargs: kwargs_pred["cmap"]=my.Constants.colormaps.div_tsurf
+    if "cmap" not in kwargs: kwargs_pred["cmap"]=my.Colormaps.div_tsurf
     if ("cbar_kwargs" not in kwargs) and ("levels" not in kwargs): kwargs_pred["cbar_kwargs"]={"ticks":np.arange(-3,3+0.5,0.5)}
     if var in ["precipitation_flux"]: 
         a=alpha_precip
-        if "cmap" not in kwargs: kwargs_pred["cmap"]=my.Constants.colormaps.div_precip
+        if "cmap" not in kwargs: kwargs_pred["cmap"]=my.Colormaps.div_precip
     sel=lambda x: x.isel(time=slice(-12*30,None))        
     d=sel(data[var]*a)
     data_ctl=sel(ctl[var]*a)
@@ -172,7 +172,7 @@ def convection_rate(data,**kwargs):
     tit=kwargs.pop("title") if "title" in kwargs else None
     kwargs_pred={"add_colorbar":False,"statistics":['all',7],
                  "levels":np.linspace(-1.5,1.5,50),
-                 "cmap":my.Constants.colormaps.div_precip}
+                 "cmap":my.Colormaps.div_precip}
     for k in kwargs_pred:
         if k in kwargs: del kwargs_pred[k]                  
     gs = gridspec.GridSpec(3, 4, height_ratios=[10, 10, 2],
@@ -290,15 +290,6 @@ for d,l in zip(datas,labels):
 #     anomalies(d,title="Low Convective Clouds | {}".format(l),
 #               var="low_type_cloud_area_fraction")
 
-# AIR TEMPERATURE
-# %%
-# # PLOT PRECIPITATION ANNUAL CYCLES
-# plt.figure()
-# for d,l,c in zip(datas,labels,colors):
-#     annual_cycle(d,var="precipitation_flux",label=l,color=c)
-# plt.legend()
-# plt.grid()
-
 
 #%%
 # # PLOT TIME SERIES
@@ -331,7 +322,7 @@ for d,l in zip(datas,labels):
 # s2=lambda x: x[var].isel(time=slice(-30*12,-20*12)).mean("time")
 # plt.figure()
 # my.DataArray((s1(ctl)-s2(ctl))*alpha_precip).plotvar(title="ctl",
-#             levels=np.linspace(-1,1,50),cmap=my.Constants.colormaps.div_precip)
+#             levels=np.linspace(-1,1,50),cmap=my.Colormaps.div_precip)
 # plt.figure()
 # my.DataArray((s1(ctl_fix)-s2(ctl_fix))*alpha_precip).plotvar(title="ctl_fix",
-#             levels=np.linspace(-1,1,50),cmap=my.Constants.colormaps.div_precip)
+#             levels=np.linspace(-1,1,50),cmap=my.Colormaps.div_precip)

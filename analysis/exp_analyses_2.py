@@ -51,7 +51,7 @@ for d,t,o in datas_single:
         title = "{} | {}".format(tit,t),
         t_student=p,
         outpath = os.path.join(output_folder,"{}_{}_amean.png".format(outvar,o)),
-        cmap = my.Constants.colormaps.div_tsurf)
+        cmap = my.Colormaps.div_tsurf)
     plt.show()
 
     #AIR TEMPERATURE
@@ -67,7 +67,7 @@ for d,t,o in datas_single:
         title = "{} | {}".format(tit,t),
         t_student=p,
         outpath = os.path.join(output_folder,"{}_{}_amean.png".format(outvar,o)),
-        cmap = my.Constants.colormaps.div_tsurf)
+        cmap = my.Colormaps.div_tsurf)
     plt.show()
 
     #PRECIPITATION
@@ -84,7 +84,7 @@ for d,t,o in datas_single:
         title = "{} | {}".format(tit,t),
         t_student=p,
         outpath = os.path.join(output_folder,"{}_{}_amean.png".format(outvar,o)),
-        cmap = my.Constants.colormaps.div_precip)
+        cmap = my.Colormaps.div_precip)
     plt.show()
 
 
@@ -109,7 +109,7 @@ for d,t,o in datas_differences:
     pvalue = my.DataArray(d[0][var]).t_student_probability(d[1][var])  
     plt.figure()
     data.plotvar(
-            cmap = my.Constants.colormaps.div_tsurf,
+            cmap = my.Colormaps.div_tsurf,
             levels = np.linspace(-2,2,100),
             cbar_kwargs={"ticks":np.arange(-2,2+0.5,0.5),
                         "label":"°C"},
@@ -124,7 +124,7 @@ for d,t,o in datas_differences:
     pvalue = my.DataArray(d[0][var].mean("longitude_0")).t_student_probability(d[1][var].mean("longitude_0"))
     plt.figure()
     data.plotlev(
-            cmap = my.Constants.colormaps.div_tsurf,
+            cmap = my.Colormaps.div_tsurf,
             levels = np.linspace(-2,2,100),
             cbar_kwargs={"ticks":np.arange(-2,2+0.5,0.5),
                         "label":"°C"},
@@ -139,7 +139,7 @@ for d,t,o in datas_differences:
     pvalue = my.DataArray(d[0][var]).t_student_probability(d[1][var])  
     plt.figure()
     data.plotvar(
-            cmap = my.Constants.colormaps.div_precip,
+            cmap = my.Colormaps.div_precip,
             levels = np.linspace(-2,2,100),
             cbar_kwargs={"ticks":np.arange(-2,2+0.5,0.5),
                         "label":"mm/day"},

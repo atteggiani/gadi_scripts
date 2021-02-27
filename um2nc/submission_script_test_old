@@ -5,6 +5,6 @@
 #PBS -P w48
 #PBS -l storage=gdata/hh5+gdata/w48+scratch/w48
 #PBS -l mem=50gb
-#PBS -N um2nc.ctl_fix_tsurf 
+#PBS -N um2nc.test_old 
 
-/g/data3/w48/dm5220/scripts/um2nc/convert_um2nc.py --id vacbc -o /g/data/w48/dm5220/data/ctl_fix_tsurf --ncpus 48
+/g/data3/w48/dm5220/scripts/um2nc/convert_um2nc_old_old.py --id vacba -o /g/data/w48/dm5220/data/test_old --ncpus 48

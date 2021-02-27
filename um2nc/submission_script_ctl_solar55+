@@ -5,6 +5,6 @@
 #PBS -P w48
 #PBS -l storage=gdata/hh5+gdata/w48+scratch/w48
 #PBS -l mem=50gb
-#PBS -N um2nc.4co2_fix_tsurf 
+#PBS -N um2nc.ctl_solar55+ 
 
-/g/data3/w48/dm5220/scripts/um2nc/convert_um2nc.py --id vacbd -o /g/data/w48/dm5220/data/4co2_fix_tsurf --ncpus 48
+/g/data3/w48/dm5220/scripts/um2nc/convert_um2nc.py --id vacbh -o /g/data/w48/dm5220/data/ctl_solar55+ --ncpus 48

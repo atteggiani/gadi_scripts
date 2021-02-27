@@ -24,7 +24,7 @@ def get_tac_sex_filename(id):
 
 ind_levs=[1,8,17,25,38]
 ref_lat = np.arange(-90,90+30,30)
-ref_levs=[my.Constants.um.hybrid_height[l-1] for l in ind_levs]
+ref_levs=[my.UM.hybrid_height[l-1] for l in ind_levs]
 sex_order=[21,24,23,22,13,16,15,14,5,8,7,6,1,4,3,2,9,12,11,10,17,20,19,18]
 sex_names=["sex{}".format(n) for n in sex_order]
 sex_args=["s{}".format(n) for n in sex_order]
@@ -45,9 +45,9 @@ change_sex=[eval("args.{}".format(arg)) for arg in sex_args]
 #Create base xarray with all values equal 0
 time = [dt360(0,m,16) for m in range(1,13)]
 
-lat = my.Constants.um.latitude
-lon = my.Constants.um.longitude 
-levs = my.Constants.um.hybrid_height
+lat = my.UM.latitude
+lon = my.UM.longitude 
+levs = my.UM.hybrid_height
 coords=(time,levs,lat,lon)
 b=np.zeros([len(x) for x in coords],dtype=np.float32)
 tac=xr.DataArray(data=b, dims=("time","hybrid_ht","latitude","longitude") ,coords=coords,name="tair_corrections")

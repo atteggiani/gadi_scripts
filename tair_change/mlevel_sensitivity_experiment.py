@@ -18,9 +18,9 @@ def pairwise(iterable):
 
 #Create base xarray with all values equal 0
 time = [dt360(0,m,16) for m in range(1,13)]
-lat = my.Constants.um.latitude
-lon = my.Constants.um.longitude 
-levs = my.Constants.um.hybrid_height
+lat = my.UM.latitude
+lon = my.UM.longitude 
+levs = my.UM.hybrid_height
 coords=(time,levs,lat,lon)
 b=np.zeros([len(x) for x in coords],dtype=np.float32)
 tac=xr.DataArray(data=b, dims=("time","hybrid_ht","latitude","longitude") ,coords=coords,name="tair_corrections")

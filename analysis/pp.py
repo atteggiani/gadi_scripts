@@ -33,5 +33,5 @@ plt.title("Annual cycle | control tsurf")
 
 # Annual mean difference plot
 c.mean("time")
-plt.figure(); my.DataArray(ctl_ac.mean("dayofyear")-c_ac.mean("dayofyear")).plotvar(title="Difference",cmap=my.Constants.colormaps.div_tsurf)
+plt.figure(); my.DataArray(ctl_ac.mean("dayofyear")-c_ac.mean("dayofyear")).plotvar(title="Difference",cmap=my.Colormaps.div_tsurf)
 

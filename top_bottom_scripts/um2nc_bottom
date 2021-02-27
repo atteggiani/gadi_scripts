@@ -1,12 +1,15 @@
 #!/bin/bash
 
-
-
 um_year() {
-    local year=$1
-    local y2=${year: -2}
-    local y1
-    case ${year:0:-2} in
+    year=$1
+    cat >> $script <<EOF
+year -> ${year}
+EOF
+    y2=${year: -2}
+    cat >> $script <<EOF
+year inside fun -> ${year:0: -2}
+EOF
+    case ${year:0: -2} in
         10) y1=a;;
         11) y1=b;;
         12) y1=c;;
@@ -36,20 +39,15 @@ um_year() {
         *) echo "Error!! Year too small/big for um reference"
            exit 1;;
     esac
+        cat >> $script <<EOF
+year after fun -> $y1$y2
+EOF
     echo $y1$y2
 }
 
 um_month() {
-    cat >> $script <<EOF
-um_month before = $1
-EOF
 
-    local month=$1
-    cat >> $script <<EOF
-um_month after = $month
-
-EOF
-    local mm
+    month=$1
     case $month in
         1) mm="ja";;
         2) mm="fb";;
@@ -78,56 +76,22 @@ EOF
 
 script=/g/data/w48/dm5220/data/${RUNID}_um2nc_bottom
 
-cat >> $script <<EOF
-read = $read
-EOF
+basis_time=$(cat $JOBDIR/CNTLALL | grep "MODEL_BASIS_TIME=")
+basis_time=${basis_time#*MODEL_BASIS_TIME=}
 
-cat $JOBDIR/CNTLALL >> $script
-
-IFS=',' read -a basis_time <<< $(grep "MODEL_BASIS_TIME=" $JOBDIR/CNTLALL)
-
-cat >> $script <<EOF
-
-basis time = ${basis_time[@]}
-EOF
-
-cat >> $script <<EOF
-
-$(grep "MODEL_BASIS_TIME=" $JOBDIR/CNTLALL)
-EOF
-
-yst=$(awk '{print $2}' <<< ${basis_time[0]})
-mst=${basis_time[1]}
-dst=${basis_time[2]}
+yst=$(echo $basis_time | cut -d',' -f1)
+mst=$(echo $basis_time | cut -d',' -f2)
+dst=$(echo $basis_time | cut -d',' -f3)
 
 days=$(($dst+$RUN_LEN_DAYS-1))
-cat >> $script <<EOF
-days = $days
-EOF
 months=$(($mst+$RUN_LEN_MONTHS))
-cat >> $script <<EOF
-months = $months
-EOF
 years=$(($yst+$RUN_LEN_YEARS))
-cat >> $script <<EOF
-years = $years
-EOF
-
 tot=$(( $days + $months*30 + $years*360 ))
 
 y=$(( $tot/360 ))
-cat >> $script <<EOF
-y before = $y
-EOF
 res=$(( $tot%360 ))
 m=$(( $res/30 ))
-cat >> $script <<EOF
-m before = $m
-EOF
 d=$(( $res%30 ))
-cat >> $script <<EOF
-d before = $d
-EOF
 
 if [[ $d == 0 ]]; then
     d=30
@@ -139,27 +103,14 @@ if [[ $m == 0 ]]; then
 fi
 
 cat >> $script <<EOF
-d after = $d
-EOF
-cat >> $script <<EOF
-m after = $m
-EOF
-cat >> $script <<EOF
-y after = $y
+ref time = $d/$m/$y
 EOF
 
 ref=$(um_year $y)$(um_month $m)
 file=$DATAW/${RUNID}*a$ref
 
-cat >> /g/data/w48/dm5220/data/${RUNID}_um2nc_bottom<<EOF
-RUNID=$RUNID
-JOBDIR=$JOBDIR
-RUN_LEN_DAYS=$RUN_LEN_DAYS
-RUN_LEN_MONTHS=$RUN_LEN_MONTHS
-RUN_LEN_YEARS=$RUN_LEN_YEARS
-DATAW=$DATAW
-
-Checking $file
+cat >> $script <<EOF
+checking file $file
 EOF
 
 if [ -f $file ]; then
