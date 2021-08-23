@@ -2,14 +2,9 @@
 
 um_year() {
     year=$1
-    cat >> $script <<EOF
-year -> ${year}
-EOF
-    y2=${year: -2}
-    cat >> $script <<EOF
-year inside fun -> ${year:0: -2}
-EOF
-    case ${year:0: -2} in
+    y2=$(echo $year | cut -c3-)
+    y1_=$(echo $year | cut -c1-2)  
+    case $y1_ in
         10) y1=a;;
         11) y1=b;;
         12) y1=c;;
@@ -39,14 +34,10 @@ EOF
         *) echo "Error!! Year too small/big for um reference"
            exit 1;;
     esac
-        cat >> $script <<EOF
-year after fun -> $y1$y2
-EOF
     echo $y1$y2
 }
 
 um_month() {
-
     month=$1
     case $month in
         1) mm="ja";;
@@ -68,13 +59,13 @@ um_month() {
 }
 
 # RUNID=vabua
-# JOBDIR=/home/565/dm5220/umui_runs/vabua-047092940
+# JOBDIR=/home/565/dm5220/umui_runs/vabua-175131329
 # RUN_LEN_DAYS=0
 # RUN_LEN_MONTHS=2
 # RUN_LEN_YEARS=0
-# DATAW=/scratch/w48/dm5220/umui/vabua
+# DATAW=/scratch/w48/dm5220/umui/$RUNID
 
-script=/g/data/w48/dm5220/data/${RUNID}_um2nc_bottom
+# script=/g/data/w48/dm5220/data/${RUNID}_um2nc_bottom
 
 basis_time=$(cat $JOBDIR/CNTLALL | grep "MODEL_BASIS_TIME=")
 basis_time=${basis_time#*MODEL_BASIS_TIME=}
@@ -102,16 +93,8 @@ if [[ $m == 0 ]]; then
     (( y-=1 ))
 fi
 
-cat >> $script <<EOF
-ref time = $d/$m/$y
-EOF
-
 ref=$(um_year $y)$(um_month $m)
 file=$DATAW/${RUNID}*a$ref
-
-cat >> $script <<EOF
-checking file $file
-EOF
 
 if [ -f $file ]; then
     outdir=/g/data/w48/dm5220/data/$RUNID
@@ -122,11 +105,6 @@ if [ -f $file ]; then
         done
         outdir=${outdir}_${i}
     fi
-    # /g/data/w48/dm5220/scripts/um2nc/um2nc --id $RUNID -o $outdir
+    /g/data/w48/dm5220/scripts/um2nc/um2nc --id $RUNID -o $outdir
     
-    cat >> /g/data/w48/dm5220/data/${RUNID}_um2nc_bottom<<EOF
-$file found:
-/g/data/w48/dm5220/scripts/um2nc/um2nc --id $RUNID -o $outdir
-EOF
-
 fi

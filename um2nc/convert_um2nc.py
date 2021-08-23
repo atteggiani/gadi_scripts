@@ -1,4 +1,4 @@
-#!/g/data3/hh5/public/apps/miniconda3/envs/analysis3-20.10/bin/python3
+#!/g/data3/hh5/public/apps/miniconda3/envs/analysis3-21.04/bin/python3
 import warnings
 warnings.simplefilter("ignore")
 from argparse import ArgumentParser
@@ -28,7 +28,7 @@ if ncpus is None: ncpus = cpu_count()
 
 
 ind=len(exp_id)+4
-# Look inside the um output folder to get the yeears of the run
+# Look inside the um output folder to get the years of the run
 years=list(set([os.path.split(x)[1][ind:-2] for x in glob.glob(os.path.join(input_folder,exp_id,"{}a@pa*".format(exp_id)))]))
 streams=["a","c","e"]
 os.makedirs(output_folder)

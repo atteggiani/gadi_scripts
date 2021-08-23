@@ -1,4 +1,4 @@
-#!/g/data3/hh5/public/apps/miniconda3/envs/analysis3-20.10/bin/python3
+#!/g/data3/hh5/public/apps/miniconda3/envs/analysis3-21.04/bin/python3
 
 import warnings
 warnings.simplefilter("ignore")

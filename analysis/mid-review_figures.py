@@ -1,3 +1,4 @@
+# %%
 import warnings
 warnings.simplefilter("ignore")
 import myfuncs as my
@@ -15,10 +16,12 @@ from scipy.stats import pearsonr as corr
 from scipy.signal import correlate2d as corr2d
 import gc
 import time
+from multiprocessing import Pool
 
 input_folder="/g/data/w48/dm5220/data"
 output_folder="/g/data/w48/dm5220/data/mid_review_figures"
 alpha_precip=86400
+selection = lambda x: x.isel(time=slice(-30*12,None))
 
 ctl = my.open_mfdataset(os.path.join(input_folder,"ctl/*_pa*.nc"),
            concat_dim="time",parallel=True)
@@ -55,18 +58,18 @@ def anomalies(data,var="air_temperature",control=ctl,a=1,t=True,**kwargs):
         if "cmap" not in kwargs: kwargs_pred["cmap"]=cm.PRGn
         if "levels" not in kwargs: kwargs_pred["levels"]=np.linspace(-0.02,0.02,100)                        
         if ("add_colorbar" not in kwargs) and ("cbar_kwargs" not in kwargs) and ("levels" not in kwargs): kwargs_pred["cbar_kwargs"]={"ticks":np.arange(-0.02,0.02+0.005,0.005),"label":None}
-    elif var in ["omega_up", "omega_down"]: 
+    elif var in ["upward_motion", "downward_motion","overturning_circulation","upward_air_velocity"]: 
         if "title" not in kwargs: kwargs_pred["title"]=""
         if "levels" not in kwargs: kwargs_pred["levels"]=np.linspace(-0.005,0.005,100)                        
-        if ("add_colorbar" not in kwargs) and ("cbar_kwargs" not in kwargs) and ("levels" not in kwargs): kwargs_pred["cbar_kwargs"]={"ticks":np.arange(-0.005,0.005+0.0025,0.0025),"label":None}
-        if "cmap" not in kwargs: kwargs_pred["cmap"]=my.Colormaps.div_precip if var == "omega_up" else my.Colormaps.div_precip_r
+        if ("add_colorbar" not in kwargs) and ("cbar_kwargs" not in kwargs) and ("levels" not in kwargs): kwargs_pred["cbar_kwargs"]={"ticks":np.arange(-0.005,0.005+0.0025,0.0025),"label":"m/s"}
+        if "cmap" not in kwargs: kwargs_pred["cmap"]=my.Colormaps.div_precip if var in ["upward_motion","upward_air_velocity"] else my.Colormaps.div_precip_r
     # select just last 30 years
     sel=lambda x: x.isel(time=slice(-12*30,None))
     d=my.DataArray(sel(data[var]*a))
     data_ctl=my.DataArray(sel(control[var]*a))
     lat0,lon0=data_ctl.get_spatial_coords()
     lat,lon=d.get_spatial_coords()
-    if var in ["omega_up", "omega_down"]: 
+    if var in ["upward_motion", "downward_motion","overturning_circulation","upward_air_velocity"]: 
         d=d.sel({"pressure":500},method="nearest")
         data_ctl=data_ctl.sel({"pressure":500},method="nearest")
     if len(d.shape) == 4:
@@ -129,12 +132,12 @@ def time_series(data,var="surface_temperature",a=1,moving_average=60,**kwargs):
         a=alpha_precip
     d=data[var]*a
     data_ctl=ctl[var]*a
-    if var in ["omega_up","omega_down"]: 
+    if var in ["upward_motion","downward_motion","overturning_circulation","upward_air_velocity"]: 
         d=d.sel({"pressure":500},method="nearest")
         data_ctl=data_ctl.sel({"pressure":500},method="nearest")
     time_series=my.DataArray(d-data_ctl).global_mean()
     if len(time_series.shape) == 2:
-        dim=[x for x in a.dims if x != "time"][0]
+        dim=[x for x in d.dims if x != "time"][0]
         time_series=time_series.mean(dim)
     if moving_average is not None:
         time_series=time_series.rolling(time=moving_average, center=True, min_periods=2).mean()
@@ -149,7 +152,7 @@ def time_series(data,var="surface_temperature",a=1,moving_average=60,**kwargs):
         gm=x2.mean() 
         c = kwargs.pop("color") if "color" in kwargs else None 
         plt.axhline(y = gm, color=c, **kwargs,linestyle = '-.',linewidth=0.5) 
-        # plt.ylim([-1,3])
+        plt.axhline(y = 0, color = 'k', linestyle = '-',linewidth=0.5) 
         plt.title("Time Series")
         plt.xlabel("Years")
         plt.gca().set_xticks(np.arange(0,n+12*5,12*5))
@@ -174,153 +177,393 @@ def vertical_profile(data,var="air_temperature",a=1,**kwargs):
         plt.gca().set_yticklabels(["{}".format(i) for i in [1000,800,600,400,200,50]])
     fun(vert)
 
-
-
-
 datas=(co2x4,solar_up,co2x4_fix,solar_up_fix,co2x4_solar_down,ctl_fix)
-labels=("4xCO2","Solar +50","4xCO2 + FIX","Solar +50 + FIX","4xCO2 + Solar -50","Control + FIX")
+labels=("4xCO2","Solar +50","4xCO2 FIX","Solar +50 FIX","4xCO2 + Solar -50","Control FIX")
 colors=("black","red","grey","orange","green","blue")
 out=("4co2","solar_up","4co2_fix","solar_up_fix","4co2_solar_down","ctl_fix")
 
-
-
+# %%
 # PLOT ANNUAL MEAN ANOMALIES 
 # SURFACE TEMPERATURE
 for d,l,o in zip(datas,labels,out):
     plt.figure()
     anomalies(d,var="surface_temperature",title="Surface Temperature | {}".format(l),
-              outpath=os.path.join(output_folder,"tsurf_{}.png".format(o)))
+              outpath=os.path.join(output_folder,"tsurf_{}.png".format(o)))    
     plt.show();plt.close() 
+    gc.collect()              
+# %%
 # PRECIPITATION
 for d,l,o in zip(datas,labels,out):
     plt.figure()
     anomalies(d,var="precipitation_flux",title="Precipitation | {}".format(l),
               outpath=os.path.join(output_folder,"precip_{}.png".format(o)))
     plt.show();plt.close() 
+    gc.collect()
+# %%    
 # AIR TEMPERATURE
 for d,l,o in zip(datas,labels,out):
     plt.figure()
     anomalies(d,var="air_temperature",title="Air Temperature | {}".format(l),
               outpath=os.path.join(output_folder,"tair_{}.png".format(o)))    
     plt.show();plt.close() 
-# OMEGA UP
+    gc.collect()
+# %%    
+# UPWARD MOTION
 for d,l,o in zip(datas,labels,out):
     plt.figure()
-    anomalies(d,var="omega_up",title="Omega Up (500hPa) | {}".format(l),
+    anomalies(d,var="upward_motion",title="Upward Motion (500hPa) | {}".format(l),
               outpath=os.path.join(output_folder,"w_up_{}.png".format(o)))    
     plt.show();plt.close() 
-# OMEGA DOWN
+    gc.collect()
+# %%    
+# DOWNWARD MOTION
 for d,l,o in zip(datas,labels,out):
     plt.figure()
-    anomalies(d,var="omega_down",title="Omega Down (500hPa) | {}".format(l),
+    anomalies(d,var="downward_motion",title="Downward Motion (500hPa) | {}".format(l),
               outpath=os.path.join(output_folder,"w_down_{}.png".format(o)))                                        
     plt.show();plt.close() 
+    gc.collect()
+# %%    
+# OVERTURNING CIRCULATION
+for d,l,o in zip(datas,labels,out):
+    plt.figure()
+    anomalies(d,var="overturning_circulation",title="Overturning Circulation (500hPa) | {}".format(l),
+              outpath=os.path.join(output_folder,"overturning_{}.png".format(o)))                                        
+    plt.show();plt.close() 
+    gc.collect()
+# %%    
+# UPWARD AIR VELOCITY
+for d,l,o in zip(datas,labels,out):
+    plt.figure()
+    anomalies(d,var="upward_air_velocity",title="Vertical Motion (500hPa) | {}".format(l),
+              outpath=os.path.join(output_folder,"vert_motion_{}.png".format(o)))                                        
+    plt.show();plt.close() 
+    gc.collect()    
+
+
+
+# PLOT ANNUAL MEAN DIFFERENCES
+# %%
+# SURFACE TEMPERATURE
+plt.figure()
+anomalies(co2x4,control=solar_up,var="surface_temperature",
+            title="Surface Temperature | 4xCO2 - Solar +50",t=False,
+            outpath=os.path.join(output_folder,"tsurf_diff_4co2_solar_up.png"))
+plt.show();plt.close() 
+plt.figure()
+anomalies(co2x4_fix,control=solar_up_fix,var="surface_temperature",
+            title="Surface Temperature | 4xCO2 FIX - Solar +50 FIX",t=False,
+            outpath=os.path.join(output_folder,"tsurf_diff_4co2_fix_solar_up_fix.png"))
+plt.show();plt.close() 
+# %%
+# PRECIPITATION
+plt.figure()
+anomalies(co2x4,control=solar_up,var="precipitation_flux",
+            title="Precipitation | 4xCO2 - Solar +50",t=False,
+            outpath=os.path.join(output_folder,"precip_diff_4co2_solar_up.png"))
+plt.show();plt.close() 
+plt.figure()
+anomalies(co2x4_fix,control=solar_up_fix,var="precipitation_flux",
+            title="Precipitation | 4xCO2 FIX - Solar +50 FIX",t=False,
+            outpath=os.path.join(output_folder,"precip_diff_4co2_fix_solar_up_fix.png"))
+plt.show();plt.close() 
+# %%
+# AIR TEMPERATURE
+plt.figure()
+anomalies(co2x4,control=solar_up,var="air_temperature",
+            title="Air Temperature | 4xCO2 - Solar +50",t=False,
+            outpath=os.path.join(output_folder,"tair_diff_4co2_solar_up.png"))
+plt.show();plt.close() 
+plt.figure()
+anomalies(co2x4_fix,control=solar_up_fix,var="air_temperature",
+            title="Air Temperature | 4xCO2 FIX - Solar +50 FIX",t=False,
+            outpath=os.path.join(output_folder,"tair_diff_4co2_fix_solar_up_fix.png"))
+plt.show();plt.close() 
+# %%
+# UPWARD MOTION
+plt.figure()
+anomalies(co2x4,control=solar_up,var="upward_motion",
+            title="Upward Motion (500hPa) | 4xCO2 - Solar +50",t=False,
+            outpath=os.path.join(output_folder,"w_up_diff_4co2_solar_up.png"))
+plt.show();plt.close() 
+plt.figure()
+anomalies(co2x4_fix,control=solar_up_fix,var="upward_motion",
+            title="Upward Motion (500hPa) | 4xCO2 FIX - Solar +50 FIX",t=False,
+            outpath=os.path.join(output_folder,"w_up_diff_4co2_fix_solar_up_fix.png"))
+plt.show();plt.close() 
+# %%
+# DOWNWARD MOTION
+plt.figure()
+anomalies(co2x4,control=solar_up,var="downward_motion",
+            title="Downward Motion (500hPa) | 4xCO2 - Solar +50",t=False,
+            outpath=os.path.join(output_folder,"w_down_diff_4co2_solar_up.png"))
+plt.show();plt.close() 
+plt.figure()
+anomalies(co2x4_fix,control=solar_up_fix,var="downward_motion",
+            title="Downward Motion (500hPa) | 4xCO2 FIX - Solar +50 FIX",t=False,
+            outpath=os.path.join(output_folder,"w_down_diff_4co2_fix_solar_up_fix.png"))
+plt.show();plt.close() 
+# %%
+# UPWARD AIR VELOCITY
+plt.figure()
+anomalies(co2x4,control=solar_up,var="upward_air_velocity",
+            title="Vertical Motion (500hPa) | 4xCO2 - Solar +50",t=False,
+            outpath=os.path.join(output_folder,"vert_motion_diff_4co2_solar_up.png"))
+plt.show();plt.close() 
+plt.figure()
+anomalies(co2x4_fix,control=solar_up_fix,var="upward_air_velocity",
+            title="Vertical Motion (500hPa) | 4xCO2 FIX - Solar +50 FIX",t=False,
+            outpath=os.path.join(output_folder,"vert_motion_diff_4co2_fix_solar_up_fix.png"))
+plt.show();plt.close() 
 
 
 
 # PLOT TIME SERIES
+# %%
 # TSURF
 plt.figure()
 for d,l,c in zip(datas[:-2],labels[:-2],colors[:-2]):
     time_series(d,label=l,color=c,moving_average=60)
-plt.legend(prop={'size': 10})
-plt.title("Surface temperature | Time Series",fontsize=14)
+plt.legend(prop={'size': 10},loc='upper left',
+           bbox_to_anchor=(1, 1.02))
+plt.title("Surface Temperature | Time Series",fontsize=14)
 plt.grid()
 plt.ylabel("°C")
-plt.savefig(os.path.join(output_folder,"tsurf_tseries_1.png"),bbox_to_anchor="tight",dpi=300)
+plt.savefig(os.path.join(output_folder,"tsurf_tseries_1.png"),bbox_inches="tight",dpi=300)
+plt.show();plt.close()
+
+plt.figure()
+for d,l,c in zip(datas[-2:],labels[-2:],colors[-2:]):
+    time_series(d,label=l,color=c,moving_average=60)
+plt.legend(prop={'size': 10},loc='upper left',
+           bbox_to_anchor=(1, 1.02))
+plt.title("Surface Temperature | Time Series",fontsize=14)
+plt.grid()
+plt.ylabel("°C")
+plt.ylim([-0.5,0.5])
+plt.savefig(os.path.join(output_folder,"tsurf_tseries_2.png"),bbox_inches="tight",dpi=300)
+plt.show();plt.close()
+# %%
 # PRECIPITATION
 plt.figure()
 for d,l,c in zip(datas[:-2],labels[:-2],colors[:-2]):
     time_series(d,var="precipitation_flux",label=l,color=c,moving_average=60)
 plt.legend(prop={'size': 10},loc='upper left',
-           bbox_to_anchor=(0.01, 0.99))
+           bbox_to_anchor=(1, 1.02))
 plt.title("Precipitation | Time Series",fontsize=14)           
 plt.ylabel("mm/day")
 plt.grid()
-plt.savefig(os.path.join(output_folder,"precip_tseries_1.png"),bbox_to_anchor="tight",dpi=300)
-# OMEGA UP
-plt.figure()
-for d,l,c in zip(datas[:-2],labels[:-2],colors[:-2]):
-    time_series(d,var="omega_up",label=l,color=c,moving_average=60)
-plt.legend(prop={'size': 10})
-plt.title("Omega Up (500hPa) | Time Series",fontsize=14)           
-plt.ylabel("m/s")
-plt.grid()
-plt.savefig(os.path.join(output_folder,"w_up_tseries_1.png"),bbox_to_anchor="tight",dpi=300)
+plt.savefig(os.path.join(output_folder,"precip_tseries_1.png"),bbox_inches="tight",dpi=300)
 
-# PLOT TIME SERIES
-# TSURF
-plt.figure()
-for d,l,c in zip(datas[-2:],labels[-2:],colors[-2:]):
-    time_series(d,label=l,color=c,moving_average=60)
-plt.legend(prop={'size': 10})
-plt.title("Surface temperature | Time Series",fontsize=14)
-plt.grid()
-plt.ylabel("°C")
-plt.ylim([-0.5,0.5])
-plt.savefig(os.path.join(output_folder,"tsurf_tseries_2.png"),bbox_to_anchor="tight",dpi=300)
-# PRECIPITATION
 plt.figure()
 for d,l,c in zip(datas[-2:],labels[-2:],colors[-2:]):
     time_series(d,var="precipitation_flux",label=l,color=c,moving_average=60)
-plt.legend(prop={'size': 10})
+plt.legend(prop={'size': 10},loc='upper left',
+           bbox_to_anchor=(1, 1.02))
 plt.title("Precipitation | Time Series",fontsize=14)           
 plt.ylabel("mm/day")
 plt.grid()
-plt.savefig(os.path.join(output_folder,"precip_tseries_2.png"),bbox_to_anchor="tight",dpi=300)
-# OMEGA UP
+plt.savefig(os.path.join(output_folder,"precip_tseries_2.png"),bbox_inches="tight",dpi=300)
+plt.show();plt.close()
+# %%
+# UPWARD MOTION
+plt.figure()
+for d,l,c in zip(datas[:-2],labels[:-2],colors[:-2]):
+    time_series(d,var="upward_motion",label=l,color=c,moving_average=60)
+plt.legend(prop={'size': 10},loc='upper left',
+           bbox_to_anchor=(1, 1.02))
+plt.title("Upward Motion (500hPa) | Time Series",fontsize=14)           
+plt.ylabel("m/s")
+plt.grid()
+plt.savefig(os.path.join(output_folder,"w_up_tseries_1.png"),bbox_inches="tight",dpi=300)
+
 plt.figure()
 for d,l,c in zip(datas[-2:],labels[-2:],colors[-2:]):
-    time_series(d,var="omega_up",label=l,color=c,moving_average=60)
-plt.legend(prop={'size': 10})
-plt.title("Omega Up (500hPa) | Time Series",fontsize=14)           
+    time_series(d,var="upward_motion",label=l,color=c,moving_average=60)
+plt.legend(prop={'size': 10},loc='upper left',
+           bbox_to_anchor=(1, 1.02))
+plt.title("Upward Motion (500hPa) | Time Series",fontsize=14)           
 plt.ylabel("m/s")
 plt.grid()
 plt.ylim([-1e-4,1e-4])
-plt.savefig(os.path.join(output_folder,"w_up_tseries_2.png"),bbox_to_anchor="tight",dpi=300)
-
-
-
-
-# # PLOT TAIR VERTICAL PROFILES
-plt.figure()
-for d,l,c in zip(datas[:-2],labels[:-2],colors[:-2]):
-    vertical_profile(d,var="air_temperature",color=c,label=l)
-plt.title("Air temperature | Vertical profile",fontsize=14)    
-plt.grid()
-plt.legend()
-plt.savefig(os.path.join(output_folder,"tair_vertical_profile_1.png"),bbox_to_anchor="tight",dpi=300)
-
-# # PLOT TAIR VERTICAL PROFILES
-plt.figure()
-for d,l,c in zip(datas[-2:],labels[-2:],colors[-2:]):
-    vertical_profile(d,var="air_temperature",color=c,label=l)
-plt.title("Air temperature | Vertical profile",fontsize=14)    
-plt.grid()
-plt.legend()
-plt.savefig(os.path.join(output_folder,"tair_vertical_profile_2.png"),bbox_to_anchor="tight",dpi=300)
-
-
-
-
-# # PLOT omega_up VERTICAL PROFILES
-plt.figure()
-for d,l,c in zip(datas[:-2],labels[:-2],colors[:-2]):
-    vertical_profile(d,var="omega_up",color=c,label=l)
-plt.title("Omega up | Vertical profile",fontsize=14)    
-plt.grid()
-plt.legend()
-plt.savefig(os.path.join(output_folder,"w_up_vertical_profile_1.png"),bbox_to_anchor="tight",dpi=300)
-
-# # PLOT omega_up VERTICAL PROFILES
-plt.figure()
-for d,l,c in zip(datas[-2:],labels[-2:],colors[-2:]):
-    vertical_profile(d,var="omega_up",color=c,label=l)
-plt.title("Omega up | Vertical profile",fontsize=14)    
-plt.grid()
-plt.legend()
-plt.savefig(os.path.join(output_folder,"w_up_vertical_profile_2.png"),bbox_to_anchor="tight",dpi=300)
+plt.savefig(os.path.join(output_folder,"w_up_tseries_2.png"),bbox_inches="tight",dpi=300)
+plt.show();plt.close()
 
 # %%
+# DOWNWARD MOTION
+plt.figure()
+for d,l,c in zip(datas[:-2],labels[:-2],colors[:-2]):
+    time_series(d,var="downward_motion",label=l,color=c,moving_average=60)
+plt.legend(prop={'size': 10},loc='upper left',
+           bbox_to_anchor=(1, 1.02))
+plt.title("Downward Motion (500hPa) | Time Series",fontsize=14)           
+plt.ylabel("m/s")
+plt.grid()
+plt.savefig(os.path.join(output_folder,"w_down_tseries_1.png"),bbox_inches="tight",dpi=300)
+
+plt.figure()
+for d,l,c in zip(datas[-2:],labels[-2:],colors[-2:]):
+    time_series(d,var="downward_motion",label=l,color=c,moving_average=60)
+plt.legend(prop={'size': 10},loc='upper left',
+           bbox_to_anchor=(1, 1.02))
+plt.title("Downward Motion (500hPa) | Time Series",fontsize=14)           
+plt.ylabel("m/s")
+plt.grid()
+plt.ylim([-1e-4,1e-4])
+plt.savefig(os.path.join(output_folder,"w_down_tseries_2.png"),bbox_inches="tight",dpi=300)
+plt.show();plt.close()
+# %%
+# OVERTURNING CIRCULATION 
+plt.figure()
+for d,l,c in zip(datas[:-2],labels[:-2],colors[:-2]):
+    time_series(d,var="overturning_circulation",label=l,color=c,moving_average=60)
+plt.legend(prop={'size': 10},loc='upper left',
+           bbox_to_anchor=(1, 1.02))
+plt.title("Overturning Circulation (500hPa) | Time Series",fontsize=14)           
+plt.ylabel("m/s")
+plt.grid()
+plt.savefig(os.path.join(output_folder,"overturning_tseries_1.png"),bbox_inches="tight",dpi=300)
+
+plt.figure()
+for d,l,c in zip(datas[-2:],labels[-2:],colors[-2:]):
+    time_series(d,var="overturning_circulation",label=l,color=c,moving_average=60)
+plt.legend(prop={'size': 10},loc='upper left',
+           bbox_to_anchor=(1, 1.02))
+plt.title("Overturning Circulation (500hPa) | Time Series",fontsize=14)           
+plt.ylabel("m/s")
+plt.grid()
+plt.ylim([-1e-5,1e-5])
+plt.savefig(os.path.join(output_folder,"overturning_tseries_2.png"),bbox_inches="tight",dpi=300)
+plt.show();plt.close()
+# %%
+# UPWARD AIR VELOCITY
+plt.figure()
+for d,l,c in zip(datas[:-2],labels[:-2],colors[:-2]):
+    time_series(d,var="upward_air_velocity",label=l,color=c,moving_average=60)
+plt.legend(prop={'size': 10},loc='upper left',
+           bbox_to_anchor=(1, 1.02))
+plt.title("Vertical Motion (500hPa) | Time Series",fontsize=14)           
+plt.ylabel("m/s")
+plt.grid()
+plt.savefig(os.path.join(output_folder,"vert_motion_tseries_1.png"),bbox_inches="tight",dpi=300)
+
+plt.figure()
+for d,l,c in zip(datas[-2:],labels[-2:],colors[-2:]):
+    time_series(d,var="upward_air_velocity",label=l,color=c,moving_average=60)
+plt.legend(prop={'size': 10},loc='upper left',
+           bbox_to_anchor=(1, 1.02))
+plt.title("Vertical Motion (500hPa) | Time Series",fontsize=14)           
+plt.ylabel("m/s")
+plt.grid()
+plt.ylim([-1e-5,1e-5])
+plt.savefig(os.path.join(output_folder,"vert_motion_tseries_2.png"),bbox_inches="tight",dpi=300)
+plt.show();plt.close()
 
 
+
+# # PLOT VERTICAL PROFILES
+# %%
+# TAIR
+plt.figure()
+for d,l,c in zip(datas[:-2],labels[:-2],colors[:-2]):
+    vertical_profile(d,var="air_temperature",color=c,label=l)
+plt.title("Air Temperature | Vertical profile",fontsize=14)    
+plt.grid()
+plt.legend(prop={'size': 10},loc='upper left',
+           bbox_to_anchor=(1, 1.02))
+plt.savefig(os.path.join(output_folder,"tair_vertical_profile_1.png"),bbox_inches="tight",dpi=300)
+plt.close()
+plt.figure()
+for d,l,c in zip(datas[-2:],labels[-2:],colors[-2:]):
+    vertical_profile(d,var="air_temperature",color=c,label=l)
+plt.title("Air Temperature | Vertical profile",fontsize=14)    
+plt.grid()
+plt.legend(prop={'size': 10},loc='upper left',
+           bbox_to_anchor=(1, 1.02))
+plt.savefig(os.path.join(output_folder,"tair_vertical_profile_2.png"),bbox_inches="tight",dpi=300)
+plt.close()
+# %%
+# #  UPWARD MOTION
+plt.figure()
+for d,l,c in zip(datas[:-2],labels[:-2],colors[:-2]):
+    vertical_profile(d,var="upward_motion",color=c,label=l)
+plt.title("Upward Motion | Vertical profile",fontsize=14)    
+plt.grid()
+plt.legend(prop={'size': 10},loc='upper left',
+           bbox_to_anchor=(1, 1.02))
+plt.savefig(os.path.join(output_folder,"w_up_vertical_profile_1.png"),bbox_inches="tight",dpi=300)
+plt.close()
+plt.figure()
+for d,l,c in zip(datas[-2:],labels[-2:],colors[-2:]):
+    vertical_profile(d,var="upward_motion",color=c,label=l)
+plt.title("Upward Motion | Vertical profile",fontsize=14)    
+plt.grid()
+plt.legend(prop={'size': 10},loc='upper left',
+           bbox_to_anchor=(1, 1.02))
+plt.savefig(os.path.join(output_folder,"w_up_vertical_profile_2.png"),bbox_inches="tight",dpi=300)
+plt.close()
+#  %%
+# #  DOWNWARD MOTION
+plt.figure()
+for d,l,c in zip(datas[:-2],labels[:-2],colors[:-2]):
+    vertical_profile(d,var="downward_motion",color=c,label=l)
+plt.title("Downward Motion | Vertical profile",fontsize=14)    
+plt.grid()
+plt.legend(prop={'size': 10},loc='upper left',
+           bbox_to_anchor=(1, 1.02))
+plt.savefig(os.path.join(output_folder,"w_down_vertical_profile_1.png"),bbox_inches="tight",dpi=300)
+plt.close()
+plt.figure()
+for d,l,c in zip(datas[-2:],labels[-2:],colors[-2:]):
+    vertical_profile(d,var="downward_motion",color=c,label=l)
+plt.title("Downward Motion | Vertical profile",fontsize=14)    
+plt.grid()
+plt.legend(prop={'size': 10},loc='upper left',
+           bbox_to_anchor=(1, 1.02))
+plt.savefig(os.path.join(output_folder,"w_down_vertical_profile_2.png"),bbox_inches="tight",dpi=300)
+plt.close()
+#  %%
+# #  OVERTUNING CIRCULATION
+plt.figure()
+for d,l,c in zip(datas[:-2],labels[:-2],colors[:-2]):
+    vertical_profile(d,var="overturning_circulation",color=c,label=l)
+plt.title("Overturning Circulation | Vertical profile",fontsize=14)    
+plt.grid()
+plt.legend(prop={'size': 10},loc='upper left',
+           bbox_to_anchor=(1, 1.02))
+plt.savefig(os.path.join(output_folder,"overturning_vertical_profile_1.png"),bbox_inches="tight",dpi=300)
+plt.close()
+plt.figure()
+for d,l,c in zip(datas[-2:],labels[-2:],colors[-2:]):
+    vertical_profile(d,var="overturning_circulation",color=c,label=l)
+plt.title("Overturning Circulation | Vertical profile",fontsize=14)    
+plt.grid()
+plt.legend(prop={'size': 10},loc='upper left',
+           bbox_to_anchor=(1, 1.02))
+plt.savefig(os.path.join(output_folder,"overturning_profile_2.png"),bbox_inches="tight",dpi=300)
+plt.close()
+#  %%
+# #  UPWARD AIR VELOCITY
+plt.figure()
+for d,l,c in zip(datas[:-2],labels[:-2],colors[:-2]):
+    vertical_profile(d,var="upward_air_velocity",color=c,label=l)
+plt.title("Vertical Motion | Vertical profile",fontsize=14)    
+plt.grid()
+plt.legend(prop={'size': 10},loc='upper left',
+           bbox_to_anchor=(1, 1.02))
+plt.savefig(os.path.join(output_folder,"vert_motion_vertical_profile_1.png"),bbox_inches="tight",dpi=300)
+plt.close()
+plt.figure()
+for d,l,c in zip(datas[-2:],labels[-2:],colors[-2:]):
+    vertical_profile(d,var="upward_air_velocity",color=c,label=l)
+plt.title("Vertical Motion | Vertical profile",fontsize=14)    
+plt.grid()
+plt.legend(prop={'size': 10},loc='upper left',
+           bbox_to_anchor=(1, 1.02))
+plt.savefig(os.path.join(output_folder,"vert_motion_profile_2.png"),bbox_inches="tight",dpi=300)
+plt.close()
+
+
+
+
+# %%

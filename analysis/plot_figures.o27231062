@@ -1,0 +1,94 @@
+Plotting Surface Temperature for 4co2
+Done plotting Surface Temperature for 4co2
+Plotting Surface Temperature for solar
+Done plotting Surface Temperature for solar
+Plotting Surface Temperature for sw
+Done plotting Surface Temperature for sw
+Plotting Surface Temperature for sw+_solar-
+Done plotting Surface Temperature for sw+_solar-
+Plotting Surface Temperature for sw-_solar+
+Done plotting Surface Temperature for sw-_solar+
+Plotting Precipitation for 4co2
+Done plotting Precipitation for 4co2
+Plotting Precipitation for solar
+Done plotting Precipitation for solar
+Plotting Precipitation for sw
+Done plotting Precipitation for sw
+Plotting Precipitation for sw+_solar-
+Done plotting Precipitation for sw+_solar-
+Plotting Precipitation for sw-_solar+
+Done plotting Precipitation for sw-_solar+
+Plotting Air Temperature (longmean) for 4co2
+Done plotting Air Temperature for 4co2
+Plotting Air Temperature (longmean) for solar
+Done plotting Air Temperature for solar
+Plotting Air Temperature (longmean) for sw
+Done plotting Air Temperature for sw
+Plotting Air Temperature (longmean) for sw+_solar-
+Done plotting Air Temperature for sw+_solar-
+Plotting Air Temperature (longmean) for sw-_solar+
+Done plotting Air Temperature for sw-_solar+
+Plotting Air Temperature (latmean) for 4co2
+Done plotting Air Temperature (latmean) for 4co2
+Plotting Air Temperature (latmean) for solar
+Done plotting Air Temperature (latmean) for solar
+Plotting Air Temperature (latmean) for sw
+Done plotting Air Temperature (latmean) for sw
+Plotting Air Temperature (latmean) for sw+_solar-
+Done plotting Air Temperature (latmean) for sw+_solar-
+Plotting Air Temperature (latmean) for sw-_solar+
+Done plotting Air Temperature (latmean) for sw-_solar+
+Plotting LW Heating Rate for 4co2
+Done plotting LW Heating Rate for 4co2
+Plotting LW Heating Rate for solar
+Done plotting LW Heating Rate for solar
+Plotting LW Heating Rate for sw
+Done plotting LW Heating Rate for sw
+Plotting LW Heating Rate for sw+_solar-
+Done plotting LW Heating Rate for sw+_solar-
+Plotting LW Heating Rate for sw-_solar+
+Done plotting LW Heating Rate for sw-_solar+
+Plotting SW Heating Rate for 4co2
+Done plotting SW Heating Rate for 4co2
+Plotting SW Heating Rate for solar
+Done plotting SW Heating Rate for solar
+Plotting SW Heating Rate for sw
+Done plotting SW Heating Rate for sw
+Plotting SW Heating Rate for sw+_solar-
+Done plotting SW Heating Rate for sw+_solar-
+Plotting SW Heating Rate for sw-_solar+
+Done plotting SW Heating Rate for sw-_solar+
+Plotting SW Radiation (TOA) for 4co2
+Done plotting SW Radiation (TOA) for 4co2
+Plotting SW Radiation (TOA) for solar
+Done plotting SW Radiation (TOA) for solar
+Plotting SW Radiation (TOA) for sw
+Done plotting SW Radiation (TOA) for sw
+Plotting SW Radiation (TOA) for sw+_solar-
+Done plotting SW Radiation (TOA) for sw+_solar-
+Plotting SW Radiation (TOA) for sw-_solar+
+Done plotting SW Radiation (TOA) for sw-_solar+
+Plotting LW Radiation (TOA) for 4co2
+Done plotting LW Radiation (TOA) for 4co2
+Plotting LW Radiation (TOA) for solar
+Done plotting LW Radiation (TOA) for solar
+Plotting LW Radiation (TOA) for sw
+Done plotting LW Radiation (TOA) for sw
+Plotting LW Radiation (TOA) for sw+_solar-
+Done plotting LW Radiation (TOA) for sw+_solar-
+Plotting LW Radiation (TOA) for sw-_solar+
+Done plotting LW Radiation (TOA) for sw-_solar+
+Plotting Air Temperature vertical profiles
+
+======================================================================================
+                  Resource Usage on 2021-08-24 01:23:15:
+   Job Id:             27231062.gadi-pbs
+   Project:            w48
+   Exit Status:        1
+   Service Units:      10.37
+   NCPUs Requested:    48                     NCPUs Used: 48              
+                                           CPU Time Used: 00:06:59                                   
+   Memory Requested:   50.0GB                Memory Used: 32.47GB         
+   Walltime requested: 01:00:00            Walltime Used: 00:06:29        
+   JobFS requested:    100.0MB                JobFS used: 0B              
+======================================================================================
