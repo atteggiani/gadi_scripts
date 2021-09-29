@@ -1,0 +1,10 @@
+#!/bin/bash
+#PBS -l walltime=01:00:00
+#PBS -l ncpus=48
+#PBS -q normal
+#PBS -P w48
+#PBS -l storage=gdata/hh5+gdata/w48+scratch/w48
+#PBS -l mem=10gb
+#PBS -N plot_vert_profiles
+
+python /g/data/w48/dm5220/scripts/analysis/plot_vertical_profiles.py  -i 4co2 4co2_solar50- 4co2_sw_x0.9452_offset ctl_solar50+_sw-_x0.95 ctl_solar50-_sw+_x1.0555_offset -l 4co2 4co2_solar- 4co2_sw- sw-_solar+ sw+_solar-

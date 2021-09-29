@@ -1,0 +1,76 @@
+#!/bin/bash
+PROGNAME=$(basename $0)
+
+usage() {
+  cat << EOF
+Script to plot vertical profiles for UM model output, for the following variables:
+- Air Temperature
+- SW Heating Rates
+- LW Heating Rates
+
+Usage: $PROGNAME [-i <input folder name(s)>] [-l <output label(s)>] [-o <output names for the 3 graphs>] [-c <control file name>]
+
+List of keys/options:
+-i <input folder name(s)> -> name of the folders (inside /g/data3/w48/dm5220/data) where the input data is;
+-l <output label(s)> -> identification label(s) of the output data. If omitted, the identification
+                        label(s) will be the same as the input folder name(s);
+-o <output names for the graphs> -> identification names of the 3 output figures.
+                                    Default names are:
+                                    - tair
+                                    - sw_hrate
+                                    - lw_hrate
+-c <control file name> -> Name of the folder (inside /g/data3/w48/dm5220/data) with the control data.                      
+                          Default value = "ctl".
+
+Example:
+$PROGNAME -i "first_folder_name second_folder_name ..." -l "first_out_label second_out_label ..." 
+$PROGNAME -i "first_folder_name second_folder_name ..." -l "first_out_label second_out_label ..." $PROGNAME -i "first_folder_name second_folder_name ..." -l "first_out_label second_out_label ..." -o "other_tsurf other_sw_hrates other_lw_hrates" -c other_control 
+
+EOF
+  exit 1
+}
+
+while getopts hi:l:o:c: opt; do
+    case $opt in
+        i)
+            options+=" -i "$OPTARG""
+            status=ok
+            ;;
+        l)
+            options+=" -l "$OPTARG""
+            ;;
+        o)  
+            n=(${OPTARG})
+            n=${#n[@]}
+            if [[ "$n" != 3 ]] && [[ "$n" > 0 ]]
+            then
+                echo "Number of output identification names must be 3!!"
+                exit 1
+            fi
+            options+=" -o "$OPTARG""
+            ;;
+        c)  
+            options+=" -c "$OPTARG""
+            ;;
+        *) usage
+    esac
+done
+
+if [ -z $status ]; then echo "No input given!!"; exit 1; fi
+
+cd /g/data3/w48/dm5220/scripts/analysis
+script="sub_plot_vert_profiles"
+cat > "$script" <<EOF
+#!/bin/bash
+#PBS -l walltime=01:00:00
+#PBS -l ncpus=48
+#PBS -q normal
+#PBS -P w48
+#PBS -l storage=gdata/hh5+gdata/w48+scratch/w48
+#PBS -l mem=10gb
+#PBS -N plot_vert_profiles
+
+python /g/data/w48/dm5220/scripts/analysis/plot_vertical_profiles.py $options
+EOF
+
+qsub "$script"

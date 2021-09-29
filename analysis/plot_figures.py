@@ -1,6 +1,7 @@
 import myfuncs as my
 import xarray as xr
 import os
+import sys
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.colors as colors
@@ -24,6 +25,23 @@ def read_data(input_folder,files):
                 coords='minimal',
                 ))
         return data
+
+def read_data_parallel(input_folder,files):
+        def _read(input_folder,file):
+                data = my.open_mfdataset(
+                        os.path.join(
+                                input_folder,
+                                f"{file}/*_pa*.nc"),
+                        combine="nested",
+                        concat_dim="time",
+                        compat='override',
+                        coords='minimal',
+                        )
+                return data
+        
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+                data = executor.map(lambda x: _read(input_folder,x),files)               
+        return list(data)
 
 # SURFACE TEMP
 def plot_tsurf(data,data_ctl,outname):        
@@ -195,30 +213,87 @@ def plot_lw_out(data,data_ctl,outname):
         collect()
         print(f"Done plotting LW Radiation out (TOA) for {outname}")
 
-outpath = "/g/data3/w48/dm5220/data/figures"
-input_folder = "/g/data/w48/dm5220/data"
-files = [
-    "ctl",
-    "4co2",
-    "4co2_solar50-",
-    "4co2_sw_x0.9452_offset",
-    "ctl_solar50+_sw-_x0.95",
-    "ctl_solar50-_sw+_x1.052",
-]
-outnames = [
-        "4co2",
-        "solar",
-        "sw",
-        "sw+_solar-",
-        "sw-_solar+"
-]
-anomalies = lambda x,y,var: my.DataArray(x[var]-y[var])
+# VERTICAL PROFILES
+# Air Temperature
+def plot_tair_vertical(all_data,outnames):
+        print(f"Plotting Air Temperature vertical profiles")
+        for data,outname in zip(all_data,outnames):
+                data = anomalies(data,ctl,"air_temperature")
+                data = data.sel(pressure=slice(49,1001))
+                data = data.annual_mean(20*12)
+                data = data.global_mean()
+                data.plot(
+                        y="pressure",
+                        yincrease=False,
+                        yscale="log",
+                        label=f"{outname}")
+        plt.vlines(0, 50, 1000, colors='k', ls='--',lw=0.8)
+        plt.ylim([1000,50])
+        plt.gca().set_yticks([1000,800,600,400,200,50])
+        plt.gca().set_yticklabels(["{}".format(i) for i in [1000,800,600,400,200,50]])
+        plt.grid(ls="--",which='both')
+        plt.legend()
+        plt.xlabel("K")
+        plt.title("Air Temperature Vertical Profiles")
+        plt.savefig(os.path.join(outpath,"tair_vertical_profiles.png"),dpi=300)
+        plt.clf()
+        collect()
+        print(f"Done plotting Air Temperature vertical profiles")
 
-with ProgressBar():
-        all_data = read_data(input_folder,files)
-ctl = all_data.pop(0)
+# SW Heating Rates
+def plot_sw_hrate_vertical(all_data,outnames):
+        print(f"Plotting SW Heating Rate vertical profiles")
+        for data,outname in zip(all_data,outnames):
+                data = anomalies(data,ctl,"tendency_of_air_temperature_due_to_shortwave_heating")
+                data = data.sel(model_level_number=slice(-0.5,32.5))
+                data = data*60*60*24
+                data = data.annual_mean(20*12)
+                data = data.global_mean()
+                data.plot(
+                        y="model_level_number",
+                        label=f"{outname}")
+        plt.vlines(0, 1, 32, colors='k', ls='--',lw=0.8)
+        plt.ylim([1,32])
+        arr=np.arange(1,32,5)
+        plt.gca().set_yticks(arr)
+        plt.gca().set_yticklabels(arr.tolist())
+        plt.grid(ls="--",which='both')
+        plt.legend()
+        plt.xlabel("K")
+        plt.ylabel("Model Level Number")
+        plt.title("SW Heating Rate Vertical Profiles")
+        plt.savefig(os.path.join(outpath,"sw_hrate_vertical_profiles.png"),dpi=300)
+        plt.clf()
+        collect()
+        print(f"Done plotting SW Heating Rate vertical profiles")
 
-@timer
+# LW Heating Rates
+def plot_lw_hrate_vertical(all_data,outnames):
+        print(f"Plotting LW Heating Rate vertical profiles")
+        for data,outname in zip(all_data,outnames):
+                data = anomalies(data,ctl,"tendency_of_air_temperature_due_to_longwave_heating")
+                data = data.sel(model_level_number=slice(-0.5,32.5))
+                data = data*60*60*24
+                data = data.annual_mean(20*12)
+                data = data.global_mean()
+                data.plot(
+                        y="model_level_number",
+                        label=f"{outname}")
+        plt.vlines(0, 1, 32, colors='k', ls='--',lw=0.8)
+        plt.ylim([1,32])
+        arr=np.arange(1,32,5)
+        plt.gca().set_yticks(arr)
+        plt.gca().set_yticklabels(arr.tolist())
+        plt.grid(ls="--",which='both')
+        plt.legend()
+        plt.xlabel("K")
+        plt.ylabel("Model Level Number")
+        plt.title("LW Heating Rate Vertical Profiles")
+        plt.savefig(os.path.join(outpath,"lw_hrate_vertical_profiles.png"),dpi=300)
+        plt.clf()
+        collect()
+        print(f"Done plotting LW Heating Rate vertical profiles")
+
 def all_plots():        
         for data,outname in zip(all_data,outnames):
                 plot_tsurf(data,ctl,outname)
@@ -231,8 +306,36 @@ def all_plots():
                 plot_sw_hrate_latmean(data,ctl,outname)
                 plot_lw_out(data,ctl,outname)
                 plot_sw_out(data,ctl,outname)
+        plot_tair_vertical(all_data,outnames)
+        plot_sw_hrate_vertical(all_data,outnames)
+        plot_lw_hrate_vertical(all_data,outnames)
+        plt.close()
 
-with ProgressBar():
+outpath = "/g/data3/w48/dm5220/data/figures"
+input_folder = "/g/data/w48/dm5220/data"
+files = [
+    "ctl",
+    "4co2",
+    "4co2_solar50-",
+    "4co2_sw_x0.9452_offset",
+    "ctl_solar50+_sw-_x0.95",
+    "ctl_solar50-_sw+_x1.0555_offset",
+]
+outnames = [
+        "4co2",
+        "solar",
+        "sw",
+        "sw-_solar+",
+        "sw+_solar-"
+]
+anomalies = lambda x,y,var: my.DataArray(x[var]-y[var])
+
+if hasattr(sys,'ps1'): #If python is run in interactive mode
+        all_data=read_data(input_folder,files)
+else: #If not
+        all_data=read_data_parallel(input_folder,files)
+
+ctl = all_data.pop(0)
+
+if __name__ == "__main__":
         all_plots()
-
-all_plots()
