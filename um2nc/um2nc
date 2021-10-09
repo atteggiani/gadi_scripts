@@ -56,7 +56,7 @@ cat > "$script" <<EOF
 #PBS -l mem=50gb
 #PBS -N um2nc.${out} 
 
-/g/data3/w48/dm5220/scripts/um2nc/convert_um2nc.py${options} --ncpus 48
+python3 /g/data3/w48/dm5220/scripts/um2nc/convert_um2nc.py${options} --ncpus 48
 EOF
 
 qsub "$script"
