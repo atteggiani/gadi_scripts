@@ -47,7 +47,11 @@ def read_data_parallel(input_folder,files):
 # Air Temperature
 def tair(all_data,all_labels,outname):
         print(f"Plotting Air Temperature vertical profiles")
-        var = "air_temperature"
+        cond=["air_temperature_0_plev" in data for data in all_data] 
+        if np.all(cond):
+                var = "air_temperature_0_plev"
+        else:
+                var = "air_temperature"
         for data,label in zip(all_data,all_labels):
                 data = anomalies(data,var)
                 data = data.sel(pressure=slice(49,1001))
@@ -76,21 +80,43 @@ def tair(all_data,all_labels,outname):
 # SW Heating Rates
 def sw_hrate(all_data,all_labels,outname):
         print(f"Plotting SW Heating Rate vertical profiles")
-        var="tendency_of_air_temperature_due_to_shortwave_heating"
+        cond=["tendency_of_air_temperature_due_to_shortwave_heating_plev" in data for data in all_data] 
+        if np.all(cond):
+                var = "tendency_of_air_temperature_due_to_shortwave_heating_plev"
+                selection =lambda x: x.sel(pressure=slice(49,1001))
+                y="pressure"
+                vline=lambda x: x.vlines(0, 50, 1000, colors='k', ls='--',lw=0.8)
+                ylim=[1000,50]
+                yticks=np.array([1000,800,600,400,200,50])
+                ylabel="pressure [hPa]"
+                yscale="log"
+                yincrease=False
+        else:
+                var = "tendency_of_air_temperature_due_to_shortwave_heating"
+                selection =lambda x: x.sel(model_level_number=slice(-0.5,32.5))
+                y="model_level_number"
+                vline=lambda x: x.vlines(0, 1, 32, colors='k', ls='--',lw=0.8)
+                ylim=[1,32]
+                yticks=np.arange(1,32,5)
+                ylabel="Model Level Number"
+                yscale="linar"
+                yincrease=True
+
         for data,label in zip(all_data,all_labels):
                 data = anomalies(data,var)
-                data = data.sel(model_level_number=slice(-0.5,32.5))
+                data = selection(data)
                 data = data*60*60*24
                 data = data.annual_mean(20*12)
                 data = data.global_mean()
                 data.plot(
-                        y="model_level_number",
-                        label=f"{label}")
-        plt.vlines(0, 1, 32, colors='k', ls='--',lw=0.8)
-        plt.ylim([1,32])
-        arr=np.arange(1,32,5)
-        plt.gca().set_yticks(arr)
-        plt.gca().set_yticklabels(arr.tolist())
+                        y=y,
+                        yincrease=yincrease,
+                        yscale=yscale,
+                        label=f"{outname}")
+        vline(plt)
+        plt.ylim(ylim)
+        plt.gca().set_yticks(yticks)
+        plt.gca().set_yticklabels(yticks.tolist())
         plt.grid(ls="--",which='both')
         plt.legend()
         plt.xlabel("K/day")
@@ -105,21 +131,42 @@ def sw_hrate(all_data,all_labels,outname):
 # LW Heating Rates
 def lw_hrate(all_data,all_labels,outname):
         print(f"Plotting LW Heating Rate vertical profiles")
-        var="tendency_of_air_temperature_due_to_longwave_heating"
+        cond=["tendency_of_air_temperature_due_to_longwave_heating_plev" in data for data in all_data] 
+        if np.all(cond):
+                var = "tendency_of_air_temperature_due_to_longwave_heating_plev"
+                selection =lambda x: x.sel(pressure=slice(49,1001))
+                y="pressure"
+                vline=lambda x: x.vlines(0, 50, 1000, colors='k', ls='--',lw=0.8)
+                ylim=[1000,50]
+                yticks=np.array([1000,800,600,400,200,50])
+                ylabel="pressure [hPa]"
+                yscale="log"
+                yincrease=False
+        else:
+                var = "tendency_of_air_temperature_due_to_longwave_heating"
+                selection =lambda x: x.sel(model_level_number=slice(-0.5,32.5))
+                y="model_level_number"
+                vline=lambda x: x.vlines(0, 1, 32, colors='k', ls='--',lw=0.8)
+                ylim=[1,32]
+                yticks=np.arange(1,32,5)
+                ylabel="Model Level Number"
+                yscale="linar"
+                yincrease=True
         for data,label in zip(all_data,all_labels):
                 data = anomalies(data,var)
-                data = data.sel(model_level_number=slice(-0.5,32.5))
+                data = selection(data)
                 data = data*60*60*24
                 data = data.annual_mean(20*12)
                 data = data.global_mean()
                 data.plot(
-                        y="model_level_number",
-                        label=f"{label}")
-        plt.vlines(0, 1, 32, colors='k', ls='--',lw=0.8)
-        plt.ylim([1,32])
-        arr=np.arange(1,32,5)
-        plt.gca().set_yticks(arr)
-        plt.gca().set_yticklabels(arr.tolist())
+                        y=y,
+                        yincrease=yincrease,
+                        yscale=yscale,
+                        label=f"{outname}")
+        vline(plt)
+        plt.ylim(ylim)
+        plt.gca().set_yticks(yticks)
+        plt.gca().set_yticklabels(yticks.tolist())
         plt.grid(ls="--",which='both')
         plt.legend()
         plt.xlabel("K/day")

@@ -1,2 +1,4 @@
 python_modules/*
 python_modules
+*.[eo][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]
+*.nc

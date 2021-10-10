@@ -1,3 +1,6 @@
+'''
+Same as "plot_nomalies.py" but with default data
+'''
 import myfuncs as my
 import xarray as xr
 import os
@@ -9,7 +12,7 @@ from gc import collect
 import concurrent.futures
 import dask
 from dask.diagnostics import ProgressBar
-from decorators import timer
+from decorators import timed
 
 def read_data(input_folder,files):
         data=[]
@@ -79,8 +82,12 @@ def plot_precip(data,data_ctl,outname):
 # AIR TEMPERATURE
 def plot_tair_longmean(data,data_ctl,outname):
         print(f"Plotting Air Temperature (longmean) for {outname}")
-        data = anomalies(data,data_ctl,"air_temperature")
-        data = data.mean('longitude_0')
+        if "air_temperature_0_plev" in data:
+                var = "air_temperature_0_plev"
+        else:
+                var = "air_temperature"
+        data = anomalies(data,data_ctl,var)
+        data = data.longitude_mean()
         data = data.annual_mean(20*12)
         data.plotlev(
                 cmap=my.Colormaps.div_tsurf,
@@ -95,7 +102,11 @@ def plot_tair_longmean(data,data_ctl,outname):
 
 def plot_tair_latmean(data,data_ctl,outname):
         print(f"Plotting Air Temperature (latmean) for {outname}")
-        data = anomalies(data,data_ctl,"air_temperature")
+        if "air_temperature_0_plev" in data:
+                var = "air_temperature_0_plev"
+        else:
+                var = "air_temperature"
+        data = anomalies(data,data_ctl,var)
         data = data.latitude_mean()
         data = data.annual_mean(20*12)
         data.plotlev(
@@ -112,9 +123,13 @@ def plot_tair_latmean(data,data_ctl,outname):
 # LW HEATING RATE
 def plot_lw_hrate_longmean(data,data_ctl,outname):
         print(f"Plotting LW Heating Rate (longmean) for {outname}")
-        data = anomalies(data,data_ctl,"tendency_of_air_temperature_due_to_longwave_heating")
+        if "tendency_of_air_temperature_due_to_longwave_heating_plev" in data:
+                var = "tendency_of_air_temperature_due_to_longwave_heating_plev"
+        else:
+                var = "tendency_of_air_temperature_due_to_longwave_heating"   
+        data = anomalies(data,data_ctl,var)
         data = data*60*60*24
-        data = data.mean("longitude")
+        data = data.longitude_mean()
         data = data.annual_mean(20*12)
         data.plotlev(
                 levels=np.linspace(-0.1,0.1,100),
@@ -129,7 +144,11 @@ def plot_lw_hrate_longmean(data,data_ctl,outname):
 
 def plot_lw_hrate_latmean(data,data_ctl,outname):
         print(f"Plotting LW Heating Rate (latmean) for {outname}")
-        data = anomalies(data,data_ctl,"tendency_of_air_temperature_due_to_longwave_heating")
+        if "tendency_of_air_temperature_due_to_longwave_heating_plev" in data:
+                var = "tendency_of_air_temperature_due_to_longwave_heating_plev"
+        else:
+                var = "tendency_of_air_temperature_due_to_longwave_heating"   
+        data = anomalies(data,data_ctl,var)
         data = data*60*60*24
         data = data.latitude_mean()
         data = data.annual_mean(20*12)
@@ -147,9 +166,13 @@ def plot_lw_hrate_latmean(data,data_ctl,outname):
 # SW HEATING RATE
 def plot_sw_hrate_longmean(data,data_ctl,outname):
         print(f"Plotting SW Heating Rate (longmean) for {outname}")
-        data = anomalies(data,data_ctl,"tendency_of_air_temperature_due_to_shortwave_heating")
+        if "tendency_of_air_temperature_due_to_longwave_heating_plev" in data:
+                var = "tendency_of_air_temperature_due_to_shortwave_heating_plev"
+        else:
+                var = "tendency_of_air_temperature_due_to_shortwave_heating"   
+        data = anomalies(data,data_ctl,var)
         data = data*60*60*24
-        data = data.mean("longitude")
+        data = data.longitude_mean()
         data = data.annual_mean(20*12)
         data.plotlev(
                 levels=np.linspace(-0.1,0.1,100),
@@ -164,7 +187,11 @@ def plot_sw_hrate_longmean(data,data_ctl,outname):
 
 def plot_sw_hrate_latmean(data,data_ctl,outname):
         print(f"Plotting SW Heating Rate (latmean) for {outname}")
-        data = anomalies(data,data_ctl,"tendency_of_air_temperature_due_to_shortwave_heating")
+        if "tendency_of_air_temperature_due_to_longwave_heating_plev" in data:
+                var = "tendency_of_air_temperature_due_to_shortwave_heating_plev"
+        else:
+                var = "tendency_of_air_temperature_due_to_shortwave_heating"   
+        data = anomalies(data,data_ctl,var)
         data = data*60*60*24
         data = data.latitude_mean()
         data = data.annual_mean(20*12)
@@ -217,8 +244,13 @@ def plot_lw_out(data,data_ctl,outname):
 # Air Temperature
 def plot_tair_vertical(all_data,outnames):
         print(f"Plotting Air Temperature vertical profiles")
+        cond=["air_temperature_0_plev" in data for data in all_data] 
+        if np.all(cond):
+                var = "air_temperature_0_plev"
+        else:
+                var = "air_temperature"
         for data,outname in zip(all_data,outnames):
-                data = anomalies(data,ctl,"air_temperature")
+                data = anomalies(data,ctl,var)
                 data = data.sel(pressure=slice(49,1001))
                 data = data.annual_mean(20*12)
                 data = data.global_mean()
@@ -243,24 +275,47 @@ def plot_tair_vertical(all_data,outnames):
 # SW Heating Rates
 def plot_sw_hrate_vertical(all_data,outnames):
         print(f"Plotting SW Heating Rate vertical profiles")
+        cond=["tendency_of_air_temperature_due_to_shortwave_heating_plev" in data for data in all_data] 
+        if np.all(cond):
+                var = "tendency_of_air_temperature_due_to_shortwave_heating_plev"
+                selection =lambda x: x.sel(pressure=slice(49,1001))
+                y="pressure"
+                vline=lambda x: x.vlines(0, 50, 1000, colors='k', ls='--',lw=0.8)
+                ylim=[1000,50]
+                yticks=np.array([1000,800,600,400,200,50])
+                ylabel="pressure [hPa]"
+                yscale="log"
+                yincrease=False
+        else:
+                var = "tendency_of_air_temperature_due_to_shortwave_heating"
+                selection =lambda x: x.sel(model_level_number=slice(-0.5,32.5))
+                y="model_level_number"
+                vline=lambda x: x.vlines(0, 1, 32, colors='k', ls='--',lw=0.8)
+                ylim=[1,32]
+                yticks=np.arange(1,32,5)
+                ylabel="Model Level Number"
+                yscale="linar"
+                yincrease=True
+
         for data,outname in zip(all_data,outnames):
-                data = anomalies(data,ctl,"tendency_of_air_temperature_due_to_shortwave_heating")
-                data = data.sel(model_level_number=slice(-0.5,32.5))
+                data = anomalies(data,ctl,var)
+                data = selection(data)
                 data = data*60*60*24
                 data = data.annual_mean(20*12)
                 data = data.global_mean()
                 data.plot(
-                        y="model_level_number",
+                        y=y,
+                        yincrease=yincrease,
+                        yscale=yscale,
                         label=f"{outname}")
-        plt.vlines(0, 1, 32, colors='k', ls='--',lw=0.8)
-        plt.ylim([1,32])
-        arr=np.arange(1,32,5)
-        plt.gca().set_yticks(arr)
-        plt.gca().set_yticklabels(arr.tolist())
+        vline(plt)
+        plt.ylim(ylim)
+        plt.gca().set_yticks(yticks)
+        plt.gca().set_yticklabels(yticks.tolist())
         plt.grid(ls="--",which='both')
         plt.legend()
         plt.xlabel("K")
-        plt.ylabel("Model Level Number")
+        plt.ylabel(ylabel)
         plt.title("SW Heating Rate Vertical Profiles")
         plt.savefig(os.path.join(outpath,"sw_hrate_vertical_profiles.png"),dpi=300)
         plt.clf()
@@ -270,24 +325,47 @@ def plot_sw_hrate_vertical(all_data,outnames):
 # LW Heating Rates
 def plot_lw_hrate_vertical(all_data,outnames):
         print(f"Plotting LW Heating Rate vertical profiles")
+        cond=["tendency_of_air_temperature_due_to_longwave_heating_plev" in data for data in all_data] 
+        if np.all(cond):
+                var = "tendency_of_air_temperature_due_to_longwave_heating_plev"
+                selection =lambda x: x.sel(pressure=slice(49,1001))
+                y="pressure"
+                vline=lambda x: x.vlines(0, 50, 1000, colors='k', ls='--',lw=0.8)
+                ylim=[1000,50]
+                yticks=np.array([1000,800,600,400,200,50])
+                ylabel="pressure [hPa]"
+                yscale="log"
+                yincrease=False
+        else:
+                var = "tendency_of_air_temperature_due_to_longwave_heating"
+                selection =lambda x: x.sel(model_level_number=slice(-0.5,32.5))
+                y="model_level_number"
+                vline=lambda x: x.vlines(0, 1, 32, colors='k', ls='--',lw=0.8)
+                ylim=[1,32]
+                yticks=np.arange(1,32,5)
+                ylabel="Model Level Number"
+                yscale="linar"
+                yincrease=True
+
         for data,outname in zip(all_data,outnames):
-                data = anomalies(data,ctl,"tendency_of_air_temperature_due_to_longwave_heating")
-                data = data.sel(model_level_number=slice(-0.5,32.5))
+                data = anomalies(data,ctl,var)
+                data = selection(data)
                 data = data*60*60*24
                 data = data.annual_mean(20*12)
                 data = data.global_mean()
                 data.plot(
-                        y="model_level_number",
+                        y=y,
+                        yincrease=yincrease,
+                        yscale=yscale,
                         label=f"{outname}")
-        plt.vlines(0, 1, 32, colors='k', ls='--',lw=0.8)
-        plt.ylim([1,32])
-        arr=np.arange(1,32,5)
-        plt.gca().set_yticks(arr)
-        plt.gca().set_yticklabels(arr.tolist())
+        vline(plt)
+        plt.ylim(ylim)
+        plt.gca().set_yticks(yticks)
+        plt.gca().set_yticklabels(yticks.tolist())
         plt.grid(ls="--",which='both')
         plt.legend()
         plt.xlabel("K")
-        plt.ylabel("Model Level Number")
+        plt.ylabel(ylabel)
         plt.title("LW Heating Rate Vertical Profiles")
         plt.savefig(os.path.join(outpath,"lw_hrate_vertical_profiles.png"),dpi=300)
         plt.clf()
@@ -318,13 +396,13 @@ files = [
     "4co2",
     "4co2_solar50-",
     "4co2_sw_x0.9452_offset",
-    "ctl_solar50+_sw-_x0.95",
+    "ctl_solar50+_sw-_x0.9489_offset",
     "ctl_solar50-_sw+_x1.0555_offset",
 ]
 outnames = [
         "4co2",
-        "solar",
-        "sw",
+        "4co2_solar-",
+        "4co2_sw-",
         "sw-_solar+",
         "sw+_solar-"
 ]

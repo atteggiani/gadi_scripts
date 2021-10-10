@@ -5,6 +5,6 @@
 #PBS -P w48
 #PBS -l storage=gdata/hh5+gdata/w48+scratch/w48
 #PBS -l mem=50gb
-#PBS -N plot_figures
+#PBS -N um2nc.vacbi 
 
-python /g/data/w48/dm5220/scripts/analysis/plot_figures.py
+python3 /g/data3/w48/dm5220/scripts/um2nc/convert_um2nc.py --id vacbi -o /g/data/w48/dm5220/data/vacbi --ncpus 48

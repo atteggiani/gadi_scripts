@@ -10,13 +10,13 @@ from gc import collect
 import concurrent.futures
 import dask
 from dask.diagnostics import ProgressBar
-from decorators import timer
+from decorators import timed
 from argparse import ArgumentParser
 
 # SURFACE TEMP
-def plot_tsurf(data,outname):        
+def plot_tsurf(data,data_ctl,outname):        
         print(f"Plotting Surface Temperature for {outname}")
-        data=anomalies(data,"surface_temperature")
+        data=anomalies(data,data_ctl,"surface_temperature")
         data = data.annual_mean(20*12)
         data.plotvar(
                 cmap=my.Colormaps.div_tsurf,
@@ -30,9 +30,9 @@ def plot_tsurf(data,outname):
         print(f"Done plotting Surface Temperature for {outname}")
 
 # PRECIP
-def plot_precip(data,outname):        
+def plot_precip(data,data_ctl,outname):        
         print(f"Plotting Precipitation for {outname}")
-        data=anomalies(data,"precipitation_flux")
+        data=anomalies(data,data_ctl,"precipitation_flux")
         data=data.to_mm_per_day()
         data = data.annual_mean(20*12)
         data.plotvar(
@@ -47,10 +47,14 @@ def plot_precip(data,outname):
         print(f"Done plotting Precipitation for {outname}")
 
 # AIR TEMPERATURE
-def plot_tair_longmean(data,outname):
+def plot_tair_longmean(data,data_ctl,outname):
         print(f"Plotting Air Temperature (longmean) for {outname}")
-        data = anomalies(data,"air_temperature")
-        data = data.mean('longitude_0')
+        if "air_temperature_0_plev" in data:
+                var = "air_temperature_0_plev"
+        else:
+                var = "air_temperature"
+        data = anomalies(data,data_ctl,var)
+        data = data.longitude_mean()
         data = data.annual_mean(20*12)
         data.plotlev(
                 cmap=my.Colormaps.div_tsurf,
@@ -63,9 +67,13 @@ def plot_tair_longmean(data,outname):
         collect()
         print(f"Done plotting Air Temperature (longmean) for {outname}")
 
-def plot_tair_latmean(data,outname):
+def plot_tair_latmean(data,data_ctl,outname):
         print(f"Plotting Air Temperature (latmean) for {outname}")
-        data = anomalies(data,"air_temperature")
+        if "air_temperature_0_plev" in data:
+                var = "air_temperature_0_plev"
+        else:
+                var = "air_temperature"
+        data = anomalies(data,data_ctl,var)
         data = data.latitude_mean()
         data = data.annual_mean(20*12)
         data.plotlev(
@@ -80,11 +88,15 @@ def plot_tair_latmean(data,outname):
         print(f"Done plotting Air Temperature (latmean) for {outname}")
 
 # LW HEATING RATE
-def plot_lw_hrate_longmean(data,outname):
+def plot_lw_hrate_longmean(data,data_ctl,outname):
         print(f"Plotting LW Heating Rate (longmean) for {outname}")
-        data = anomalies(data,"tendency_of_air_temperature_due_to_longwave_heating")
+        if "tendency_of_air_temperature_due_to_longwave_heating_plev" in data:
+                var = "tendency_of_air_temperature_due_to_longwave_heating_plev"
+        else:
+                var = "tendency_of_air_temperature_due_to_longwave_heating"   
+        data = anomalies(data,data_ctl,var)
         data = data*60*60*24
-        data = data.mean("longitude")
+        data = data.longitude_mean()
         data = data.annual_mean(20*12)
         data.plotlev(
                 levels=np.linspace(-0.1,0.1,100),
@@ -97,9 +109,13 @@ def plot_lw_hrate_longmean(data,outname):
         collect()
         print(f"Done plotting LW Heating Rate (longmean) for {outname}")
 
-def plot_lw_hrate_latmean(data,outname):
+def plot_lw_hrate_latmean(data,data_ctl,outname):
         print(f"Plotting LW Heating Rate (latmean) for {outname}")
-        data = anomalies(data,"tendency_of_air_temperature_due_to_longwave_heating")
+        if "tendency_of_air_temperature_due_to_longwave_heating_plev" in data:
+                var = "tendency_of_air_temperature_due_to_longwave_heating_plev"
+        else:
+                var = "tendency_of_air_temperature_due_to_longwave_heating"   
+        data = anomalies(data,data_ctl,var)
         data = data*60*60*24
         data = data.latitude_mean()
         data = data.annual_mean(20*12)
@@ -115,11 +131,15 @@ def plot_lw_hrate_latmean(data,outname):
         print(f"Done plotting LW Heating Rate (longmean) for {outname}")
 
 # SW HEATING RATE
-def plot_sw_hrate_longmean(data,outname):
+def plot_sw_hrate_longmean(data,data_ctl,outname):
         print(f"Plotting SW Heating Rate (longmean) for {outname}")
-        data = anomalies(data,"tendency_of_air_temperature_due_to_shortwave_heating")
+        if "tendency_of_air_temperature_due_to_longwave_heating_plev" in data:
+                var = "tendency_of_air_temperature_due_to_shortwave_heating_plev"
+        else:
+                var = "tendency_of_air_temperature_due_to_shortwave_heating"   
+        data = anomalies(data,data_ctl,var)
         data = data*60*60*24
-        data = data.mean("longitude")
+        data = data.longitude_mean()
         data = data.annual_mean(20*12)
         data.plotlev(
                 levels=np.linspace(-0.1,0.1,100),
@@ -132,9 +152,13 @@ def plot_sw_hrate_longmean(data,outname):
         collect()
         print(f"Done plotting SW Heating Rate (longmean) for {outname}")
 
-def plot_sw_hrate_latmean(data,outname):
+def plot_sw_hrate_latmean(data,data_ctl,outname):
         print(f"Plotting SW Heating Rate (latmean) for {outname}")
-        data = anomalies(data,"tendency_of_air_temperature_due_to_shortwave_heating")
+        if "tendency_of_air_temperature_due_to_longwave_heating_plev" in data:
+                var = "tendency_of_air_temperature_due_to_shortwave_heating_plev"
+        else:
+                var = "tendency_of_air_temperature_due_to_shortwave_heating"   
+        data = anomalies(data,data_ctl,var)
         data = data*60*60*24
         data = data.latitude_mean()
         data = data.annual_mean(20*12)
@@ -150,9 +174,9 @@ def plot_sw_hrate_latmean(data,outname):
         print(f"Done plotting SW Heating Rate (longmean) for {outname}")
 
 # SW Radiation (TOA out) 
-def plot_sw_out(data,outname):
+def plot_sw_out(data,data_ctl,outname):
         print(f"Plotting SW Radiation out (TOA) for {outname}")
-        data = anomalies(data,"toa_outgoing_shortwave_flux")
+        data = anomalies(data,data_ctl,"toa_outgoing_shortwave_flux")
         data = data.annual_mean(20*12)
         data.plotvar(
                 cmap=my.Colormaps.div_tsurf,
@@ -167,9 +191,9 @@ def plot_sw_out(data,outname):
         print(f"Done plotting SW Radiation out (TOA) for {outname}")
 
 # LW Radiation (TOA out) 
-def plot_lw_out(data,outname):
+def plot_lw_out(data,data_ctl,outname):
         print(f"Plotting LW Radiation out (TOA) for {outname}")
-        data = anomalies(data,"toa_outgoing_longwave_flux")
+        data = anomalies(data,data_ctl,"toa_outgoing_longwave_flux")
         data = data.annual_mean(20*12)
         data.plotvar(
                 cmap=my.Colormaps.div_tsurf,
