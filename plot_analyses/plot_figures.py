@@ -158,7 +158,10 @@ def plot_lw_hrate_latmean(data,data_ctl,outname):
                 du=0.02,
                 units="K/day",
                 title="LW Heating Rate (latitude mean)",
-                outpath=os.path.join(outpath,f"{outname}_LW_hrate_latmean.png"))
+                )
+        plt.xlim([-0.3,0.2])
+        plt.savefig(os.path.join(outpath,f"{outname}_LW_hrate_latmean.png"),
+                    dpi=300)
         plt.clf()
         collect()
         print(f"Done plotting LW Heating Rate (longmean) for {outname}")
@@ -180,7 +183,10 @@ def plot_sw_hrate_longmean(data,data_ctl,outname):
                 du=0.02,
                 units="K/day",
                 title="SW Heating Rate (longitude mean)",
-                outpath=os.path.join(outpath,f"{outname}_SW_hrate_longmean.png"))
+                )
+        plt.xlim([-0.3,0.2])
+        plt.savefig(os.path.join(outpath,f"{outname}_SW_hrate_latmean.png"),
+                    dpi=300)
         plt.clf()
         collect()
         print(f"Done plotting SW Heating Rate (longmean) for {outname}")
@@ -310,11 +316,12 @@ def plot_sw_hrate_vertical(all_data,outnames):
                         label=f"{outname}")
         vline(plt)
         plt.ylim(ylim)
+        plt.xlim([-0.3,0.2])
         plt.gca().set_yticks(yticks)
         plt.gca().set_yticklabels(yticks.tolist())
         plt.grid(ls="--",which='both')
         plt.legend()
-        plt.xlabel("K")
+        plt.xlabel("K/day")
         plt.ylabel(ylabel)
         plt.title("SW Heating Rate Vertical Profiles")
         plt.savefig(os.path.join(outpath,"sw_hrate_vertical_profiles.png"),dpi=300)
@@ -360,17 +367,75 @@ def plot_lw_hrate_vertical(all_data,outnames):
                         label=f"{outname}")
         vline(plt)
         plt.ylim(ylim)
+        plt.xlim([-0.3,0.2])
         plt.gca().set_yticks(yticks)
         plt.gca().set_yticklabels(yticks.tolist())
         plt.grid(ls="--",which='both')
         plt.legend()
-        plt.xlabel("K")
+        plt.xlabel("K/day")
         plt.ylabel(ylabel)
         plt.title("LW Heating Rate Vertical Profiles")
         plt.savefig(os.path.join(outpath,"lw_hrate_vertical_profiles.png"),dpi=300)
         plt.clf()
         collect()
         print(f"Done plotting LW Heating Rate vertical profiles")
+
+# TOT Heating Rates (SW+LW)
+def plot_tot_hrate_vertical(all_data,outnames):
+        print(f"Plotting TOT Heating Rate vertical profiles")
+        cond=[("tendency_of_air_temperature_due_to_longwave_heating_plev" in data) and
+              ("tendency_of_air_temperature_due_to_shortwave_heating_plev" in data) 
+              for data in all_data] 
+        if np.all(cond):
+                var1 = "tendency_of_air_temperature_due_to_shortwave_heating_plev"
+                var2 = "tendency_of_air_temperature_due_to_longwave_heating_plev"
+                selection =lambda x: x.sel(pressure=slice(49,1001))
+                y="pressure"
+                vline=lambda x: x.vlines(0, 50, 1000, colors='k', ls='--',lw=0.8)
+                ylim=[1000,50]
+                yticks=np.array([1000,800,600,400,200,50])
+                ylabel="pressure [hPa]"
+                yscale="log"
+                yincrease=False
+        else:
+                var1 = "tendency_of_air_temperature_due_to_shortwave_heating"
+                var2 = "tendency_of_air_temperature_due_to_longwave_heating"
+                selection =lambda x: x.sel(model_level_number=slice(-0.5,32.5))
+                y="model_level_number"
+                vline=lambda x: x.vlines(0, 1, 32, colors='k', ls='--',lw=0.8)
+                ylim=[1,32]
+                yticks=np.arange(1,32,5)
+                ylabel="Model Level Number"
+                yscale="linar"
+                yincrease=True
+
+        for data,outname in zip(all_data,outnames):
+                data1 = anomalies(data,ctl,var1)
+                data2 = anomalies(data,ctl,var2)
+                data = data1+data2
+                data = selection(data)
+                data = data*60*60*24
+                data = data.annual_mean(20*12)
+                data = data.global_mean()
+                data.plot(
+                        y=y,
+                        yincrease=yincrease,
+                        yscale=yscale,
+                        label=f"{outname}")
+        vline(plt)
+        plt.ylim(ylim)
+        plt.xlim([-0.3,0.2])
+        plt.gca().set_yticks(yticks)
+        plt.gca().set_yticklabels(yticks.tolist())
+        plt.grid(ls="--",which='both')
+        plt.legend()
+        plt.xlabel("K/day")
+        plt.ylabel(ylabel)
+        plt.title("Total (SW + LW) Heating Rate Vertical Profiles")
+        plt.savefig(os.path.join(outpath,"tot_hrate_vertical_profiles.png"),dpi=300)
+        plt.clf()
+        collect()
+        print(f"Done plotting TOT Heating Rate vertical profiles")
 
 def all_plots():        
         for data,outname in zip(all_data,outnames):
@@ -387,6 +452,7 @@ def all_plots():
         plot_tair_vertical(all_data,outnames)
         plot_sw_hrate_vertical(all_data,outnames)
         plot_lw_hrate_vertical(all_data,outnames)
+        plot_tot_hrate_vertical(all_data,outnames)
         plt.close()
 
 outpath = "/g/data3/w48/dm5220/data/figures"
@@ -408,12 +474,10 @@ outnames = [
 ]
 anomalies = lambda x,y,var: my.DataArray(x[var]-y[var])
 
-if hasattr(sys,'ps1'): #If python is run in interactive mode
-        all_data=read_data(input_folder,files)
-else: #If not
-        all_data=read_data_parallel(input_folder,files)
-
-ctl = all_data.pop(0)
-
 if __name__ == "__main__":
+        if hasattr(sys,'ps1'): #If python is run in interactive mode
+                all_data=read_data(input_folder,files)
+        else: #If not
+                all_data=read_data_parallel(input_folder,files)
+        ctl = all_data.pop(0)
         all_plots()

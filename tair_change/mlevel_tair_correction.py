@@ -1,7 +1,3 @@
-#!/g/data3/hh5/public/apps/miniconda3/envs/analysis3-21.04/bin/python3
-
-import warnings
-warnings.simplefilter("ignore")
 from argparse import ArgumentParser
 import os
 import numpy as np

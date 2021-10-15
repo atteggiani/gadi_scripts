@@ -112,7 +112,7 @@ def sw_hrate(all_data,all_labels,outname):
                         y=y,
                         yincrease=yincrease,
                         yscale=yscale,
-                        label=f"{outname}")
+                        label=f"{label}") 
         vline(plt)
         plt.ylim(ylim)
         plt.gca().set_yticks(yticks)
@@ -120,8 +120,9 @@ def sw_hrate(all_data,all_labels,outname):
         plt.grid(ls="--",which='both')
         plt.legend()
         plt.xlabel("K/day")
-        plt.ylabel("Model Level Number")
+        plt.ylabel(ylabel)
         plt.title("SW Heating Rate Vertical Profiles")
+        plt.xlim([-0.3,0.2])
         plt.savefig(os.path.join(outpath,f"{outname}_vertical_profiles.png"),
                     dpi=300)
         plt.clf()
@@ -162,7 +163,7 @@ def lw_hrate(all_data,all_labels,outname):
                         y=y,
                         yincrease=yincrease,
                         yscale=yscale,
-                        label=f"{outname}")
+                        label=f"{label}") 
         vline(plt)
         plt.ylim(ylim)
         plt.gca().set_yticks(yticks)
@@ -170,13 +171,73 @@ def lw_hrate(all_data,all_labels,outname):
         plt.grid(ls="--",which='both')
         plt.legend()
         plt.xlabel("K/day")
-        plt.ylabel("Model Level Number")
+        plt.ylabel(ylabel)
         plt.title("LW Heating Rate Vertical Profiles")
+        plt.xlim([-0.3,0.2])
         plt.savefig(os.path.join(outpath,f"{outname}_vertical_profiles.png"),
                     dpi=300)
         plt.clf()
         collect()
         print(f"Done plotting LW Heating Rate vertical profiles")
+
+# TOT Heating Rates
+def tot_hrate(all_data,all_labels,outname):
+        print(f"Plotting TOT Heating Rate vertical profiles")
+        cond=[("tendency_of_air_temperature_due_to_longwave_heating_plev" in data) and
+              ("tendency_of_air_temperature_due_to_shortwave_heating_plev" in data) 
+              for data in all_data]
+        if np.all(cond):
+                var1 = "tendency_of_air_temperature_due_to_shortwave_heating_plev"
+                var2 = "tendency_of_air_temperature_due_to_longwave_heating_plev"
+                selection =lambda x: x.sel(pressure=slice(49,1001))
+                y="pressure"
+                vline=lambda x: x.vlines(0, 50, 1000, colors='k', ls='--',lw=0.8)
+                ylim=[1000,50]
+                yticks=np.array([1000,800,600,400,200,50])
+                ylabel="pressure [hPa]"
+                yscale="log"
+                yincrease=False
+        else:
+                var1 = "tendency_of_air_temperature_due_to_shortwave_heating"
+                var2 = "tendency_of_air_temperature_due_to_longwave_heating"
+                selection =lambda x: x.sel(model_level_number=slice(-0.5,32.5))
+                y="model_level_number"
+                vline=lambda x: x.vlines(0, 1, 32, colors='k', ls='--',lw=0.8)
+                ylim=[1,32]
+                yticks=np.arange(1,32,5)
+                ylabel="Model Level Number"
+                yscale="linar"
+                yincrease=True
+
+        for data,label in zip(all_data,all_labels):
+                data1 = anomalies(data,ctl,var1)
+                data2 = anomalies(data,ctl,var2)
+                data = data1+data2
+                data = selection(data)
+                data = data*60*60*24
+                data = data.annual_mean(20*12)
+                data = data.global_mean()
+                data.plot(
+                        y=y,
+                        yincrease=yincrease,
+                        yscale=yscale,
+                        label=f"{label}")
+        vline(plt)
+        plt.ylim(ylim)
+        plt.gca().set_yticks(yticks)
+        plt.gca().set_yticklabels(yticks.tolist())
+        plt.grid(ls="--",which='both')
+        plt.legend()
+        plt.xlabel("K/day")
+        plt.ylabel(ylabel)
+        plt.title("Total (SW + LW) Heating Rate Vertical Profiles")
+        plt.xlim([-0.3,0.2])
+        plt.savefig(os.path.join(outpath,f"{outname}_vertical_profiles.png"),
+                    dpi=300)
+        plt.clf()
+        collect()
+        print(f"Done plotting LW Heating Rate vertical profiles")
+
 
 def all_plots(outnames):
         tair(all_data,all_labels,outnames[0])
