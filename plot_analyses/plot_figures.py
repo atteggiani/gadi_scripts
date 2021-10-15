@@ -300,7 +300,7 @@ def plot_sw_hrate_vertical(all_data,outnames):
                 ylim=[1,32]
                 yticks=np.arange(1,32,5)
                 ylabel="Model Level Number"
-                yscale="linar"
+                yscale="linear"
                 yincrease=True
 
         for data,outname in zip(all_data,outnames):
@@ -351,7 +351,7 @@ def plot_lw_hrate_vertical(all_data,outnames):
                 ylim=[1,32]
                 yticks=np.arange(1,32,5)
                 ylabel="Model Level Number"
-                yscale="linar"
+                yscale="linear"
                 yincrease=True
 
         for data,outname in zip(all_data,outnames):
@@ -406,7 +406,7 @@ def plot_tot_hrate_vertical(all_data,outnames):
                 ylim=[1,32]
                 yticks=np.arange(1,32,5)
                 ylabel="Model Level Number"
-                yscale="linar"
+                yscale="linear"
                 yincrease=True
 
         for data,outname in zip(all_data,outnames):

@@ -61,7 +61,8 @@ def tair(all_data,all_labels,outname):
                         y="pressure",
                         yincrease=False,
                         yscale="log",
-                        label=f"{label}")                        
+                        label=f"{label}")
+
         plt.vlines(0, 50, 1000, colors='k', ls='--',lw=0.8)
         plt.ylim([1000,50])
         plt.gca().set_yticks([1000,800,600,400,200,50])
@@ -99,7 +100,7 @@ def sw_hrate(all_data,all_labels,outname):
                 ylim=[1,32]
                 yticks=np.arange(1,32,5)
                 ylabel="Model Level Number"
-                yscale="linar"
+                yscale="linear"
                 yincrease=True
 
         for data,label in zip(all_data,all_labels):
@@ -151,7 +152,7 @@ def lw_hrate(all_data,all_labels,outname):
                 ylim=[1,32]
                 yticks=np.arange(1,32,5)
                 ylabel="Model Level Number"
-                yscale="linar"
+                yscale="linear"
                 yincrease=True
         for data,label in zip(all_data,all_labels):
                 data = anomalies(data,var)
@@ -206,7 +207,7 @@ def tot_hrate(all_data,all_labels,outname):
                 ylim=[1,32]
                 yticks=np.arange(1,32,5)
                 ylabel="Model Level Number"
-                yscale="linar"
+                yscale="linear"
                 yincrease=True
 
         for data,label in zip(all_data,all_labels):
