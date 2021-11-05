@@ -22,6 +22,7 @@ while getopts hi:o:s:-:g opt; do
             case "$OPTARG" in
                 id)
                     options+=" --id ${!OPTIND}"
+                    id="${!OPTIND}"
                     OPTIND=$(( $OPTIND + 1 ))
                     status=ok
                     ;;
@@ -42,6 +43,7 @@ while getopts hi:o:s:-:g opt; do
 done
 
 if [ -z $status ]; then echo "No input given!!"; exit 1; fi
+if [ -z $out ]; then out="$id"; fi
 
 cd /g/data3/w48/dm5220/scripts/um2nc
 
@@ -53,7 +55,7 @@ cat > "$script" <<EOF
 #PBS -q normal
 #PBS -P w48
 #PBS -l storage=gdata/hh5+gdata/w48+scratch/w48
-#PBS -l mem=50gb
+#PBS -l mem=130gb
 #PBS -N um2nc.${out} 
 
 python3 /g/data3/w48/dm5220/scripts/um2nc/convert_um2nc.py${options} --ncpus 48
