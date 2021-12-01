@@ -4,11 +4,8 @@ import os
 import sys
 import matplotlib.pyplot as plt
 import numpy as np
-import matplotlib.colors as colors
 from gc import collect
 import concurrent.futures
-import dask
-from dask.diagnostics import ProgressBar
 from argparse import ArgumentParser
 
 def read_data(input_folder,files):
@@ -45,23 +42,26 @@ def read_data_parallel(input_folder,files):
 
 # VERTICAL PROFILES
 # Air Temperature
-def tair(all_data,all_labels,outname):
-        print(f"Plotting Air Temperature vertical profiles")
-        cond=["air_temperature_0_plev" in data for data in all_data] 
-        if np.all(cond):
-                var = "air_temperature_0_plev"
-        else:
-                var = "air_temperature"
-        for data,label in zip(all_data,all_labels):
+def tair_plev(all_data,all_labels,outname):
+        var = "air_temperature_0_plev"
+        cond=[var in data for data in all_data] 
+        if not np.all(cond): return
+        print(f"Plotting Air Temperature vertical profiles on pressure levels")
+        for data,label,color in zip(all_data,all_labels,colors[:len(all_data)]):
                 data = anomalies(data,var)
                 data = data.sel(pressure=slice(49,1001))
-                data = data.annual_mean(20*12)
                 data = data.global_mean()
-                data.plot(
+                am = data.annual_mean(20*12)
+                min=data.isel(time=slice(-20*12,None)).min('time')
+                max=data.isel(time=slice(-20*12,None)).max('time')
+                am.plot(
                         y="pressure",
                         yincrease=False,
                         yscale="log",
-                        label=f"{label}")
+                        label=label,
+                        color=color)
+                plt.fill_betweenx(y=am.pressure, x1=min, x2=max,
+                                        color=color, alpha=0.2)
 
         plt.vlines(0, 50, 1000, colors='k', ls='--',lw=0.8)
         plt.ylim([1000,50])
@@ -71,192 +71,333 @@ def tair(all_data,all_labels,outname):
         plt.grid(ls="--",which='both')
         plt.legend()
         plt.xlabel("K")
+        plt.ylabel("Pressure [hPa]")
         plt.title("Air Temperature Vertical Profiles")
-        plt.savefig(os.path.join(outpath,f"{outname}_vertical_profiles.png"),
-                    dpi=300)
+        if outname is not None: 
+                outname="_".join([outname,"tair_vertprof_plev.png"])
+        else:
+                outname="tair_vertprof_plev.png"
+        plt.savefig(os.path.join(outpath,outname),dpi=300)
         plt.clf()
         collect()
-        print(f"Done plotting Air Temperature vertical profiles")
+
+def tair_mlev(all_data,all_labels,outname):
+        var = "air_temperature_0"
+        cond=[var in data for data in all_data] 
+        if not np.all(cond): return
+        print(f"Plotting Air Temperature vertical profiles on model levels")
+        for data,label,color in zip(all_data,all_labels,colors[:len(all_data)]):
+                data = anomalies(data,var)
+                data = data.sel(model_level_number=slice(None,32))
+                data = data.global_mean()
+                am = data.annual_mean(20*12)
+                min=data.isel(time=slice(-20*12,None)).min('time')
+                max=data.isel(time=slice(-20*12,None)).max('time')
+                am = am.assign_coords(model_level_number=np.arange(32))
+                am.plot(
+                        y="model_level_number",
+                        label=label,
+                        color=color)
+                plt.fill_betweenx(y=am.model_level_number, x1=min, x2=max,
+                                        color=color, alpha=0.2)
+
+        plt.vlines(0, 0, 31, colors='k', ls='--',lw=0.8)
+        plt.ylim([0,31])
+        plt.gca().set_yticks(np.arange(0,32))
+        ticklabels=[str(i) for i in np.arange(1,33)];ticklabels[1::2]=["" for _ in ticklabels[1::2]]
+        plt.gca().set_yticklabels(ticklabels,fontsize=8)
+        plt.grid(ls="--",which='both')
+        plt.legend()
+        plt.xlabel("K")
+        plt.ylabel("Model Level Number")
+        plt.title("Air Temperature Vertical Profiles")
+        if outname is not None: 
+                outname="_".join([outname,"tair_vertprof_mlev.png"])
+        else:
+                outname="tair_vertprof_mlev.png"
+        plt.savefig(os.path.join(outpath,outname),dpi=300)
+        plt.clf()
+        collect()
 
 # SW Heating Rates
-def sw_hrate(all_data,all_labels,outname):
-        print(f"Plotting SW Heating Rate vertical profiles")
-        cond=["tendency_of_air_temperature_due_to_shortwave_heating_plev" in data for data in all_data] 
-        if np.all(cond):
-                var = "tendency_of_air_temperature_due_to_shortwave_heating_plev"
-                selection =lambda x: x.sel(pressure=slice(49,1001))
-                y="pressure"
-                vline=lambda x: x.vlines(0, 50, 1000, colors='k', ls='--',lw=0.8)
-                ylim=[1000,50]
-                yticks=np.array([1000,800,600,400,200,50])
-                ylabel="pressure [hPa]"
-                yscale="log"
-                yincrease=False
-        else:
-                var = "tendency_of_air_temperature_due_to_shortwave_heating"
-                selection =lambda x: x.sel(model_level_number=slice(-0.5,32.5))
-                y="model_level_number"
-                vline=lambda x: x.vlines(0, 1, 32, colors='k', ls='--',lw=0.8)
-                ylim=[1,32]
-                yticks=np.arange(1,32,5)
-                ylabel="Model Level Number"
-                yscale="linear"
-                yincrease=True
-
-        for data,label in zip(all_data,all_labels):
+def sw_hrate_plev(all_data,all_labels,outname):
+        var = "tendency_of_air_temperature_due_to_shortwave_heating_plev"
+        cond=[var in data for data in all_data] 
+        if not np.all(cond): return
+        print(f"Plotting SW Heating Rate vertical profiles on pressure levels")
+        for data,label,color in zip(all_data,all_labels,colors[:len(all_data)]):
                 data = anomalies(data,var)
-                data = selection(data)
-                data = data*60*60*24
-                data = data.annual_mean(20*12)
+                data = data.sel(pressure=slice(49,1001))
                 data = data.global_mean()
-                data.plot(
-                        y=y,
-                        yincrease=yincrease,
-                        yscale=yscale,
-                        label=f"{label}") 
-        vline(plt)
-        plt.ylim(ylim)
-        plt.gca().set_yticks(yticks)
-        plt.gca().set_yticklabels(yticks.tolist())
+                data = data*60*60*24
+                am = data.annual_mean(20*12)
+                min=data.isel(time=slice(-20*12,None)).min('time')
+                max=data.isel(time=slice(-20*12,None)).max('time')
+                am.plot(
+                        y="pressure",
+                        yincrease=False,
+                        yscale="log",
+                        label=label,
+                        color=color)
+                plt.fill_betweenx(y=am.pressure, x1=min, x2=max,
+                                        color=color, alpha=0.2)
+
+        plt.vlines(0, 50, 1000, colors='k', ls='--',lw=0.8)
+        plt.ylim([1000,50])
+        plt.xlim([-0.4,0.3])
+        plt.gca().set_yticks([1000,800,600,400,200,50])
+        plt.gca().set_yticklabels(
+                ["{}".format(i) for i in [1000,800,600,400,200,50]])
         plt.grid(ls="--",which='both')
         plt.legend()
         plt.xlabel("K/day")
-        plt.ylabel(ylabel)
+        plt.ylabel("Pressure [hPa]")
         plt.title("SW Heating Rate Vertical Profiles")
-        plt.xlim([-0.3,0.2])
-        plt.savefig(os.path.join(outpath,f"{outname}_vertical_profiles.png"),
-                    dpi=300)
+        if outname is not None: 
+                outname="_".join([outname,"swhrate_vertprof_plev.png"])
+        else:
+                outname="swhrate_vertprof_plev.png"
+        plt.savefig(os.path.join(outpath,outname),dpi=300)
         plt.clf()
         collect()
-        print(f"Done plotting SW Heating Rate vertical profiles")
+
+def sw_hrate_mlev(all_data,all_labels,outname):
+        var = "tendency_of_air_temperature_due_to_shortwave_heating"
+        cond=[var in data for data in all_data] 
+        if not np.all(cond): return
+        print(f"Plotting SW Heating Rate vertical profiles on model levels")
+        for data,label,color in zip(all_data,all_labels,colors[:len(all_data)]):
+                data = anomalies(data,var)
+                data = data.sel(model_level_number=slice(None,32))
+                data = data.global_mean()
+                data = data*60*60*24
+                am = data.annual_mean(20*12)
+                min=data.isel(time=slice(-20*12,None)).min('time')
+                max=data.isel(time=slice(-20*12,None)).max('time')
+                am = am.assign_coords(model_level_number=np.arange(32))
+                am.plot(
+                        y="model_level_number",
+                        label=label,
+                        color=color)
+                plt.fill_betweenx(y=am.model_level_number, x1=min, x2=max,
+                                        color=color, alpha=0.2)
+
+        plt.vlines(0, 0, 31, colors='k', ls='--',lw=0.8)
+        plt.ylim([0,31])
+        plt.xlim([-0.4,0.3])
+        plt.gca().set_yticks(np.arange(0,32))
+        ticklabels=[str(i) for i in np.arange(1,33)];ticklabels[1::2]=["" for _ in ticklabels[1::2]]
+        plt.gca().set_yticklabels(ticklabels,fontsize=8)
+        plt.grid(ls="--",which='both')
+        plt.legend()
+        plt.xlabel("K/day")
+        plt.ylabel("Model Level Number")
+        plt.title("SW Heating Rate Vertical Profiles")
+        if outname is not None: 
+                outname="_".join([outname,"swhrate_vertprof_mlev.png"])
+        else:
+                outname="swhrate_vertprof_mlev.png"
+        plt.savefig(os.path.join(outpath,outname),dpi=300)
+        plt.clf()
+        collect()
 
 # LW Heating Rates
-def lw_hrate(all_data,all_labels,outname):
-        print(f"Plotting LW Heating Rate vertical profiles")
-        cond=["tendency_of_air_temperature_due_to_longwave_heating_plev" in data for data in all_data] 
-        if np.all(cond):
-                var = "tendency_of_air_temperature_due_to_longwave_heating_plev"
-                selection =lambda x: x.sel(pressure=slice(49,1001))
-                y="pressure"
-                vline=lambda x: x.vlines(0, 50, 1000, colors='k', ls='--',lw=0.8)
-                ylim=[1000,50]
-                yticks=np.array([1000,800,600,400,200,50])
-                ylabel="pressure [hPa]"
-                yscale="log"
-                yincrease=False
-        else:
-                var = "tendency_of_air_temperature_due_to_longwave_heating"
-                selection =lambda x: x.sel(model_level_number=slice(-0.5,32.5))
-                y="model_level_number"
-                vline=lambda x: x.vlines(0, 1, 32, colors='k', ls='--',lw=0.8)
-                ylim=[1,32]
-                yticks=np.arange(1,32,5)
-                ylabel="Model Level Number"
-                yscale="linear"
-                yincrease=True
-        for data,label in zip(all_data,all_labels):
+def lw_hrate_plev(all_data,all_labels,outname):
+        var = "tendency_of_air_temperature_due_to_longwave_heating_plev"
+        cond=[var in data for data in all_data] 
+        if not np.all(cond): return
+        print(f"Plotting LW Heating Rate vertical profiles on pressure levels")
+        for data,label,color in zip(all_data,all_labels,colors[:len(all_data)]):
                 data = anomalies(data,var)
-                data = selection(data)
-                data = data*60*60*24
-                data = data.annual_mean(20*12)
+                data = data.sel(pressure=slice(49,1001))
                 data = data.global_mean()
-                data.plot(
-                        y=y,
-                        yincrease=yincrease,
-                        yscale=yscale,
-                        label=f"{label}") 
-        vline(plt)
-        plt.ylim(ylim)
-        plt.gca().set_yticks(yticks)
-        plt.gca().set_yticklabels(yticks.tolist())
+                data = data*60*60*24
+                am = data.annual_mean(20*12)
+                min=data.isel(time=slice(-20*12,None)).min('time')
+                max=data.isel(time=slice(-20*12,None)).max('time')
+                am.plot(
+                        y="pressure",
+                        yincrease=False,
+                        yscale="log",
+                        label=label,
+                        color=color)
+                plt.fill_betweenx(y=am.pressure, x1=min, x2=max,
+                                        color=color, alpha=0.2)
+
+        plt.vlines(0, 50, 1000, colors='k', ls='--',lw=0.8)
+        plt.ylim([1000,50])
+        plt.xlim([-0.4,0.3])
+        plt.gca().set_yticks([1000,800,600,400,200,50])
+        plt.gca().set_yticklabels(
+                ["{}".format(i) for i in [1000,800,600,400,200,50]])
         plt.grid(ls="--",which='both')
         plt.legend()
         plt.xlabel("K/day")
-        plt.ylabel(ylabel)
+        plt.ylabel("Pressure [hPa]")
         plt.title("LW Heating Rate Vertical Profiles")
-        plt.xlim([-0.3,0.2])
-        plt.savefig(os.path.join(outpath,f"{outname}_vertical_profiles.png"),
-                    dpi=300)
+        if outname is not None: 
+                outname="_".join([outname,"lwhrate_vertprof_plev.png"])
+        else:
+                outname="lwhrate_vertprof_plev.png"
+        plt.savefig(os.path.join(outpath,outname),dpi=300)
         plt.clf()
         collect()
-        print(f"Done plotting LW Heating Rate vertical profiles")
+
+def lw_hrate_mlev(all_data,all_labels,outname):
+        var = "tendency_of_air_temperature_due_to_longwave_heating"
+        cond=[var in data for data in all_data] 
+        if not np.all(cond): return
+        print(f"Plotting LW Heating Rate vertical profiles on model levels")
+        for data,label,color in zip(all_data,all_labels,colors[:len(all_data)]):
+                data = anomalies(data,var)
+                data = data.sel(model_level_number=slice(None,32))
+                data = data.global_mean()
+                data = data*60*60*24
+                am = data.annual_mean(20*12)
+                min=data.isel(time=slice(-20*12,None)).min('time')
+                max=data.isel(time=slice(-20*12,None)).max('time')
+                am = am.assign_coords(model_level_number=np.arange(32))
+                am.plot(
+                        y="model_level_number",
+                        label=label,
+                        color=color)
+                plt.fill_betweenx(y=am.model_level_number, x1=min, x2=max,
+                                        color=color, alpha=0.2)
+
+        plt.vlines(0, 0, 31, colors='k', ls='--',lw=0.8)
+        plt.ylim([0,31])
+        plt.xlim([-0.4,0.3])
+        plt.gca().set_yticks(np.arange(0,32))
+        ticklabels=[str(i) for i in np.arange(1,33)];ticklabels[1::2]=["" for _ in ticklabels[1::2]]
+        plt.gca().set_yticklabels(ticklabels,fontsize=8)
+        plt.grid(ls="--",which='both')
+        plt.legend()
+        plt.xlabel("K/day")
+        plt.ylabel("Model Level Number")
+        plt.title("LW Heating Rate Vertical Profiles")
+        if outname is not None: 
+                outname="_".join([outname,"lwhrate_vertprof_mlev.png"])
+        else:
+                outname="lwhrate_vertprof_mlev.png"
+        plt.savefig(os.path.join(outpath,outname),dpi=300)
+        plt.clf()
+        collect()
 
 # TOT Heating Rates
-def tot_hrate(all_data,all_labels,outname):
-        print(f"Plotting TOT Heating Rate vertical profiles")
-        cond=[("tendency_of_air_temperature_due_to_longwave_heating_plev" in data) and
-              ("tendency_of_air_temperature_due_to_shortwave_heating_plev" in data) 
-              for data in all_data]
-        if np.all(cond):
-                var1 = "tendency_of_air_temperature_due_to_shortwave_heating_plev"
-                var2 = "tendency_of_air_temperature_due_to_longwave_heating_plev"
-                selection =lambda x: x.sel(pressure=slice(49,1001))
-                y="pressure"
-                vline=lambda x: x.vlines(0, 50, 1000, colors='k', ls='--',lw=0.8)
-                ylim=[1000,50]
-                yticks=np.array([1000,800,600,400,200,50])
-                ylabel="pressure [hPa]"
-                yscale="log"
-                yincrease=False
-        else:
-                var1 = "tendency_of_air_temperature_due_to_shortwave_heating"
-                var2 = "tendency_of_air_temperature_due_to_longwave_heating"
-                selection =lambda x: x.sel(model_level_number=slice(-0.5,32.5))
-                y="model_level_number"
-                vline=lambda x: x.vlines(0, 1, 32, colors='k', ls='--',lw=0.8)
-                ylim=[1,32]
-                yticks=np.arange(1,32,5)
-                ylabel="Model Level Number"
-                yscale="linear"
-                yincrease=True
-
-        for data,label in zip(all_data,all_labels):
-                data1 = anomalies(data,ctl,var1)
-                data2 = anomalies(data,ctl,var2)
+def tot_hrate_plev(all_data,all_labels,outname):
+        var1 = "tendency_of_air_temperature_due_to_shortwave_heating_plev"
+        var2 = "tendency_of_air_temperature_due_to_longwave_heating_plev"
+        cond1=[var1 in data for data in all_data]
+        cond2=[var2 in data for data in all_data]
+        if not np.all(cond1) or not np.all(cond2): return
+        print(f"Plotting TOT Heating Rate vertical profiles on pressure levels")
+        for data,label,color in zip(all_data,all_labels,colors[:len(all_data)]):
+                data1 = anomalies(data,var1)
+                data2 = anomalies(data,var2)
                 data = data1+data2
-                data = selection(data)
-                data = data*60*60*24
-                data = data.annual_mean(20*12)
+                data = data.sel(pressure=slice(49,1001))
                 data = data.global_mean()
-                data.plot(
-                        y=y,
-                        yincrease=yincrease,
-                        yscale=yscale,
-                        label=f"{label}")
-        vline(plt)
-        plt.ylim(ylim)
-        plt.gca().set_yticks(yticks)
-        plt.gca().set_yticklabels(yticks.tolist())
+                data = data*60*60*24
+                am = data.annual_mean(20*12)
+                min=data.isel(time=slice(-20*12,None)).min('time')
+                max=data.isel(time=slice(-20*12,None)).max('time')
+                am.plot(
+                        y="pressure",
+                        yincrease=False,
+                        yscale="log",
+                        label=label,
+                        color=color)
+                plt.fill_betweenx(y=am.pressure, x1=min, x2=max,
+                                        color=color, alpha=0.2)
+
+        plt.vlines(0, 50, 1000, colors='k', ls='--',lw=0.8)
+        plt.ylim([1000,50])
+        plt.xlim([-0.4,0.3])
+        plt.gca().set_yticks([1000,800,600,400,200,50])
+        plt.gca().set_yticklabels(
+                ["{}".format(i) for i in [1000,800,600,400,200,50]])
         plt.grid(ls="--",which='both')
         plt.legend()
         plt.xlabel("K/day")
-        plt.ylabel(ylabel)
+        plt.ylabel("Pressure [hPa]")
         plt.title("Total (SW + LW) Heating Rate Vertical Profiles")
-        plt.xlim([-0.3,0.2])
-        plt.savefig(os.path.join(outpath,f"{outname}_vertical_profiles.png"),
-                    dpi=300)
+        if outname is not None: 
+                outname="_".join([outname,"tothrate_vertprof_plev.png"])
+        else:
+                outname="tothrate_vertprof_plev.png"
+        plt.savefig(os.path.join(outpath,outname),dpi=300)
         plt.clf()
         collect()
-        print(f"Done plotting LW Heating Rate vertical profiles")
+
+def tot_hrate_mlev(all_data,all_labels,outname):
+        var1 = "tendency_of_air_temperature_due_to_shortwave_heating"
+        var2 = "tendency_of_air_temperature_due_to_longwave_heating"
+        cond1=[var1 in data for data in all_data]
+        cond2=[var2 in data for data in all_data]
+        if not np.all(cond1) or not np.all(cond2): return
+        print(f"Plotting TOT Heating Rate vertical profiles on model levels")
+        for data,label,color in zip(all_data,all_labels,colors[:len(all_data)]):
+                data1 = anomalies(data,var1)
+                data2 = anomalies(data,var2)
+                data = data1+data2
+                data = data.sel(model_level_number=slice(None,32))
+                data = data.global_mean()
+                data = data*60*60*24
+                am = data.annual_mean(20*12)
+                min=data.isel(time=slice(-20*12,None)).min('time')
+                max=data.isel(time=slice(-20*12,None)).max('time')
+                am = am.assign_coords(model_level_number=np.arange(32))
+                am.plot(
+                        y="model_level_number",
+                        label=label,
+                        color=color)
+                plt.fill_betweenx(y=am.model_level_number, x1=min, x2=max,
+                                        color=color, alpha=0.2)
+
+        plt.vlines(0, 0, 31, colors='k', ls='--',lw=0.8)
+        plt.ylim([0,31])
+        plt.gca().set_yticks(np.arange(0,32))
+        ticklabels=[str(i) for i in np.arange(1,33)];ticklabels[1::2]=["" for _ in ticklabels[1::2]]
+        plt.gca().set_yticklabels(ticklabels,fontsize=8)
+        plt.grid(ls="--",which='both')
+        plt.legend()
+        plt.xlabel("K/day")
+        plt.ylabel("Model Level Number")
+        plt.title("Total (SW + LW) Heating Rate Vertical Profiles")
+        if outname is not None: 
+                outname="_".join([outname,"tothrate_vertprof_mlev.png"])
+        else:
+                outname="tothrate_vertprof_mlev.png"
+        plt.savefig(os.path.join(outpath,outname),dpi=300)
+        plt.clf()
+        collect()
 
 
-def all_plots(outnames):
-        tair(all_data,all_labels,outnames[0])
-        sw_hrate(all_data,all_labels,outnames[1])
-        lw_hrate(all_data,all_labels,outnames[2])
+def all_plots(all_data,all_labels,outname):
+        tair_plev(all_data,all_labels,outname)
+        tair_mlev(all_data,all_labels,outname)
+        sw_hrate_plev(all_data,all_labels,outname)
+        sw_hrate_mlev(all_data,all_labels,outname)
+        lw_hrate_plev(all_data,all_labels,outname)
+        lw_hrate_mlev(all_data,all_labels,outname)
+        tot_hrate_plev(all_data,all_labels,outname)
+        tot_hrate_mlev(all_data,all_labels,outname)
         plt.close()
 
 parser=ArgumentParser()
 parser.add_argument('-i','--input',type=str,nargs='*')
 parser.add_argument('-l','--labels',type=str,nargs='*')
-parser.add_argument('-o','--output',type=str,nargs='*')
-parser.add_argument('-c','--control',type=str,default="ctl")
+parser.add_argument('-o','--outname',type=str)
+parser.add_argument('-C','--control',type=str,default="ctl")
+parser.add_argument('-c','--colors',type=str,nargs='*')
 args=parser.parse_args()
 
 files=args.input
 all_labels=args.labels
-outnames=args.output
-if outnames is None: outnames = ["tair","sw_hrate","lw_hrate"]
+outname=args.outname
+colors=args.colors
+if colors is None: colors=['blue','darkorange','firebrick','darkgreen','m','turquoise',
+       'rebeccapurple', 'grey']
 control_file=args.control
 if all_labels is None:
         all_labels = files
@@ -285,4 +426,6 @@ ctl = all_data.pop(0)
 anomalies = lambda x,var: my.DataArray(x[var]-ctl[var])
 
 if __name__ == "__main__":
-        all_plots(outnames)
+        all_plots(all_data,all_labels,outname)
+
+        

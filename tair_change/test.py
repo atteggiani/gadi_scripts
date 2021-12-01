@@ -2,22 +2,12 @@ import myfuncs as my
 import xarray as xr
 from importlib import reload
 import numpy as np
-# import os
-# import matplotlib.pyplot as plt
-
-# import matplotlib.colors as colors
-# from gc import collect
-# import concurrent.futures
-# import dask
-# from dask.diagnostics import ProgressBar
-# from decorators import timed
-# from metpy.interpolate import log_interpolate_1d
-# from metpy.units import units
-# from scipy.interpolate import interp1d
-# import matplotlib.colors as colors
+import os
 
 input_folder = my.UM.data_folder
 stream='c'
+alpha = 60*60*24
+name = "mlev_ancil"
 
 def read_data(folder):
     return my.open_mfdataset(
@@ -39,6 +29,22 @@ def tot_hrates_anomalies(data):
 solar=read_data("4co2_solar50-")
 sw=read_data("4co2_sw_x0.9452_offset")
 
-# Total hrates
-SW=tot_hrates_anomalies(sw)
-SOLAR=tot_hrates_anomalies(solar)
+# Total hrates in K/day
+SW=tot_hrates_anomalies(sw)*alpha
+SOLAR=tot_hrates_anomalies(solar)*alpha
+
+SW.name = name
+SOLAR.name = name
+SW.to_netcdf("/g/data/w48/dm5220/scripts/tair_change/tac_all_4co2_sw-.nc",
+            encoding={name: {"dtype": "int16", "zlib": True, "complevel":9}})
+SOLAR.to_netcdf("/g/data/w48/dm5220/scripts/tair_change/tac_all_4co2_solar-.nc",
+            encoding={name: {"dtype": "int16", "zlib": True, "complevel":9}})
+
+#Annual cycles in K/day
+swac=SW.annual_cycle()
+solarac=SOLAR.annual_cycle()
+
+swac.to_netcdf("/g/data/w48/dm5220/scripts/tair_change/tac_annual_4co2_sw-.nc",
+            encoding={name: {"zlib": True, "complevel":8}})
+solarac.to_netcdf("/g/data/w48/dm5220/scripts/tair_change/tac_annual_4co2_solar-.nc",
+            encoding={name: {"zlib": True, "complevel":8}})

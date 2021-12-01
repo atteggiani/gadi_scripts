@@ -4,37 +4,39 @@ PROGNAME=$(basename $0)
 usage() {
   cat << EOF
 Script to plot anomalies for UM model output.
-Usage: $PROGNAME [-i <input folder name(s)>] [-o <output name(s)>]
+Usage: $PROGNAME [-i <input folder name(s)>] [-o <output name(s)>] [-C <control file>]
 
 List of keys/options:
 -i <input folder name(s)> -> name of the folder (inside /g/data3/w48/dm5220/data) where the input data is;
 -o <output name(s)> -> identification name(s) of the output figures. If omitted, the identification
                        name will be the same as the input folder name.
+-C <control file name> -> Name of the folder (inside /g/data3/w48/dm5220/data) with the data to compute anomalies from.
+                          Default value = "ctl"                          
 
 Example:
 $PROGNAME -i folder_name
 $PROGNAME -i folder_name -o out_name
-$PROGNAME -i "first_folder_name second_folder_name ..." -o "first_out_name second_out_name ..." 
+$PROGNAME -i "first_folder_name second_folder_name ..." -o "first_out_name second_out_name ..." -C other_control_file
 
 EOF
   exit 1
 }
 
-while getopts hi:o: opt; do
+while getopts hi:o:C: opt; do
     case $opt in
         i)
             options+=" -i "$OPTARG""
             status=ok
             ;;
-        o)
-            options+=" -o "$OPTARG""
+        [oC])
+            options+=" -$opt "$OPTARG""
             ;;
         *) usage
     esac
 done
 
 if [ -z $status ]; then echo "No input given!!"; exit 1; fi
-cd /g/data3/w48/dm5220/scripts/analysis
+cd /g/data3/w48/dm5220/scripts/plot_analyses
 script="sub_plot_anomalies"
 cat > "$script" <<EOF
 #!/bin/bash
@@ -46,7 +48,7 @@ cat > "$script" <<EOF
 #PBS -l mem=10gb
 #PBS -N plot_anomal
 
-python /g/data/w48/dm5220/scripts/analysis/plot_anomalies.py $options
+python /g/data/w48/dm5220/scripts/plot_analyses/plot_anomalies.py $options
 EOF
 
 qsub "$script"

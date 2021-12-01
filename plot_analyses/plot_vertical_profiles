@@ -7,50 +7,44 @@ Script to plot vertical profiles for UM model output, for the following variable
 - Air Temperature
 - SW Heating Rates
 - LW Heating Rates
+- TOT Heating Rates (SW+LW)
 
-Usage: $PROGNAME [-i <input folder name(s)>] [-l <output label(s)>] [-o <output names for the 3 graphs>] [-c <control file name>]
+Usage: $PROGNAME [-i <input folder name(s)>] [-l <output label(s)>] [-c <list of color(s)>] [-o <output name identifier>] [-C <control file>]
 
 List of keys/options:
 -i <input folder name(s)> -> name of the folders (inside /g/data3/w48/dm5220/data) where the input data is;
 -l <output label(s)> -> identification label(s) of the output data. If omitted, the identification
-                        label(s) will be the same as the input folder name(s);
--o <output names for the graphs> -> identification names of the 3 output figures.
-                                    Default names are:
-                                    - tair
-                                    - sw_hrate
-                                    - lw_hrate
--c <control file name> -> Name of the folder (inside /g/data3/w48/dm5220/data) with the control data.                      
-                          Default value = "ctl".
+                        label(s) will be the same as the input folder name(s).
+                        The number needs to be equal to the number of inputs.
+-c <color(s)> -> colour(s) to use for the vertical plots. 
+                 The number needs to be equal to the number of inputs.
+-o <output name identifier> -> identification name for the output files.
+                                This identification specifier is prepended to the output files, in the form:
+                                <output_name_identifier>_<var>_vert_prof_<levtype>.png
+                                Depending on the graph plotted:
+                                var is one among tair, swhrate, lwhrate, tothrate;
+                                levtype is either plev (pressure levels) or mlev (model levels).
+                                If omitted, the output form will be:
+                                <var>_vert_prof_<levtype>.png
+-C <control file name> -> Name of the folder (inside /g/data3/w48/dm5220/data) with the data to compute anomalies from.
+                          Default value = "ctl"                          
 
 Example:
 $PROGNAME -i "first_folder_name second_folder_name ..." -l "first_out_label second_out_label ..." 
-$PROGNAME -i "first_folder_name second_folder_name ..." -l "first_out_label second_out_label ..." $PROGNAME -i "first_folder_name second_folder_name ..." -l "first_out_label second_out_label ..." -o "other_tsurf other_sw_hrates other_lw_hrates" -c other_control 
+$PROGNAME -i "first_folder_name second_folder_name ..." -l "first_out_label second_out_label ..." -c "first_color second_color ..." -C other_control_file 
 
 EOF
   exit 1
 }
 
-while getopts hi:l:o:c: opt; do
+while getopts hi:l:c:o:C: opt; do
     case $opt in
         i)
-            options+=" -i "$OPTARG""
+            options+=" -i $OPTARG"
             status=ok
             ;;
-        l)
-            options+=" -l "$OPTARG""
-            ;;
-        o)  
-            n=(${OPTARG})
-            n=${#n[@]}
-            if [[ "$n" != 3 ]] && [[ "$n" > 0 ]]
-            then
-                echo "Number of output identification names must be 3!!"
-                exit 1
-            fi
-            options+=" -o "$OPTARG""
-            ;;
-        c)  
-            options+=" -c "$OPTARG""
+        [lcoC])
+            options+=" -$opt $OPTARG"
             ;;
         *) usage
     esac
@@ -58,7 +52,7 @@ done
 
 if [ -z $status ]; then echo "No input given!!"; exit 1; fi
 
-cd /g/data3/w48/dm5220/scripts/analysis
+cd /g/data3/w48/dm5220/scripts/plot_analyses
 script="sub_plot_vert_profiles"
 cat > "$script" <<EOF
 #!/bin/bash
@@ -70,7 +64,7 @@ cat > "$script" <<EOF
 #PBS -l mem=10gb
 #PBS -N plot_vert_profiles
 
-python /g/data/w48/dm5220/scripts/analysis/plot_vertical_profiles.py $options
+python /g/data/w48/dm5220/scripts/plot_analyses/plot_vertical_profiles.py $options
 EOF
 
 qsub "$script"
