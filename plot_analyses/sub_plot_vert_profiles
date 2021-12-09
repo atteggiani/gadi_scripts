@@ -7,4 +7,4 @@
 #PBS -l mem=10gb
 #PBS -N plot_vert_profiles
 
-python /g/data/w48/dm5220/scripts/plot_analyses/plot_vertical_profiles.py  -i test_-0.007 test_0.007 -l 4co2_sw-_tac-0.007 4co2_sw-_tac0.007 -o DIFF_test1_2 -C 4co2_sw_x0.9452_offset
+python /g/data/w48/dm5220/scripts/plot_analyses/plot_vertical_profiles.py  -i 4co2_solar50- 4co2_sw_x0.9452_offset -l 4co2_solar- 4co2_sw- -c darkorange firebrick -o 4co2_solar-.sw-

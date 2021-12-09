@@ -1,5 +1,3 @@
-#!/g/data3/hh5/public/apps/miniconda3/envs/analysis3-21.04/bin/python3
-
 import warnings
 warnings.simplefilter("ignore")
 from argparse import ArgumentParser
@@ -8,28 +6,24 @@ import os
 parser=ArgumentParser()
 parser.add_argument('-i','--input',type=str)
 parser.add_argument('-o','--output',type=str)
-parser.add_argument('--id','--exp_id',type=str)
 parser.add_argument('-s','--stream',type=str,default="c")
 parser.add_argument('-g','--greb',action='store_true')
 args=parser.parse_args()
 
 input_folder=args.input
 output_file=args.output
-exp_id=args.id
 stream=args.stream
 greb=args.greb
-if exp_id is None: input_folder,exp_id = os.path.split(input_folder)
 
 from myfuncs import UM
 import xarray as xr
 import numpy as np
 from dask.diagnostics import ProgressBar
-from cftime import Datetime360Day
 import pandas as pd
 
 os.makedirs(os.path.split(output_file)[0],exist_ok=True)
 
-data=xr.open_mfdataset(os.path.join(input_folder,"{}_p{}*.nc".format(exp_id,stream)),
+data=xr.open_mfdataset(os.path.join(input_folder,f"*_p{stream}*.nc"),
                        combine='nested', concat_dim="time", parallel=True, decode_times=False).chunk({'time':40000}).surface_temperature
 
 hours_per_year = 360 * 24

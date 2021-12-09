@@ -1,0 +1,11 @@
+#!/bin/bash
+#PBS -l walltime=10:00:00
+#PBS -l ncpus=4
+#PBS -q normal
+#PBS -P w48
+#PBS -l storage=gdata/hh5+gdata/w48+scratch/w48+gdata/access
+#PBS -l mem=100gb
+#PBS -N make_ancil
+
+/g/data/access/projects/access/apps/xancil/0.57/mkancil < /g/data/w48/dm5220/scripts/tac_rad_change/xancil.namelist_sw
+/g/data/access/projects/access/apps/xancil/0.57/mkancil < /g/data/w48/dm5220/scripts/tac_rad_change/xancil.namelist_solar

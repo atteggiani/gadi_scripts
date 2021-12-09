@@ -356,6 +356,7 @@ def tot_hrate_mlev(all_data,all_labels,outname):
 
         plt.vlines(0, 0, 31, colors='k', ls='--',lw=0.8)
         plt.ylim([0,31])
+        plt.xlim([-0.4,0.3])
         plt.gca().set_yticks(np.arange(0,32))
         ticklabels=[str(i) for i in np.arange(1,33)];ticklabels[1::2]=["" for _ in ticklabels[1::2]]
         plt.gca().set_yticklabels(ticklabels,fontsize=8)

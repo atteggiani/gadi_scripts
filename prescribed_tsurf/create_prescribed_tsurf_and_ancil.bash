@@ -16,7 +16,6 @@ List of keys/options:
 -o "<path to 3h file> <path to monthly file>" -> paths to output UM ancillary files
 -s "<string1> <sting2>" -> streams (default is "c" for 3h tsurf and "a" for monthly sst).
 -g -> add greb annual cycle tsurf response on top
---id <experiment id>  -> experiment id (if not provided, the last folder of the input path will be considered as id)
 EOF
   exit 1
 }
@@ -25,20 +24,8 @@ filetype=("3h_tsurf" "monthly_sst")
 for i in "${!filetype[@]}"
 do
     OPTIND=1
-    unset options id
-    while getopts hi:o:s:-:g opt; do
+    while getopts hi:o:s:g opt; do
         case $opt in
-            -)
-                case "$OPTARG" in
-                    id)
-                        options+=" --id ${!OPTIND}"
-                        id=${!OPTIND}
-                        OPTIND=$(( $OPTIND + 1 ))
-                        ;;
-                    *)
-                    echo "Uknown option --${OPTARG}"
-                    usage
-                esac;;
             i)
                 arg=(${OPTARG})
                 if [[ ${#arg[@]} == 2 ]]; then
@@ -329,7 +316,7 @@ EOF
 #PBS -l mem=50gb
 
 echo "Writing Surface Temperature netCDF file: ${in}"
-/g/data3/w48/dm5220/scripts/prescribed_tsurf/${filetype[$i]}.py${options}
+python3 /g/data3/w48/dm5220/scripts/prescribed_tsurf/${filetype[$i]}.py${options}
 /g/data/access/projects/access/apps/xancil/0.57/mkancil < "$xancil_namelist"
 /g/data/w48/dm5220/scripts/util/fix_polar_anom.py "$out" #fix polar errors
 EOF

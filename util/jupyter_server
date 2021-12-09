@@ -1,0 +1,37 @@
+#!/bin/bash
+
+#PBS -N jupyter_server
+#PBS -P <project_id>
+#PBS -q <queue_type>
+#PBS -l walltime=01:00:00  
+
+### number of CPU
+#PBS -l ncpus=12
+
+### number of GPU, only if the queue is gpuvolta 
+#PBS -l ngpus=1              
+
+###  memory limit
+#PBS -l mem=20GB           
+
+###  local disk limit
+#PBS -l jobfs=100GB        
+
+#PBS -l storage=scratch/<project_id>  
+
+###set the environment variable for python to find libs
+#PBS -v PYTHONPATH=/scratch/vp91/apps/lib/python3.8/site-packages/:$PYTHONPATH    
+
+###load pangeo
+module load pangeo/2021.01
+
+###load job required lib, this depends on your job
+module load tensorflow/2.3.0
+
+###You may load other modules that are required by your job
+
+###pangeo initialisation script
+pangeo.ini.all.sh
+
+###Keep the server up until the job hits the wall time, otherwise it terminates right at EOF
+sleep infinity

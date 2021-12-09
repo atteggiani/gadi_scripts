@@ -1,0 +1,137 @@
+#!/bin/bash
+#PBS -l walltime=10:00:00
+#PBS -l ncpus=4
+#PBS -q normal
+#PBS -P w48
+#PBS -l storage=gdata/hh5+gdata/w48+scratch/w48+gdata/access
+#PBS -l mem=150gb
+#PBS -N create_tac_test_submit
+
+python3 /g/data/w48/dm5220/scripts/tac_rad_change/create_tac_test.py
+
+for path in /g/data/w48/dm5220/ancil/user_mlevel/tac_rad_change/files_for_xancil/*;
+do
+  file=$(basename "$path")
+  script=/g/data/w48/dm5220/scripts/tac_rad_change/xancil.namelist_test
+  cat > $script <<EOF
+&nam_config
+  ICAL = 2,
+  ISIZE = 64,
+  L32BIT = .FALSE.,
+  VERSION = 7.3,
+  LBIGENDOUT = .TRUE.,
+  LWFIO = .TRUE.,
+  IWFIO_SIZE = 2048,
+  NNCFILES = 1
+  NCFILES = "/g/data3/w48/dm5220/ancil/user_mlevel/tac_rad_change/files_for_xancil/${file}"
+ /
+
+ &nam_gridconfig
+  LVARGRID = .FALSE.,
+  IAVERT = 1,
+  NLEV = 38,
+  NO3LEV = 38,
+  LLEVSTOREUP = .TRUE.,
+  NAM_VERT = "/g/data/access/projects/access/umdir/vn7.3/ctldata/vert/vertlevs_G3",
+  IOVERT = 0,
+  LDEEPSOIL = .FALSE.
+ /
+
+ &nam_ozone
+ /
+
+ &nam_smow
+ /
+
+ &nam_slt
+ /
+
+ &nam_soil
+ /
+
+ &nam_veg
+ /
+
+ &nam_vegfrac
+ /
+
+ &nam_vegfunc
+ /
+
+ &nam_vegdist
+ /
+
+ &nam_sst
+ /
+
+ &nam_ice
+ /
+
+ &nam_orog
+ /
+
+ &nam_mask
+ /
+
+ &nam_lfrac
+ /
+
+ &nam_ausrmulti
+  LAUSRMULTI = .TRUE.,
+  AUSRMULTI_FILEOUT = "/g/data3/w48/dm5220/ancil/user_mlevel/tac_rad_change/${file%.nc}",
+  LAUSRMULTI_PERIODIC = .TRUE.,
+  LAUSRMULTI_CAL_INDEP = .FALSE.,
+  IAUSRMULTI_TIMEUSAGE1 = 1,
+  IAUSRMULTI_TIMEUSAGE2 = 0,
+  IAUSRMULTI_STARTDATE(1) = 0000,
+  IAUSRMULTI_STARTDATE(2) = 1,
+  IAUSRMULTI_STARTDATE(3) = 1,
+  IAUSRMULTI_STARTDATE(4) = 0,
+  IAUSRMULTI_STARTDATE(5) = 0,
+  IAUSRMULTI_STARTDATE(6) = 0,
+  IAUSRMULTI_NTIMES = 360,
+  IAUSRMULTI_INTERVAL = 1,
+  IAUSRMULTI_INTUNIT = 2,
+  LAUSRMULTI_MM = .TRUE.
+  IAUSRMULTI_NFIELD = 1
+  IAUSRMULTI_FILEINID(1) = 1,
+  IAUSRMULTI_STASHCODE(1) = 321,
+  IAUSRMULTI_PPCODE(1) = 0,
+  AUSRMULTI_NCNAME(1) = "mlev_ancil",
+  LAUSRMULTI_THETA(1) = .TRUE.
+  IAUSRMULTI_GRIDTYPE(1) = 1,
+  IAUSRMULTI_DATATYPE(1) = 1,
+  IAUSRMULTI_MASKTYPE(1) = 0,
+  IAUSRMULTI_MASK(1) = 0,
+ /
+
+ &nam_ausrancil
+ /
+
+ &nam_ts1
+ /
+
+ &nam_flux
+ /
+
+ &nam_ousrmulti
+ /
+
+ &nam_ousrancil
+ /
+
+ &nam_genanc_config
+  NANCFILES = 1
+ /
+
+ &nam_genanc
+  LGENANC_FILE(1) = .FALSE.,
+
+ /
+
+ &nam_astart
+ /
+EOF
+
+  /g/data/access/projects/access/apps/xancil/0.57/mkancil < "$script"
+done
