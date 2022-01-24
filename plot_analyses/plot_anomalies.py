@@ -515,7 +515,7 @@ def plot_tair_change_conv_latmean_plev(data,outname):
         plt.clf()
         collect()
 
-def plot_tair_change_ls_latmean_mlev(data,outname):
+def plot_tair_change_conv_latmean_mlev(data,outname):
         var='change_over_time_in_air_temperature_due_to_convection_plev'
         if var not in data: return 
         print(f"Plotting Air Temperature Change due to Convection (latmean) for {outname} on model levels")
