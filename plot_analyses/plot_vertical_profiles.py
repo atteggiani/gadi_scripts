@@ -8,36 +8,12 @@ from gc import collect
 import concurrent.futures
 from argparse import ArgumentParser
 
-def read_data(input_folder,files):
-        data=[]
-        for file in files:
-            data.append(my.open_mfdataset(
-                os.path.join(
-                        input_folder,
-                        f"{file}/*_pa*.nc"),
-                parallel=True,
-                combine="nested",
-                concat_dim="time",
-                compat='override',
-                coords='minimal',
-                ))
-        return data
+def read_data(input_folder,files):        
+        return [my.UM.read_data(f) for f in files]
 
 def read_data_parallel(input_folder,files):
-        def _read(input_folder,file):
-                data = my.open_mfdataset(
-                        os.path.join(
-                                input_folder,
-                                f"{file}/*_pa*.nc"),
-                        combine="nested",
-                        concat_dim="time",
-                        compat='override',
-                        coords='minimal',
-                        )
-                return data
-        
         with concurrent.futures.ThreadPoolExecutor() as executor:
-                data = executor.map(lambda x: _read(input_folder,x),files)               
+                data = executor.map(lambda x: my.UM.read_data(x),files)
         return list(data)
 
 # VERTICAL PROFILES

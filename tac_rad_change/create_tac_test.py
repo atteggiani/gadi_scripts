@@ -18,12 +18,12 @@ levs_save={"Lower atmosphere":"la",
         "Mid atmosphere":"ma",
         "High atmosphere":"ha",
         "Higher atmosphere":"Ha"}
-lat = [-15,15]
+lat = [-10,10]
 lons = {"Pacific":[195,225],
         "Amazon":[285,315],
         "Atlantic":[318.75,348.75],
-        "Africa":[0,30],
-        "Indian":[67.5,97.5]}
+        "Africa":[11.25,41.25],
+        "Indian":[63.75,93.75]}
 file_output_folder = "/g/data3/w48/dm5220/ancil/user_mlevel/tac_rad_change/files_for_xancil"
 figure_output_folder = "/g/data3/w48/dm5220/ancil/user_mlevel/tac_rad_change/figures"
 name = "mlev_ancil"
