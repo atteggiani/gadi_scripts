@@ -579,8 +579,6 @@ def plot_tair_vert_plev(data,outname):
         data.plotprof(
                 timesteps=20*12,
                 labels = outname,
-                xlim=None,
-                dx=None,
                 units = 'K',
                 double_axis=True,
                 xlim=(-4,6),
@@ -600,8 +598,6 @@ def plot_tair_vert_mlev(data,outname):
         data.plotprof(
                 timesteps=20*12,
                 labels = outname,
-                xlim=None,
-                dx=None,
                 units = 'K',
                 double_axis=True,
                 xlim=(-4,6),
