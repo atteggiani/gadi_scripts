@@ -429,7 +429,7 @@ def plot_tair_change_ls_latmean_plev(data,outname):
                 units="K",
                 title="Tair Change due to LS Precip (latitude mean)",
                 double_axis=True,
-                outpath=os.path.join(outpath,f"{outname}_tair_change_ls_longmean_plev.png")
+                outpath=os.path.join(outpath,f"{outname}_tair_change_ls_latmean_plev.png")
                 )
         plt.clf()
         collect()
@@ -449,7 +449,7 @@ def plot_tair_change_ls_latmean_mlev(data,outname):
                 units="K",
                 title="Tair Change due to LS Precip (latitude mean)",
                 double_axis=True,
-                outpath=os.path.join(outpath,f"{outname}_tair_change_ls_longmean_mlev.png")
+                outpath=os.path.join(outpath,f"{outname}_tair_change_ls_latmean_mlev.png")
                 )
         plt.clf()
         collect()
@@ -510,7 +510,7 @@ def plot_tair_change_conv_latmean_plev(data,outname):
                 units="K",
                 title="Tair Change due to Convection (latitude mean)",
                 double_axis=True,
-                outpath=os.path.join(outpath,f"{outname}_tair_change_conv_longmean_plev.png")
+                outpath=os.path.join(outpath,f"{outname}_tair_change_conv_latmean_plev.png")
                 )
         plt.clf()
         collect()
@@ -530,7 +530,7 @@ def plot_tair_change_conv_latmean_mlev(data,outname):
                 units="K",
                 title="Tair Change due to Convection (latitude mean)",
                 double_axis=True,
-                outpath=os.path.join(outpath,f"{outname}_tair_change_conv_longmean_mlev.png")
+                outpath=os.path.join(outpath,f"{outname}_tair_change_conv_latmean_mlev.png")
                 )
         plt.clf()
         collect()

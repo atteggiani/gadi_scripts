@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROGNAME=$0
+PROGNAME=$(basename $0)
 
 usage() {
   cat << EOF
@@ -9,7 +9,7 @@ Usage: $PROGNAME [-i <input folder>] [-o <output folder>] [--id <experiment id>]
 
 List of keys/options:
 -i <path to folder> -> path to input folder (default is "/scratch/w48/dm5220/umui")
--o <path to folder> -> path to the output folder
+-o <path to folder> -> path to the output folder (if not provided, the id will be considered as output folder)
 --id <experiment id> -> experiment id (if not provided, the last folder of the input path will be considered as id)
 
 EOF
@@ -55,7 +55,7 @@ cat > "$script" <<EOF
 #PBS -q normal
 #PBS -P w48
 #PBS -l storage=gdata/hh5+gdata/w48+scratch/w48
-#PBS -l mem=130gb
+#PBS -l mem=190gb
 #PBS -N um2nc.${out} 
 
 python3 /g/data3/w48/dm5220/scripts/um2nc/convert_um2nc.py${options} --ncpus 48

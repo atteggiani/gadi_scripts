@@ -1,0 +1,14 @@
+#!/bin/bash
+#PBS -l walltime=20:00:00
+#PBS -l ncpus=48
+#PBS -q normal
+#PBS -P w48
+#PBS -l storage=gdata/hh5+gdata/w48+scratch/w48
+#PBS -l mem=190gb
+#PBS -N test_convert
+
+base=/g/data3/w48/dm5220/data
+for f in $base/4co2_s* $base/4co2 $base/ctl_solar50+_sw-_x0.9489_offset $base/ctl_solar50-_sw+_x1.0555_offset;
+do
+    python3 /g/data3/w48/dm5220/scripts/um2nc/test.py $f
+done

@@ -1,0 +1,15 @@
+#!/bin/bash
+
+add=_4
+
+cp -r "/home/565/dm5220/umui_runs/vacca-351080003" "/home/565/dm5220/umui_runs/vacca-351080003${add}"
+
+sed -i "s|351080003|351080003${add}|g" "/home/565/dm5220/umui_runs/vacca-351080003${add}/SUBMIT"
+sed -i "s|OCO=leave|OCO=leave${add}|g" "/home/565/dm5220/umui_runs/vacca-351080003${add}/SUBMIT"
+
+sed -i 's|UM_DATAW=/scratch/$PROJECT/$USER/umui/$RUNID|UM_DATAW=/scratch/$PROJECT/$USER/umui/$RUNID'"${add}|g" "/home/565/dm5220/umui_runs/vacca-351080003${add}/SCRIPT"
+sed -i 's|UM_DATAM=/scratch/$PROJECT/$USER/umui/$RUNID|UM_DATAM=/scratch/$PROJECT/$USER/umui/$RUNID'"${add}|g" "/home/565/dm5220/umui_runs/vacca-351080003${add}/SCRIPT"
+
+/home/565/dm5220/umui_runs/vacca-351080003${add}/SUBMIT
+# qsub "/home/565/dm5220/umui_runs/vacca-351080003${add}/umuisubmit_clr"
+qsub "/home/565/dm5220/umui_runs/vacca-351080003${add}/umuisubmit_run"

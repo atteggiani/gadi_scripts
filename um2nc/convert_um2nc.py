@@ -1,14 +1,12 @@
 from argparse import ArgumentParser
-from myfuncs import UM,Dataset
+from myfuncs import UM
 import myfuncs as my
-import xarray as xr
 import iris
 import os
 from  multiprocessing import Pool,cpu_count
-from itertools import repeat
 import numpy as np
 import glob
-import time
+from gc import collect
 
 # Argument parsing
 parser=ArgumentParser()
@@ -47,6 +45,8 @@ def convert(stream,year):
     try:
         x=iris.load(os.path.join(input_folder,exp_id,f"{exp_id}a@p{stream}{year}*"))
         iris.save(x,outfile)
+        del x
+        collect()
         # Convert the netCDF output from model levels to pressure levels
         my.load_dataset(outfile).to_pressure_lev().to_netcdf(outfile,mode='w')
         return outfile
