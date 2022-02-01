@@ -8,7 +8,7 @@ from gc import collect
 import concurrent.futures
 from argparse import ArgumentParser
 
-def read_data(input_folder,files):        
+def read_data(input_folder,files):    
         return [my.UM.read_data(f) for f in files]
 
 def read_data_parallel(input_folder,files):

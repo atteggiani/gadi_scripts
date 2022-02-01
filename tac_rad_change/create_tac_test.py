@@ -3,29 +3,34 @@ import xarray as xr
 from importlib import reload
 import numpy as np
 import os
+import sys
 import dask
 import cartopy.crs as ccrs
 import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 
-vals = {"p":0.005,
-        "m":-0.005}
+vals = {"p":0.02,
+        "m":-0.02}
 levs = {"Lower atmosphere":[1,7],
         "Mid atmosphere":[7,13],
         "High atmosphere":[13,19],
-        "Higher atmosphere":[19,25]}
+        "Top atmosphere":[19,25]}
+plevs=[1000,890,630,400,190]        
 levs_save={"Lower atmosphere":"la",
         "Mid atmosphere":"ma",
         "High atmosphere":"ha",
-        "Higher atmosphere":"Ha"}
-lat = [-10,10]
-lons = {"Pacific":[195,225],
-        "Amazon":[285,315],
-        "Atlantic":[318.75,348.75],
-        "Africa":[11.25,41.25],
-        "Indian":[63.75,93.75]}
-file_output_folder = "/g/data3/w48/dm5220/ancil/user_mlevel/tac_rad_change/files_for_xancil"
-figure_output_folder = "/g/data3/w48/dm5220/ancil/user_mlevel/tac_rad_change/figures"
+        "Top atmosphere":"ta"}
+lat = [-20,20]
+lons = {"Pacific":[165,255],
+        "Amazon":[255,345],
+        "Atlantic":[288.75,356.25,18.75],
+        "Africa":[341.25,356.25,71.25],
+        "Indian":[33.75,123.75]}
+base_dir = sys.argv[1]
+file_output_folder = os.path.join(base_dir,"files_for_xancil")
+os.makedirs(file_output_folder,exist_ok=True)
+figure_output_folder = os.path.join(base_dir,"figures")
+os.makedirs(figure_output_folder,exist_ok=True)
 name = "mlev_ancil"
 cmaps = {"p":colors.ListedColormap(['white','red']),
          "m":colors.ListedColormap(['blue','white'])}
@@ -45,7 +50,7 @@ for val_id,val in vals.items():
             # Condition for longitude
             c2=np.logical_and(da.longitude>=lon[0],da.longitude<=lon[1])
             if len(lon) == 3:
-                c2=np.logical_or(c2,da.longitude==lon[2])
+                c2=np.logical_or(c2,np.logical_and(da.longitude>=0,da.longitude<=lon[2]))
             # Join conditions
             cond = np.logical_not(np.logical_and(np.logical_and(c0,c1),c2))
             new=my.DataArray(da.where(cond,val))
@@ -69,6 +74,7 @@ for val_id,val in vals.items():
                 cmap=cmaps[val_id],
                 levels=2,
                 units='K/(30min)',
+                double_axis=True,
                 outpath=os.path.join(figure_output_folder,f"lev-lon_{outname}"),
                 title=f"{val} {area} {atm}",
                 )
@@ -78,6 +84,7 @@ for val_id,val in vals.items():
                 cmap=cmaps[val_id],
                 levels=2,
                 units='K/(30min)',
+                double_axis=True,
                 outpath=os.path.join(figure_output_folder,f"lev-lat_{outname}"),
                 title=f"{val} {area} {atm}",
                 )

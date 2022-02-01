@@ -297,7 +297,7 @@ def plot_tot_hrate_longmean_plev(data,outname):
                 cmap=my.Colormaps.div_tsurf,
                 du=0.02,
                 units="K/day",
-                title="SW Heating Rate (longitude mean)",
+                title="TOT Heating Rate (longitude mean)",
                 double_axis=True,
                 outpath=os.path.join(outpath,f"{outname}_TOT_hrate_longmean_plev.png")
                 )
@@ -320,7 +320,7 @@ def plot_tot_hrate_longmean_mlev(data,outname):
                 cmap=my.Colormaps.div_tsurf,
                 du=0.02,
                 units="K/day",
-                title="SW Heating Rate (longitude mean)",
+                title="TOT Heating Rate (longitude mean)",
                 double_axis=True,
                 outpath=os.path.join(outpath,f"{outname}_TOT_hrate_longmean_mlev.png")
                 )
@@ -343,7 +343,7 @@ def plot_tot_hrate_latmean_plev(data,outname):
                 cmap=my.Colormaps.div_tsurf,
                 du=0.02,
                 units="K/day",
-                title="SW Heating Rate (latitude mean)",
+                title="TOT Heating Rate (latitude mean)",
                 double_axis=True,
                 outpath=os.path.join(outpath,f"{outname}_TOT_hrate_latmean_plev.png")
                 )
@@ -366,7 +366,7 @@ def plot_tot_hrate_latmean_mlev(data,outname):
                 cmap=my.Colormaps.div_tsurf,
                 du=0.02,
                 units="K/day",
-                title="SW Heating Rate (latitude mean)",
+                title="TOT Heating Rate (latitude mean)",
                 double_axis=True,
                 outpath=os.path.join(outpath,f"{outname}_TOT_hrate_latmean_mlev.png")
                 )

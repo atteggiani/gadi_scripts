@@ -40,7 +40,7 @@ cd /g/data3/w48/dm5220/scripts/plot_analyses
 script="sub_plot_anomalies"
 cat > "$script" <<EOF
 #!/bin/bash
-#PBS -l walltime=01:00:00
+#PBS -l walltime=10:00:00
 #PBS -l ncpus=48
 #PBS -q normal
 #PBS -P w48

@@ -1,5 +1,5 @@
 #!/bin/bash
-#PBS -l walltime=01:00:00
+#PBS -l walltime=10:00:00
 #PBS -l ncpus=48
 #PBS -q normal
 #PBS -P w48
@@ -7,4 +7,4 @@
 #PBS -l mem=10gb
 #PBS -N plot_anomal
 
-python /g/data/w48/dm5220/scripts/plot_analyses/plot_anomalies.py  -i 4co2
+python /g/data/w48/dm5220/scripts/plot_analyses/plot_anomalies.py  -i vaccb vaccc vaccd vaccf -C 4co2_sw_x0.9452_offset
