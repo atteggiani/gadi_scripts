@@ -48,6 +48,7 @@ def convert(stream,year):
         del x
         collect()
         # Convert the netCDF output from model levels to pressure levels
+        print(f"Convert to pressure levels year {year}")
         my.load_dataset(outfile).to_pressure_lev().to_netcdf(outfile,mode='w')
         return outfile
     except OSError as e:

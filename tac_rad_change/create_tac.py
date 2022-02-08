@@ -3,59 +3,91 @@ import xarray as xr
 from importlib import reload
 import numpy as np
 import os
+import sys
+import dask
+import cartopy.crs as ccrs
+import matplotlib.colors as colors
+import matplotlib.pyplot as plt
 
-input_folder = my.UM.data_folder
-output_folder = "/g/data3/w48/dm5220/ancil/user_mlevel/tac_rad_change/files_for_xancil"
-stream="c"
-# stream="a"
-alpha = 60*30 # K/s to K/30min
+vals = {"p":0.015,"m":-0.015}
+levs = {"Lower atmosphere":[1,7],
+        "Mid atmosphere":[7,13]}
+levs_save={"Lower atmosphere":"la",
+        "Mid atmosphere":"ma",
+        "High atmosphere":"ha",
+        "Top atmosphere":"ta"}
+lats = {"Equatorial":[-10,10],
+        "Extratropics":[-90,-35,35,90]}
+lats_save = {"Equatorial":'equa',
+        "Extratropics":'extr'}
+base_dir = sys.argv[1]
+file_output_folder = os.path.join(base_dir,"files_for_xancil")
+os.makedirs(file_output_folder,exist_ok=True)
+figure_output_folder = os.path.join(base_dir,"figures")
+os.makedirs(figure_output_folder,exist_ok=True)
+cmaps = {"p":colors.ListedColormap(['white','red']),
+         "m":colors.ListedColormap(['blue','white'])}
+
 name = "mlev_ancil"
-limit = 0.009
-limit_lev=26
+data=dask.array.from_array(np.zeros([360,38,73,96]),name=name)
+da=my.DataArray(data,
+    dims=('time', 'model_level_number', 'latitude', 'longitude'),
+    coords=[np.arange(1,361),np.arange(1,39),my.UM.latitude,my.UM.longitude])
 
-def read_data(folder):
-    return my.open_mfdataset(
-        os.path.join(input_folder,f"{folder}/*_p{stream}*.nc"),
-        parallel=True,
-        combine="nested",
-        concat_dim="time",
-        compat='override',
-        coords='minimal',
-        )
-
-ctl=read_data("ctl")
-
-solar=read_data("4co2_solar50-")
-sw=read_data("4co2_sw_x0.9452_offset")
-
-def tot_hrates_anomalies(data):
-    anomalies = lambda x,var: x[var] - ctl[var]
-    var1="tendency_of_air_temperature_due_to_shortwave_heating"
-    var2="tendency_of_air_temperature_due_to_longwave_heating"
-    return anomalies(data,var1)+anomalies(data,var2)
-
-# Total hrates in K/s
-SW=tot_hrates_anomalies(sw)
-SOLAR=tot_hrates_anomalies(solar)
-
-SW.name = name
-SOLAR.name = name
-
-#Annual cycles in K/30min
-swac=-SW.annual_cycle(20*360)*alpha
-solarac=-SOLAR.annual_cycle(20*360)*alpha
-
-# Correct values too big/small and set upper atmosphere corrections to 0
-# swac=my.DataArray(swac.where(swac>=-limit,-limit).where(swac<=limit,limit))
-# solarac=my.DataArray(solarac.where(solarac>=-limit,-limit).where(solarac<=limit,limit))
-
-a=my.DataArray(swac.where(swac>100,0).where(np.logical_or(swac.model_level_number<7,swac.model_level_number>13),-0.007))
-b=my.DataArray(swac.where(swac>100,0).where(np.logical_or(swac.model_level_number<7,swac.model_level_number>13),-0.008))
-c=my.DataArray(swac.where(swac>100,0).where(np.logical_or(swac.model_level_number<7,swac.model_level_number>13),-0.009))
-a.to_netcdf(os.path.join(output_folder,"tac_test_-0.007.nc"))
-b.to_netcdf(os.path.join(output_folder,"tac_test_-0.008.nc"))
-c.to_netcdf(os.path.join(output_folder,"tac_test_-0.009.nc"))
-
-# # Convert to NetCDF
-# swac.to_netcdf(os.path.join(output_folder,"tac_annual_4co2_sw-.nc"))
-# solarac.to_netcdf(os.path.join(output_folder,"tac_annual_4co2_solar-.nc"))
+for val_id,val in vals.items():
+    for atm,lev in levs.items():
+        for arealat,lat in lats.items():
+            # Condition for latitude
+            clat0=np.logical_and(da.latitude>=lat[0],da.latitude<=lat[1])
+            if len(lat) > 2:
+                clat=np.logical_or(clat0,np.logical_and(da.latitude>=lat[2],da.latitude<=lat[3]))
+            else:
+                clat=clat0
+            # Condition for model levels
+            clev=np.logical_and(da.model_level_number>=lev[0],da.model_level_number<=lev[1])
+            cond = np.logical_and(clat,clev)
+            # # Condition for longitude
+            # clon0=np.logical_and(da.longitude>=lon[0],da.longitude<=lon[1])
+            # if len(lon) > 2:
+            #     clon=np.logical_or(clon0,np.logical_and(da.longitude>=lon[2],da.longitude<=lon[3])):
+            # else:
+            #     clon=clon0
+            # cond = np.logical_and(cond,np.logical_not(clon))
+            cond=np.logical_not(cond)
+            
+            new=my.DataArray(da.where(cond,val))
+            outname=f"{val_id}_{lats_save[arealat]}_{levs_save[atm]}"
+            new.to_netcdf(os.path.join(file_output_folder,f"{outname}.nc"))
+            # Plot lat-lon            
+            plt.figure()
+            new.annual_mean().sel(model_level_number=lev[0]).plotvar(
+                projection=False,
+                cmap=cmaps[val_id],
+                levels=2,
+                statistics=False,
+                units='K/(30min)',
+                grid=True,
+                title=f"{val} {arealat} {atm}",
+                outpath=os.path.join(figure_output_folder,f"lat-lon_{outname}"),
+                )   
+            plt.clf()
+            # Plot lev-lon                
+            new.annual_mean().sel(latitude=lat[0],method='backfill').plotlev(
+                cmap=cmaps[val_id],
+                levels=2,
+                units='K/(30min)',
+                double_axis=True,
+                outpath=os.path.join(figure_output_folder,f"lev-lon_{outname}"),
+                title=f"{val} {arealat} {atm}",
+                )
+            plt.clf()
+            # Plot lev-lat                
+            new.annual_mean().sel(longitude=0).plotlev(
+                cmap=cmaps[val_id],
+                levels=2,
+                units='K/(30min)',
+                double_axis=True,
+                outpath=os.path.join(figure_output_folder,f"lev-lat_{outname}"),
+                title=f"{val} {arealat} {atm}",
+                )
+            plt.clf()
