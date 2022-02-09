@@ -68,12 +68,21 @@ def sel_lon(x):
         return x.isel(longitude=cond).longitude_mean()
 sel_lat=lambda x: x.sel(latitude=slice(*lat)).latitude_mean()
 
-out_folder='/g/data/w48/dm5220/data/figures/tac_rad_test'
+# out_folder='/g/data/w48/dm5220/data/figures/tac_rad_test'
+out_folder='/g/data/w48/dm5220/data/figures/fix_tsurf_tac_rad'
 nyears=20
-ctl=my.UM.read_data('4co2_sw_x0.9452_offset')
-files=['p_ind_la',]
+# ctl=my.UM.read_data('4co2_sw_x0.9452_offset') # 4CO2 SW-
+ctl=my.UM.read_data('4co2_fix_tsurf') # 4CO2 fixed tsurf
+
+files=['p_afr_la',
+       'p_ama_la',
+       'p_atl_la',
+       'p_ind_la',
+       'p_pac_la',
+]
 for file in files:
-    d=my.UM.read_data(f'4co2_sw-_{file}')
+    # d=my.UM.read_data(f'4co2_sw-_{file}') # 4CO2 SW-
+    d=my.UM.read_data(f'4co2_fix_tsurf_{file}') # 4CO2 fix tsurf
     # d=my.Dataset(d.to_pressure_lev()) #TO DELETE
     change,area,atm=file.split('_')
     anom=lambda var: d[var]-ctl[var]
