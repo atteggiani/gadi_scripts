@@ -6,4 +6,4 @@
 #PBS -l storage=gdata/hh5+gdata/w48+scratch/w48+gdata/access
 #PBS -l mem=50gb
 
-/g/data/access/projects/access/apps/xancil/0.57/mkancil < "/g/data3/w48/dm5220/scripts/tair_change/xancil.namelist_slevel_tair_change_tac_ctl_corr"
+/g/data/access/projects/access/apps/xancil/0.57/mkancil < "/g/data3/w48/dm5220/scripts/tair_change/xancil.namelist_slevel"

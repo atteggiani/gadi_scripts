@@ -58,25 +58,15 @@ um_month() {
     echo $mm
 }
 
-# RUNID=vabua
-# JOBDIR=/home/565/dm5220/umui_runs/vabua-175131329
-# RUN_LEN_DAYS=0
-# RUN_LEN_MONTHS=2
-# RUN_LEN_YEARS=0
-# DATAW=/scratch/w48/dm5220/umui/$RUNID
+basis_time=$(grep -Po "MODEL_BASIS_TIME= \K.*" $JOBDIR/CNTLALL)
 
-# script=/g/data/w48/dm5220/data/${RUNID}_um2nc_bottom
+yst=$(cut -d, -f1 <<< $basis_time)
+mst=$(cut -d, -f2 <<< $basis_time)
+dst=$(cut -d, -f3 <<< $basis_time)
 
-basis_time=$(cat $JOBDIR/CNTLALL | grep "MODEL_BASIS_TIME=")
-basis_time=${basis_time#*MODEL_BASIS_TIME=}
-
-yst=$(echo $basis_time | cut -d',' -f1)
-mst=$(echo $basis_time | cut -d',' -f2)
-dst=$(echo $basis_time | cut -d',' -f3)
-
-days=$(($dst+$RUN_LEN_DAYS-1))
-months=$(($mst+$RUN_LEN_MONTHS))
-years=$(($yst+$RUN_LEN_YEARS))
+days=$(( $dst+$RUN_LEN_DAYS-1 ))
+months=$(( $mst+$RUN_LEN_MONTHS ))
+years=$(( $yst+$RUN_LEN_YEARS ))
 tot=$(( $days + $months*30 + $years*360 ))
 
 y=$(( $tot/360 ))
@@ -96,6 +86,21 @@ fi
 ref=$(um_year $y)$(um_month $m)
 file=$DATAW/${RUNID}*a$ref
 
+resub_time=$(grep -Po "RUN_RESUBMIT_INC= \K.*" $JOBDIR/CNTLALL)
+yres=$(cut -d, -f1 <<< $resub_time)
+mres=$(cut -d, -f2 <<< $resub_time)
+months=$(( $mst + $mres -1 ))
+y=$(( $yst + $yres + $months/12 ))
+m=$(( $months%12 ))
+
+if [[ $m == 0 ]]; then
+    m=12
+    (( y-=1 ))
+fi
+
+ref=$(um_year $y)$(um_month $m)
+fileres=$DATAW/${RUNID}*a$ref
+
 if [ -f $file ]; then
     outdir=/g/data/w48/dm5220/data/$RUNID
     if [ -d $outdir ]; then
@@ -106,5 +111,9 @@ if [ -f $file ]; then
         outdir=${outdir}_${i}
     fi
     /g/data/w48/dm5220/scripts/um2nc/um2nc --id $RUNID -o $outdir
-    
+    /g/data/w48/dm5220/scripts/top_bottom_scripts/compress_build $RUNID
+elif [[ $TYPE == "NRUN" ]] && [ -f $fileres ]
+then
+    /g/data/w48/dm5220/scripts/util/resubmit $JOBDIR
 fi
+exit

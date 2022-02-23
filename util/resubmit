@@ -1,31 +1,53 @@
 #!/bin/bash
 
+PROGNAME=$(basename $0)
+
+usage() {
+  cat << EOF
+Script to resubmit a UM model run.
+Usage: $PROGNAME [-p] <jobdir-to-resubmit>
+
+'$PROGNAME' copies the <jobdir-to-resubmit> folder to <jobdir-to-resubmit>_r and applies some changes to make it suitable for resubmission. In the end, it submits the job running:
+'qsub <jobdir-to-resubmit>_r/umuisubmit_run'.
+
+List of keys/options:
+-p -> Before resubmitting, perturbes the multi-level boundary condition, to avoid crashes. The boundary condition file is taken from the 'USRMULTI' in the file <jobdir-to-resubmit>/INITHIS. In this case, the new folder will be called <jobdir-to-resubmit>_p.
+
+EOF
+  exit 1
+}
+
+while getopts hp opt; do
+    case $opt in
+        p)
+            add='_p'
+            perturb=true
+			shift
+            ;;
+        *) usage
+    esac
+done
+
 for exp in "$@"
 do
-	dir=$(readlink -f "$exp")
-	newdir="${dir}.restart"
+	dir=$(readlink -m "$exp")
+	add=${add:='_r'}
+	newdir="${dir}${add}"
+	rm -r "$newdir" &> /dev/null
 	cp -r "$dir" "$newdir"
 
-	# file="${newdir}/SUBMIT"
-	# line=$(grep -n "SUBMITID=" "$file" | cut -d: -f1 | head -1)
-	# sed -i ${line}"s/[[:blank:]]*$//" "$file"
-	# sed -i ${line}"s/$/.restart/" "$file"
-	# line=$(grep -n "TYPE=NRUN" "$file" | cut -d: -f1 | head -1)
-	# sed -i ${line}"s/TYPE=NRUN/TYPE=CRUN/" "$file"
-	# sed -i $(( "$line"+1 ))"s/2/4/" "$file"
-
-	file="${newdir}/umuisubmit_run"
-	sed -i "s/export TYPE=NRUN/export TYPE=CRUN/" "$file"
-	line=$(grep -n "export UMRUN_OUTPUT=" "$file" | cut -d: -f -1)
-	sed -i ${line}"s/[[:blank:]]*$//" "$file"
-	sed -i ${line}"s/$/.restart/" "$file"
-	line=$(grep -n "export JOBDIR=" "$file" | cut -d: -f -1)
-	sed -i ${line}"s/[[:blank:]]*$//" "$file"
-	sed -i ${line}"s/$/.restart/" "$file"
-	line=$(grep -n "export SUBMITID=" "$file" | cut -d: -f -1)
-	sed -i ${line}"s/[[:blank:]]*$//" "$file"
-	sed -i ${line}"s/$/.restart/" "$file"
+	file="${newdir}/SUBMIT"
+	sed -i "s|^SUBMITID=[^ ]*|&${add}|" "$file"
+	sed -i "s/^TYPE=NRUN/TYPE=CRUN/" "$file"
+	sed -i "s/^STEP=2/STEP=4/" "$file"
+	sed -i "s|export RCF_NEW_EXEC=|export RCF_NEW_EXEC=false|" "$file"
+	ksh "$file" > /dev/null
 	
-	cd /home/565/dm5220/umui_runs
-	qsub "$file"
+	if [[ -z $perturb ]]
+	then
+		qsub ${newdir}/umuisubmit_run
+	else	
+		qsub -N perturb.${exp%-*} -v newdir=$newdir /g/data/w48/dm5220/scripts/tac_rad_change/perturb
+	fi
 done
+exit

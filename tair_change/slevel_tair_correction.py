@@ -46,11 +46,12 @@ def create_tsurf(t):
                                        dims=("time","latitude","longitude"),
                                        coords=(t,my.UM.latitude,my.UM.longitude))
     else:
-        data=xr.open_mfdataset(os.path.join(input_folder,"*_pe*.nc"),chunks={"time":1000},
-                            combine='nested', concat_dim="time", parallel=True, decode_times=False).surface_temperature
+        data=my.UM.read_data(input_folder,stream='c',chunks={"time":1000},decode_times=False).surface_temperature
         
-        hours_per_year = 360 * 24
-        year = 1970 + (data.time-0.5) // hours_per_year
+        # hours_per_year = 360 * 24
+        # year = 1970 + (data.time-0.5) // hours_per_year
+        days_per_year = 360
+        year = 1970 + (data.time-0.5) // days_per_year
         hour_of_year = data.time % hours_per_year
         time_mi = pd.MultiIndex.from_arrays((year.values, hour_of_year.values), names=('year','h_year'))
         data.coords['time'] = time_mi
