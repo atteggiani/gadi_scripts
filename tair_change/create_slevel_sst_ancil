@@ -21,14 +21,14 @@ while getopts hi:o:-: opt; do
           case "${OPTARG}" in
             slab)
               options_slev+=" --slab"
-              mask_file="/g/data/w48/dm5220/ancil/user_slevel/tair_change/files_for_xancil/land_mask_tac_slab.nc"
+              mask_file="/g/data/w40/dm5220/ancil/user_slevel/tair_change/files_for_xancil/land_mask_tac_slab.nc"
             ;;
             *) usage
           esac;;
         i)
           options_slev+=" -i $(readlink -f ${OPTARG})"
           options_sst+=" -i $(readlink -f ${OPTARG})"
-          mask_file="/g/data/w48/dm5220/ancil/user_slevel/tair_change/files_for_xancil/land_mask_tac_no_slab.nc"
+          mask_file="/g/data/w40/dm5220/ancil/user_slevel/tair_change/files_for_xancil/land_mask_tac_no_slab.nc"
           sst=1
           ;;
         o)
@@ -40,16 +40,16 @@ while getopts hi:o:-: opt; do
     esac
 done
 
-cd /g/data3/w48/dm5220/scripts/tair_change
+cd /g/data3/w40/dm5220/scripts/tair_change
 
-in_slev="/g/data/w48/dm5220/ancil/user_slevel/tair_change/files_for_xancil/$(basename "$out_slev").nc"
-in_sst="/g/data/w48/dm5220/ancil/sst/tair_change/files_for_xancil/$(basename "$out_sst").nc"
+in_slev="/g/data/w40/dm5220/ancil/user_slevel/tair_change/files_for_xancil/$(basename "$out_slev").nc"
+in_sst="/g/data/w40/dm5220/ancil/sst/tair_change/files_for_xancil/$(basename "$out_sst").nc"
 options_slev+=" -o $in_slev"
 options_sst+=" -o $in_sst"
 
-flux_file="/g/data/w48/dm5220/ancil/user_slevel/tair_change/files_for_xancil/qflux_tac.nc"
+flux_file="/g/data/w40/dm5220/ancil/user_slevel/tair_change/files_for_xancil/qflux_tac.nc"
 
-xancil_namelist_slev="/g/data3/w48/dm5220/scripts/tair_change/xancil.namelist_slevel_tair_change_$(basename "$out_slev")"
+xancil_namelist_slev="/g/data3/w40/dm5220/scripts/tair_change/xancil.namelist_slevel_tair_change_$(basename "$out_slev")"
 cat > "$xancil_namelist_slev" <<EOF
   &nam_config
   ICAL = 2,
@@ -183,7 +183,7 @@ cat > "$xancil_namelist_slev" <<EOF
 EOF
 
 if ! [[ -z $sst ]]; then
-    xancil_namelist_sst="/g/data3/w48/dm5220/scripts/tair_change/xancil.namelist_sst_tair_change_$(basename "$out_sst")"
+    xancil_namelist_sst="/g/data3/w40/dm5220/scripts/tair_change/xancil.namelist_sst_tair_change_$(basename "$out_sst")"
     cat > "$xancil_namelist_sst" <<EOF
  &nam_config
   ICAL = 2,
@@ -303,18 +303,18 @@ cat > "$script" <<EOF
 #PBS -l walltime=10:00:00
 #PBS -l ncpus=4
 #PBS -q normal
-#PBS -P w48
-#PBS -l storage=gdata/hh5+gdata/w48+scratch/w48+gdata/access
+#PBS -P w40
+#PBS -l storage=gdata/hh5+gdata/w40+scratch/w40+gdata/access
 #PBS -l mem=50gb
 
-#/g/data3/w48/dm5220/scripts/tair_change/slevel_tair_correction.py${options_slev}
+#/g/data3/w40/dm5220/scripts/tair_change/slevel_tair_correction.py${options_slev}
 #/g/data/access/projects/access/apps/xancil/0.57/mkancil < "$xancil_namelist_slev"
-#/g/data/w48/dm5220/scripts/util/fix_polar_anom "$out_slev" #fix polar errors
+#/g/data/w40/dm5220/scripts/util/fix_polar_anom "$out_slev" #fix polar errors
 EOF
 
 if ! [[ -z $sst ]]; then
     cat >> "$script" <<EOF
-/g/data/w48/dm5220/scripts/prescribed_tsurf/monthly_sst.py${options_sst}
+/g/data/w40/dm5220/scripts/prescribed_tsurf/monthly_sst.py${options_sst}
 /g/data/access/projects/access/apps/xancil/0.57/mkancil < "$xancil_namelist_sst"
 EOF
 fi

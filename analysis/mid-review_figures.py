@@ -18,8 +18,8 @@ import gc
 import time
 from multiprocessing import Pool
 
-input_folder="/g/data/w48/dm5220/data"
-output_folder="/g/data/w48/dm5220/data/mid_review_figures"
+input_folder="/g/data/w40/dm5220/data"
+output_folder="/g/data/w40/dm5220/data/mid_review_figures"
 alpha_precip=86400
 selection = lambda x: x.isel(time=slice(-30*12,None))
 

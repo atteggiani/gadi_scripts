@@ -1,25 +1,3 @@
-#!/bin/bash
-#PBS -l walltime=10:00:00
-#PBS -l ncpus=4
-#PBS -q normal
-#PBS -P w40
-#PBS -l storage=gdata/hh5+gdata/w40+scratch/w40+gdata/access
-#PBS -l mem=150gb
-#PBS -N create_tac_submit
-
-
-dir=/g/data3/w40/dm5220/ancil/user_mlevel/tac_rad_change
-mkdir -p $dir
-
-python3 /g/data/w40/dm5220/scripts/tac_rad_change/create_tac.py $dir
-
-for path in $dir/files_for_xancil/[pm]_[eg]*;
-do
-    file=$(basename "$path")
-    if ! [[ -f "${dir}/${file%.nc}" ]];
-    then
-        script=/g/data/w40/dm5220/scripts/tac_rad_change/xancil.namelist_tac
-        cat > $script <<EOF
 &nam_config
   ICAL = 2,
   ISIZE = 64,
@@ -29,7 +7,7 @@ do
   LWFIO = .TRUE.,
   IWFIO_SIZE = 2048,
   NNCFILES = 1
-  NCFILES = "${dir}/files_for_xancil/${file}"
+  NCFILES = "/g/data3/w40/dm5220/ancil/user_mlevel/tac_rad_change/files_for_xancil/m_extr_ha_p.nc"
  /
 
  &nam_gridconfig
@@ -84,7 +62,7 @@ do
 
  &nam_ausrmulti
   LAUSRMULTI = .TRUE.,
-  AUSRMULTI_FILEOUT = "${dir}/${file%.nc}",
+  AUSRMULTI_FILEOUT = "/g/data3/w40/dm5220/ancil/user_mlevel/tac_rad_change/m_extr_ha_p",
   LAUSRMULTI_PERIODIC = .TRUE.,
   LAUSRMULTI_CAL_INDEP = .FALSE.,
   IAUSRMULTI_TIMEUSAGE1 = 1,
@@ -137,7 +115,3 @@ do
 
  &nam_astart
  /
-EOF
-        /g/data/access/projects/access/apps/xancil/0.57/mkancil < "$script"
-    fi
-done

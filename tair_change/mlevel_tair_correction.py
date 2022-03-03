@@ -15,7 +15,7 @@ def pairwise(iterable):
     return zip(a, b)
 
 def get_tac_sex_filename(id):
-    tac_folder="/g/data/w48/dm5220/ancil/user_mlevel/tair_change/sex"
+    tac_folder="/g/data/w40/dm5220/ancil/user_mlevel/tair_change/sex"
     return os.readlink(os.path.join(tac_folder,id))
 
 ind_levs=[1,8,17,25,38]
@@ -60,7 +60,7 @@ for l in pairwise(ref_lat):
             tac=tac.where(cond,change_sex[count])
         count+=1
 
-output_file = "/g/data/w48/dm5220/ancil/user_mlevel/tair_change/files_for_xancil/{}.nc".format(out_file)
+output_file = "/g/data/w40/dm5220/ancil/user_mlevel/tair_change/files_for_xancil/{}.nc".format(out_file)
 encoding = {tac.name: {'zlib':True,'shuffle':True,'complevel':4,'chunksizes': [1,8,73,96]}}
 tac.to_netcdf(output_file,encoding=encoding)
 

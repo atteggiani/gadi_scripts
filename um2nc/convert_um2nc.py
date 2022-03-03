@@ -10,7 +10,7 @@ from gc import collect
 
 # Argument parsing
 parser=ArgumentParser()
-parser.add_argument('-i','--input',type=str,default="/scratch/w48/dm5220/umui")
+parser.add_argument('-i','--input',type=str,default="/scratch/w40/dm5220/umui")
 parser.add_argument('-o','--output',type=str)
 parser.add_argument('--id','--exp_id',type=str)
 parser.add_argument('--ncpus',type=int)
@@ -21,7 +21,7 @@ output_folder=args.output
 exp_id=args.id
 ncpus=args.ncpus
 if exp_id is None: input_folder,exp_id = os.path.split(input_folder)
-if output_folder is None: output_folder = f"/g/data3/w48/dm5220/data/{exp_id}"
+if output_folder is None: output_folder = f"/g/data3/w40/dm5220/data/{exp_id}"
 if ncpus is None: ncpus = cpu_count()
 
 

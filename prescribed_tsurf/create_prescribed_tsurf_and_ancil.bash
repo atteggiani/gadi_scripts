@@ -59,9 +59,9 @@ do
     options+=" -o ${in}"
     mkdir -p $(dirname "$in")
 
-    cd /g/data3/w48/dm5220/scripts/prescribed_tsurf
+    cd /g/data3/w40/dm5220/scripts/prescribed_tsurf
 
-    xancil_namelist="/g/data3/w48/dm5220/scripts/prescribed_tsurf/xancil.namelist_$(basename "$in")"
+    xancil_namelist="/g/data3/w40/dm5220/scripts/prescribed_tsurf/xancil.namelist_$(basename "$in")"
     namelist="$xancil_namelist"
     num=0
     while [[ -e "$namelist" ]]; do
@@ -311,14 +311,14 @@ EOF
 #PBS -l walltime=00:10:00
 #PBS -l ncpus=4
 #PBS -q normal
-#PBS -P w48
-#PBS -l storage=gdata/hh5+gdata/w48+scratch/w48+gdata/access
+#PBS -P w40
+#PBS -l storage=gdata/hh5+gdata/w40+scratch/w40+gdata/access
 #PBS -l mem=50gb
 
 echo "Writing Surface Temperature netCDF file: ${in}"
-python3 /g/data3/w48/dm5220/scripts/prescribed_tsurf/${filetype[$i]}.py${options}
+python3 /g/data3/w40/dm5220/scripts/prescribed_tsurf/${filetype[$i]}.py${options}
 /g/data/access/projects/access/apps/xancil/0.57/mkancil < "$xancil_namelist"
-/g/data/w48/dm5220/scripts/util/fix_polar_anom.py "$out" #fix polar errors
+/g/data/w40/dm5220/scripts/util/fix_polar_anom.py "$out" #fix polar errors
 EOF
     
     qsub "$script"

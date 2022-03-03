@@ -102,7 +102,7 @@ ref=$(um_year $y)$(um_month $m)
 fileres=$DATAW/${RUNID}*a$ref
 
 if [ -f $file ]; then
-    outdir=/g/data/w48/dm5220/data/$RUNID
+    outdir=/g/data/w40/dm5220/data/$RUNID
     if [ -d $outdir ]; then
         i=2
         while [ -d ${outdir}_${i} ] ; do
@@ -110,10 +110,9 @@ if [ -f $file ]; then
         done
         outdir=${outdir}_${i}
     fi
-    /g/data/w48/dm5220/scripts/um2nc/um2nc --id $RUNID -o $outdir
-    /g/data/w48/dm5220/scripts/top_bottom_scripts/compress_build $RUNID
+    /g/data/w40/dm5220/scripts/um2nc/um2nc --id $RUNID -o $outdir
 elif [[ $TYPE == "NRUN" ]] && [ -f $fileres ]
 then
-    /g/data/w48/dm5220/scripts/util/resubmit $JOBDIR
+    /g/data/w40/dm5220/scripts/util/resubmit $JOBDIR
 fi
 exit

@@ -27,7 +27,7 @@ while getopts hi:o: opt; do
     esac
 done
 
-cd /g/data3/w48/dm5220/scripts/prescribed_tsurf
+cd /g/data3/w40/dm5220/scripts/prescribed_tsurf
 
 script="submission_script_${filetype}"
 cat > "$script" <<EOF
@@ -35,11 +35,11 @@ cat > "$script" <<EOF
 #PBS -l walltime=10:00:00
 #PBS -l ncpus=48
 #PBS -q normal
-#PBS -P w48
-#PBS -l storage=gdata/hh5+gdata/w48+scratch/w48
+#PBS -P w40
+#PBS -l storage=gdata/hh5+gdata/w40+scratch/w40
 #PBS -l mem=50gb
 
-/g/data3/w48/dm5220/scripts/prescribed_tsurf/${filetype}.py${options}
+/g/data3/w40/dm5220/scripts/prescribed_tsurf/${filetype}.py${options}
 EOF
 
 qsub "$script"

@@ -26,11 +26,11 @@ while getopts hi:o: opt; do
     esac
 done
 
-in="/g/data/w48/dm5220/ancil/sst/prescribed/files_for_xancil/$(basename "$out").nc"
+in="/g/data/w40/dm5220/ancil/sst/prescribed/files_for_xancil/$(basename "$out").nc"
 options+=" -o $in"
-cd /g/data3/w48/dm5220/scripts/prescribed_tsurf
+cd /g/data3/w40/dm5220/scripts/prescribed_tsurf
 
-xancil_namelist="/g/data3/w48/dm5220/scripts/prescribed_tsurf/xancil.namelist_${filetype}"
+xancil_namelist="/g/data3/w40/dm5220/scripts/prescribed_tsurf/xancil.namelist_${filetype}"
 cat > "$xancil_namelist" <<EOF
  &nam_config
   ICAL = 2,
@@ -149,12 +149,12 @@ cat > "$script" <<EOF
 #PBS -l walltime=10:00:00
 #PBS -l ncpus=4
 #PBS -q normal
-#PBS -P w48
-#PBS -l storage=gdata/hh5+gdata/w48+scratch/w48+gdata/access
+#PBS -P w40
+#PBS -l storage=gdata/hh5+gdata/w40+scratch/w40+gdata/access
 #PBS -l mem=50gb
 
 echo "Writing Sea Surface Temperature netCDF file: ${in}"
-/g/data3/w48/dm5220/scripts/prescribed_tsurf/${filetype}.py${options}
+/g/data3/w40/dm5220/scripts/prescribed_tsurf/${filetype}.py${options}
 /g/data/access/projects/access/apps/xancil/0.57/mkancil < "$xancil_namelist"
 EOF
 

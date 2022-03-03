@@ -47,7 +47,7 @@ while getopts ho:c:s:l: opt; do
     esac
 done
 
-output_dir="/g/data/w48/dm5220/ancil/user_mlevel/tair_change"
+output_dir="/g/data/w40/dm5220/ancil/user_mlevel/tair_change"
 
 in="${output_dir}/files_for_xancil/${name}.nc"
 out="${output_dir}/${name}"
@@ -56,9 +56,9 @@ if ! [ -z ${link_name} ]; then
   link_string="rm -f $link; in -s $out $link"
 fi
 
-cd /g/data3/w48/dm5220/scripts/tair_change
+cd /g/data3/w40/dm5220/scripts/tair_change
 
-xancil_namelist="/g/data3/w48/dm5220/scripts/tair_change/xancil.namelist_mlevel_tair_change_$(basename $out)"
+xancil_namelist="/g/data3/w40/dm5220/scripts/tair_change/xancil.namelist_mlevel_tair_change_$(basename $out)"
 cat > "$xancil_namelist" <<EOF
  &nam_config
   ICAL = 2,
@@ -186,13 +186,13 @@ cat > "$script" <<EOF
 #PBS -l walltime=10:00:00
 #PBS -l ncpus=1
 #PBS -q normal
-#PBS -P w48
-#PBS -l storage=gdata/hh5+gdata/w48+scratch/w48+gdata/access
+#PBS -P w40
+#PBS -l storage=gdata/hh5+gdata/w40+scratch/w40+gdata/access
 #PBS -l mem=50gb
 
-/g/data3/w48/dm5220/scripts/tair_change/mlevel_tair_correction.py${options}
+/g/data3/w40/dm5220/scripts/tair_change/mlevel_tair_correction.py${options}
 /g/data/access/projects/access/apps/xancil/0.57/mkancil < "$xancil_namelist"
-/g/data/w48/dm5220/scripts/util/fix_polar_anom "$out" #fix polar errors
+/g/data/w40/dm5220/scripts/util/fix_polar_anom "$out" #fix polar errors
 $link_string
 EOF
 

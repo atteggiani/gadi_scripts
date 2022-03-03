@@ -883,7 +883,7 @@ if len(files) != len(outnames):
         raise Exception(f"Number of input files and output names mismatch. \
 Number of input files is {len(files)}. \
 Number of output names is {len(outnames)}")
-outpath = "/g/data3/w48/dm5220/data/figures"
+outpath = "/g/data3/w40/dm5220/data/figures"
 ctl = my.UM.read_data(control_file)
 anomalies = lambda x,var: my.DataArray(x[var]-ctl[var])
 

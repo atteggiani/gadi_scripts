@@ -5,6 +5,6 @@
 #PBS -P w40
 #PBS -l storage=gdata/hh5+gdata/w40+scratch/w40
 #PBS -l mem=190gb
-#PBS -N um2nc.vaccr_2 
+#PBS -N um2nc.vaccm 
 
-python3 /g/data3/w40/dm5220/scripts/um2nc/convert_um2nc.py --id vaccr -o /g/data/w40/dm5220/data/vaccr_2 --ncpus 48
+python3 /g/data3/w40/dm5220/scripts/um2nc/convert_um2nc.py --id vaccm -o /g/data/w40/dm5220/data/vaccm --ncpus 48

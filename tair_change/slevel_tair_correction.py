@@ -24,19 +24,19 @@ def create_flux(t):
     #CREATE QFLUX from ref qflux
     newt=xr.cftime_range(start='0000', periods=12*30*24*3, freq="1H", calendar="360_day")
     oldt=[x+timedelta(days=15) for x in xr.cftime_range(start='0000', periods=36, freq="MS", calendar="360_day")]
-    d=xr.open_dataarray("/g/data/w48/dm5220/ancil/qflux/slab-qflux.nc")
+    d=xr.open_dataarray("/g/data/w40/dm5220/ancil/qflux/slab-qflux.nc")
     out=np.repeat(d,30*24,axis=0).assign_coords({"t":t})
     out.name="qflux"
-    output_file = "/g/data/w48/dm5220/ancil/user_slevel/tair_change/files_for_xancil/qflux_tac.nc"
+    output_file = "/g/data/w40/dm5220/ancil/user_slevel/tair_change/files_for_xancil/qflux_tac.nc"
     encoding = {out.name: {'zlib':True,'shuffle':True,'complevel':4}}
     out.to_netcdf(output_file,encoding=encoding)
 
 def create_mask(t):
     # CREATE LAND MASK from ref land_mask file
-    m=xr.open_dataarray("/g/data/w48/dm5220/ancil/land_mask/land_mask.nc")
+    m=xr.open_dataarray("/g/data/w40/dm5220/ancil/land_mask/land_mask.nc")
     newm=m.expand_dims({"t":t})
     if not slab: newm=(newm*0)+1
-    output_file = "/g/data/w48/dm5220/ancil/user_slevel/tair_change/files_for_xancil/land_mask_tac.nc"
+    output_file = "/g/data/w40/dm5220/ancil/user_slevel/tair_change/files_for_xancil/land_mask_tac.nc"
     encoding = {newm.name: {'zlib':True,'shuffle':True,'complevel':4}}
     newm.to_netcdf(output_file,encoding=encoding)
 

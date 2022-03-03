@@ -8,7 +8,7 @@ Script to convert the UM model output to netCDF data.
 Usage: $PROGNAME [-i <input folder>] [-o <output folder>] [--id <experiment id>] ...
 
 List of keys/options:
--i <path to folder> -> path to input folder (default is "/scratch/w48/dm5220/umui")
+-i <path to folder> -> path to input folder (default is "/scratch/w40/dm5220/umui")
 -o <path to folder> -> path to the output folder (if not provided, the id will be considered as output folder)
 --id <experiment id> -> experiment id (if not provided, the last folder of the input path will be considered as id)
 
@@ -45,7 +45,7 @@ done
 if [ -z $status ]; then echo "No input given!!"; exit 1; fi
 if [ -z $out ]; then out="$id"; fi
 
-cd /g/data3/w48/dm5220/scripts/um2nc
+cd /g/data3/w40/dm5220/scripts/um2nc
 
 script="submission_script_${out}"
 cat > "$script" <<EOF
@@ -53,12 +53,12 @@ cat > "$script" <<EOF
 #PBS -l walltime=01:00:00
 #PBS -l ncpus=48
 #PBS -q normal
-#PBS -P w48
-#PBS -l storage=gdata/hh5+gdata/w48+scratch/w48
+#PBS -P w40
+#PBS -l storage=gdata/hh5+gdata/w40+scratch/w40
 #PBS -l mem=190gb
 #PBS -N um2nc.${out} 
 
-python3 /g/data3/w48/dm5220/scripts/um2nc/convert_um2nc.py${options} --ncpus 48
+python3 /g/data3/w40/dm5220/scripts/um2nc/convert_um2nc.py${options} --ncpus 48
 EOF
 
 qsub "$script"

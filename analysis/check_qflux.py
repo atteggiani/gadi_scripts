@@ -32,10 +32,10 @@ def energy_balance_toa(x):
         D=lambda d: g(d.toa_outgoing_shortwave_flux) + g(d.toa_outgoing_longwave_flux) - g(d.toa_incoming_shortwave_flux)
         return D(x)
 
-input_folder = "/g/data/w48/dm5220/data"
+input_folder = "/g/data/w40/dm5220/data"
 ctl=read_data(input_folder,["ctl"])[0]
 toa_balance=energy_balance_toa(ctl)
-qflux=my.open_dataarray("/g/data/w48/dm5220/ancil/qflux/qflux_slab.nc").squeeze()
+qflux=my.open_dataarray("/g/data/w40/dm5220/ancil/qflux/qflux_slab.nc").squeeze()
 qf=qflux.mean()
 
 toa_balance.mean(["latitude","longitude"]).plot(label="Energy Balance TOA")

@@ -21,13 +21,13 @@ while getopts hi:o:-: opt; do
           case "${OPTARG}" in
             slab)
               options+=" --slab"
-              mask_file="/g/data/w48/dm5220/ancil/user_slevel/tair_change/files_for_xancil/land_mask_tac_slab.nc"
+              mask_file="/g/data/w40/dm5220/ancil/user_slevel/tair_change/files_for_xancil/land_mask_tac_slab.nc"
             ;;
             *) usage
           esac;;
         i)
           options+=" -i $(readlink -f ${OPTARG%/})"
-          mask_file="/g/data/w48/dm5220/ancil/user_slevel/tair_change/files_for_xancil/land_mask_tac_no_slab.nc"
+          mask_file="/g/data/w40/dm5220/ancil/user_slevel/tair_change/files_for_xancil/land_mask_tac_no_slab.nc"
           ;;
         o)
 	        out=$(readlink -m "$OPTARG")
@@ -36,14 +36,14 @@ while getopts hi:o:-: opt; do
     esac
 done
 
-cd /g/data3/w48/dm5220/scripts/tair_change
+cd /g/data3/w40/dm5220/scripts/tair_change
 
-in="/g/data/w48/dm5220/ancil/user_slevel/tair_change/files_for_xancil/$(basename "$out").nc"
+in="/g/data/w40/dm5220/ancil/user_slevel/tair_change/files_for_xancil/$(basename "$out").nc"
 options+=" -o $in"
 
-flux_file="/g/data/w48/dm5220/ancil/user_slevel/tair_change/files_for_xancil/qflux_tac.nc"
+flux_file="/g/data/w40/dm5220/ancil/user_slevel/tair_change/files_for_xancil/qflux_tac.nc"
 
-xancil_namelist="/g/data3/w48/dm5220/scripts/tair_change/xancil.namelist_slevel_tair_change_$(basename "$out")"
+xancil_namelist="/g/data3/w40/dm5220/scripts/tair_change/xancil.namelist_slevel_tair_change_$(basename "$out")"
 cat > "$xancil_namelist" <<EOF
   &nam_config
   ICAL = 2,
@@ -182,13 +182,13 @@ cat > "$script" <<EOF
 #PBS -l walltime=10:00:00
 #PBS -l ncpus=4
 #PBS -q normal
-#PBS -P w48
-#PBS -l storage=gdata/hh5+gdata/w48+scratch/w48+gdata/access
+#PBS -P w40
+#PBS -l storage=gdata/hh5+gdata/w40+scratch/w40+gdata/access
 #PBS -l mem=50gb
 
-/g/data3/w48/dm5220/scripts/tair_change/slevel_tair_correction.py${options}
+/g/data3/w40/dm5220/scripts/tair_change/slevel_tair_correction.py${options}
 /g/data/access/projects/access/apps/xancil/0.57/mkancil < "$xancil_namelist"
-/g/data/w48/dm5220/scripts/util/fix_polar_anom "$out" #fix polar errors
+/g/data/w40/dm5220/scripts/util/fix_polar_anom "$out" #fix polar errors
 EOF
 
 qsub "$script"

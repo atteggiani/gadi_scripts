@@ -36,7 +36,7 @@ for l in pairwise(lat):
         cond = ~np.logical_and(cond_lat,cond_lev)
         new_tac=tac.where(cond,coeff)
         
-        output_file = "/g/data/w48/dm5220/ancil/user_mlevel/tair_change/sex/files_for_xancil/lat.{}_{}.plev.{}_{}.nc".format(l[0],l[1],pl[0],pl[1])
+        output_file = "/g/data/w40/dm5220/ancil/user_mlevel/tair_change/sex/files_for_xancil/lat.{}_{}.plev.{}_{}.nc".format(l[0],l[1],pl[0],pl[1])
         encoding = {new_tac.name: {'zlib':True,'shuffle':True,'complevel':4,'chunksizes': [1,8,73,96]}}
         new_tac.to_netcdf(output_file,encoding=encoding)
         print("Created {}".format(os.path.split(output_file)[1]))

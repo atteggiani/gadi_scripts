@@ -2,4 +2,4 @@
 
 module use /g/data/access/modules
 module load pythonlib/umfile_utils -s
-python /g/data/w48/dm5220/scripts/util/fix_polar_anom.py "$1"
+python /g/data/w40/dm5220/scripts/util/fix_polar_anom.py "$1"

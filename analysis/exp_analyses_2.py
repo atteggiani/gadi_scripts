@@ -43,8 +43,8 @@ def read_data_parallel(input_folder,files):
                 data = executor.map(lambda x: _read(input_folder,x),files)               
         return list(data)
 
-outpath = "/g/data3/w48/dm5220/data/figures"
-input_folder = "/g/data/w48/dm5220/data"
+outpath = "/g/data3/w40/dm5220/data/figures"
+input_folder = "/g/data/w40/dm5220/data"
 files = [
     "ctl",
     "4co2",

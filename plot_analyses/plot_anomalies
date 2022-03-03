@@ -7,10 +7,10 @@ Script to plot anomalies for UM model output.
 Usage: $PROGNAME [-i <input folder name(s)>] [-o <output name(s)>] [-C <control file>]
 
 List of keys/options:
--i <input folder name(s)> -> name of the folder (inside /g/data3/w48/dm5220/data) where the input data is;
+-i <input folder name(s)> -> name of the folder (inside /g/data3/w40/dm5220/data) where the input data is;
 -o <output name(s)> -> identification name(s) of the output figures. If omitted, the identification
                        name will be the same as the input folder name.
--C <control file name> -> Name of the folder (inside /g/data3/w48/dm5220/data) with the data to compute anomalies from.
+-C <control file name> -> Name of the folder (inside /g/data3/w40/dm5220/data) with the data to compute anomalies from.
                           Default value = "ctl"                          
 
 Example:
@@ -36,19 +36,19 @@ while getopts hi:o:C: opt; do
 done
 
 if [ -z $status ]; then echo "No input given!!"; exit 1; fi
-cd /g/data3/w48/dm5220/scripts/plot_analyses
+cd /g/data3/w40/dm5220/scripts/plot_analyses
 script="sub_plot_anomalies"
 cat > "$script" <<EOF
 #!/bin/bash
 #PBS -l walltime=10:00:00
 #PBS -l ncpus=48
 #PBS -q normal
-#PBS -P w48
-#PBS -l storage=gdata/hh5+gdata/w48+scratch/w48
+#PBS -P w40
+#PBS -l storage=gdata/hh5+gdata/w40+scratch/w40
 #PBS -l mem=10gb
 #PBS -N plot_anomal
 
-python /g/data/w48/dm5220/scripts/plot_analyses/plot_anomalies.py $options
+python /g/data/w40/dm5220/scripts/plot_analyses/plot_anomalies.py $options
 EOF
 
 qsub "$script"

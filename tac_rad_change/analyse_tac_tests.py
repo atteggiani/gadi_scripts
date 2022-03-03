@@ -74,28 +74,29 @@ files=['4co2_fix_tsurf_p_afr_la',
        '4co2_fix_tsurf_p_atl_la',
        '4co2_fix_tsurf_p_ind_la',
        '4co2_fix_tsurf_p_pac_la',
-       '4co2_fix_tsurf_p_global_la',
-       '4co2_fix_tsurf_p_equa_la',
-       '4co2_fix_tsurf_p_extr_la',
-
-    #    '4co2_fix_tsurf_p_afr_ma',
-    #    '4co2_fix_tsurf_p_ama_ma',
-    #    '4co2_fix_tsurf_p_atl_ma',
-    #    '4co2_fix_tsurf_p_ind_ma',
-    #    '4co2_fix_tsurf_p_pac_ma',
-    #    '4co2_fix_tsurf_p_global_ma',
-    #    '4co2_fix_tsurf_p_equa_ma',
-    #    '4co2_fix_tsurf_p_extr_ma',
-
+       
+       '4co2_fix_tsurf_p_ama_ma',
+       '4co2_fix_tsurf_p_atl_ma',
+       '4co2_fix_tsurf_p_ind_ma',
+       '4co2_fix_tsurf_p_pac_ma',
+       
        '4co2_fix_tsurf_p_afr_ha',
        '4co2_fix_tsurf_p_ama_ha',
        '4co2_fix_tsurf_p_atl_ha',
        '4co2_fix_tsurf_p_ind_ha',
        '4co2_fix_tsurf_p_pac_ha',
-       '4co2_fix_tsurf_p_global_ha',
-       '4co2_fix_tsurf_p_equa_ha',
-       '4co2_fix_tsurf_p_extr_ha',
-]
+
+       '4co2_fix_tsurf_m_afr_la',
+       '4co2_fix_tsurf_m_ama_la',
+       '4co2_fix_tsurf_m_atl_la',
+       '4co2_fix_tsurf_m_ind_la',
+       '4co2_fix_tsurf_m_pac_la',
+       
+       '4co2_fix_tsurf_m_afr_ma',
+       '4co2_fix_tsurf_m_ind_ma',
+       '4co2_fix_tsurf_m_pac_ma',
+
+    ]
 
 mlev = {"la":[1,7],
         "ma":[7,13],
@@ -127,12 +128,12 @@ nyears=20
 for file in files:
     filespec=file.split('_')   
     if filespec[1] == 'fix': # 4CO2 fixed tsurf
-        out_folder='/g/data/w48/dm5220/data/figures/fix_tsurf_tac_rad'
+        out_folder='/g/data/w40/dm5220/data/figures/fix_tsurf_tac_rad'
         change,area,atm=filespec[3:]
         ctl=my.UM.read_data('4co2_fix_tsurf')
         d=my.UM.read_data(file)
     elif filespec[1] == 'sw-': # 4CO2 SW-
-        out_folder='/g/data/w48/dm5220/data/figures/tac_rad_test'
+        out_folder='/g/data/w40/dm5220/data/figures/tac_rad_test'
         change,area,atm=filespec[2:]
         ctl=my.UM.read_data('4co2_sw_x0.9452_offset')
         d=my.UM.read_data(file)

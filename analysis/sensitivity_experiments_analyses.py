@@ -10,9 +10,9 @@ import numpy as np
 import cartopy.crs as ccrs
 
 
-input_folder="/g/data/w48/dm5220/data"
-tac_folder="/g/data/w48/dm5220/ancil/user_mlevel/tair_change/sex"
-output_folder="/g/data/w48/dm5220/data/figures/tac_sensitivity_experiments"
+input_folder="/g/data/w40/dm5220/data"
+tac_folder="/g/data/w40/dm5220/ancil/user_mlevel/tair_change/sex"
+output_folder="/g/data/w40/dm5220/data/figures/tac_sensitivity_experiments"
 
 def get_tac_sex_filename(id):
     return os.readlink(os.path.join(tac_folder,id))

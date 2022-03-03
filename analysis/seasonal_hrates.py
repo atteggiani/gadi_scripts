@@ -80,9 +80,9 @@ def plot_vertical_profiles(all_data,labels=None,colors=None,**kwargs):
     plt.grid(ls="--",which='both')
     plt.ylabel(ylabel)
 
-input_folder = "/g/data/w48/dm5220/data"
-outpath = "/g/data3/w48/dm5220/data/figures/seasonal_hrates"
-input_folder = "/g/data/w48/dm5220/data"
+input_folder = "/g/data/w40/dm5220/data"
+outpath = "/g/data3/w40/dm5220/data/figures/seasonal_hrates"
+input_folder = "/g/data/w40/dm5220/data"
 files = [
     "ctl",
     # "4co2",

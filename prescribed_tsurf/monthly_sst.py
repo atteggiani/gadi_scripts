@@ -27,7 +27,7 @@ data = data.rename({lon:'longitude',lat:'latitude'})
 
 land_mask=xr.open_dataarray(my.UM.land_mask_file())
 time=[Datetime360Day(0,m,16,0) for m in np.arange(1,13)]
-ref=xr.open_dataarray("/g/data/w48/dm5220/ancil/ref/qrclim.sst_noland.nc").squeeze()
+ref=xr.open_dataarray("/g/data/w40/dm5220/ancil/ref/qrclim.sst_noland.nc").squeeze()
 
 annual_cycle = data.isel(time=slice(-30*12,None)).groupby("time.month").mean('time',keep_attrs=True)
 annual_cycle = annual_cycle.rename({'month':'t'}).assign_coords(t=time)

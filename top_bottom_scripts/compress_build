@@ -1,10 +1,6 @@
 #!/bin/bash
-dir=/scratch/w48/dm5220/um_builds/dm5220/${1}
-cat > /scratch/w48/dm5220/um_builds/dm5220/test<<EOF
-${1}
-ciao
-EOF
-if [[ -d $dir ]]
+dir=/scratch/w40/dm5220/um_builds/dm5220/$RUNID
+if [[ -d $dir ]] && [[ $TYPE == "NRUN" ]]
 then
     tar --remove-files -cf ${dir}.tar ${dir}
 fi

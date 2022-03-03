@@ -12,7 +12,7 @@ Script to plot vertical profiles for UM model output, for the following variable
 Usage: $PROGNAME [-i <input folder name(s)>] [-l <output label(s)>] [-c <list of color(s)>] [-o <output name identifier>] [-C <control file>]
 
 List of keys/options:
--i <input folder name(s)> -> name of the folders (inside /g/data3/w48/dm5220/data) where the input data is;
+-i <input folder name(s)> -> name of the folders (inside /g/data3/w40/dm5220/data) where the input data is;
 -l <output label(s)> -> identification label(s) of the output data. If omitted, the identification
                         label(s) will be the same as the input folder name(s).
                         The number needs to be equal to the number of inputs.
@@ -26,7 +26,7 @@ List of keys/options:
                                 levtype is either plev (pressure levels) or mlev (model levels).
                                 If omitted, the output form will be:
                                 <var>_vert_prof_<levtype>.png
--C <control file name> -> Name of the folder (inside /g/data3/w48/dm5220/data) with the data to compute anomalies from.
+-C <control file name> -> Name of the folder (inside /g/data3/w40/dm5220/data) with the data to compute anomalies from.
                           Default value = "ctl"                          
 
 Example:
@@ -52,19 +52,19 @@ done
 
 if [ -z $status ]; then echo "No input given!!"; exit 1; fi
 
-cd /g/data3/w48/dm5220/scripts/plot_analyses
+cd /g/data3/w40/dm5220/scripts/plot_analyses
 script="sub_plot_vert_profiles"
 cat > "$script" <<EOF
 #!/bin/bash
 #PBS -l walltime=01:00:00
 #PBS -l ncpus=48
 #PBS -q normal
-#PBS -P w48
-#PBS -l storage=gdata/hh5+gdata/w48+scratch/w48
+#PBS -P w40
+#PBS -l storage=gdata/hh5+gdata/w40+scratch/w40
 #PBS -l mem=10gb
 #PBS -N plot_vert_profiles
 
-python /g/data/w48/dm5220/scripts/plot_analyses/plot_vertical_profiles.py $options
+python /g/data/w40/dm5220/scripts/plot_analyses/plot_vertical_profiles.py $options
 EOF
 
 qsub "$script"

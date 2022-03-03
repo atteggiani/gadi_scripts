@@ -37,7 +37,7 @@ data.coords['time'] = time_mi
 
 annual_cycle = data.unstack('time').isel(year=slice(-30,None)).mean('year').rename({'h_year':'time'}).roll(time=-1).assign_coords(time=time)
 if greb:
-    greb_file="/g/data3/w48/dm5220/data/ancil/GREB_response.nc"
+    greb_file="/g/data3/w40/dm5220/data/ancil/GREB_response.nc"
     g=xr.open_dataarray(greb_file).squeeze()
     g=g.interp(coords={'latitude':annual_cycle.latitude},kwargs={'fill_value':'extrapolate'})
     annual_cycle=(g+annual_cycle)

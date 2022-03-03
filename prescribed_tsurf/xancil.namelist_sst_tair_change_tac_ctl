@@ -7,7 +7,7 @@
   LWFIO = .TRUE.,
   IWFIO_SIZE = 2048,
   NNCFILES = 1
-  NCFILES = "/g/data/w48/dm5220/ancil/sst/prescibed/files_for_xancil/tac_ctl.nc"
+  NCFILES = "/g/data/w40/dm5220/ancil/sst/prescibed/files_for_xancil/tac_ctl.nc"
  /
 
  &nam_gridconfig
@@ -43,9 +43,9 @@
  
  &nam_sst
   LSST = .TRUE.,
-  SST_FILEIN = "/g/data/w48/dm5220/ancil/sst/prescibed/files_for_xancil/tac_ctl.nc"
+  SST_FILEIN = "/g/data/w40/dm5220/ancil/sst/prescibed/files_for_xancil/tac_ctl.nc"
   SST_NCNAME = "surface_temperature",
-  SST_FILEOUT = "/g/data/w48/dm5220/ancil/sst/prescribed/tac_ctl"
+  SST_FILEOUT = "/g/data/w40/dm5220/ancil/sst/prescribed/tac_ctl"
   LSST_MIN = .TRUE.,
   ASST_MIN = 271.4,
   LSST_ICEVAL = .FALSE.,

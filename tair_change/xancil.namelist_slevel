@@ -7,7 +7,7 @@
   LWFIO = .TRUE.,
   IWFIO_SIZE = 2048,
   NNCFILES = 3
-  NCFILES = "/g/data3/w48/dm5220/ancil/user_slevel/tair_change/files_for_xancil/qflux_tac.nc","/g/data3/w48/dm5220/ancil/user_slevel/tair_change/files_for_xancil/land_mask_tac_no_slab.nc","/g/data3/w48/dm5220/ancil/user_slevel/tair_change/files_for_xancil/tac_ctl.nc"
+  NCFILES = "/g/data3/w40/dm5220/ancil/user_slevel/tair_change/files_for_xancil/qflux_tac.nc","/g/data3/w40/dm5220/ancil/user_slevel/tair_change/files_for_xancil/land_mask_tac_no_slab.nc","/g/data3/w40/dm5220/ancil/user_slevel/tair_change/files_for_xancil/tac_ctl.nc"
  /
 
  &nam_gridconfig
@@ -61,7 +61,7 @@
 
  &nam_ausrancil
   LAUSRANCIL = .TRUE.,
-  AUSRANCIL_FILEOUT = "/g/data3/w48/dm5220/ancil/user_slevel/tair_change/tac_ctl_new",
+  AUSRANCIL_FILEOUT = "/g/data3/w40/dm5220/ancil/user_slevel/tair_change/tac_ctl_new",
   LAUSRANCIL_PERIODIC = .TRUE.,
   LAUSRANCIL_CAL_INDEP = .FALSE.,
   IAUSRANCIL_TIMEUSAGE1 = 1,

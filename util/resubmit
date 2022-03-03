@@ -5,49 +5,55 @@ PROGNAME=$(basename $0)
 usage() {
   cat << EOF
 Script to resubmit a UM model run.
-Usage: $PROGNAME [-p] <jobdir-to-resubmit>
+Usage: $PROGNAME [-p <perturb_value>] <jobdir-to-resubmit>
 
 '$PROGNAME' copies the <jobdir-to-resubmit> folder to <jobdir-to-resubmit>_r and applies some changes to make it suitable for resubmission. In the end, it submits the job running:
 'qsub <jobdir-to-resubmit>_r/umuisubmit_run'.
 
 List of keys/options:
--p -> Before resubmitting, perturbes the multi-level boundary condition, to avoid crashes. The boundary condition file is taken from the 'USRMULTI' in the file <jobdir-to-resubmit>/INITHIS. In this case, the new folder will be called <jobdir-to-resubmit>_p.
+-p -> Before resubmitting, perturbes the multi-level boundary condition multiplying it by <perturb_value>, to avoid crashes. 
+The boundary condition file is taken from the 'USRMULTI' in the file <jobdir-to-resubmit>/INITHIS. In this case, the new folder will be called <jobdir-to-resubmit>_p.
 
 EOF
   exit 1
 }
 
-while getopts hp opt; do
+while getopts ":p:" opt; do
     case $opt in
         p)
             add='_p'
             perturb=true
-			shift
+			pval=$OPTARG
+			shift 2
             ;;
-        *) usage
+        \?) usage
     esac
 done
 
 for exp in "$@"
 do
-	dir=$(readlink -m "$exp")
+	dir=/home/565/dm5220/umui_runs/$(basename ${exp%/})
+	jobid=$(basename ${exp%-*})
 	add=${add:='_r'}
 	newdir="${dir}${add}"
-	rm -r "$newdir" &> /dev/null
+	rm -r ${dir}_[rp] &> /dev/null
 	cp -r "$dir" "$newdir"
 
 	file="${newdir}/SUBMIT"
 	sed -i "s|^SUBMITID=[^ ]*|&${add}|" "$file"
-	sed -i "s/^TYPE=NRUN/TYPE=CRUN/" "$file"
 	sed -i "s/^STEP=2/STEP=4/" "$file"
 	sed -i "s|export RCF_NEW_EXEC=|export RCF_NEW_EXEC=false|" "$file"
+	if ! [[ -z $(ls /scratch/w40/dm5220/umui/${jobid}/${jobid}?@d* 2> /dev/null) ]]
+	then
+		sed -i "s/^TYPE=NRUN/TYPE=CRUN/" "$file"
+	fi
 	ksh "$file" > /dev/null
 	
 	if [[ -z $perturb ]]
 	then
 		qsub ${newdir}/umuisubmit_run
 	else	
-		qsub -N perturb.${exp%-*} -v newdir=$newdir /g/data/w48/dm5220/scripts/tac_rad_change/perturb
+		qsub -N perturb.${jobid}_${pval} -v newdir=$newdir,pval=$pval /g/data/w40/dm5220/scripts/tac_rad_change/perturb
 	fi
 done
 exit

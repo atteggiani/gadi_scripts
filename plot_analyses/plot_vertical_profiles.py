@@ -384,8 +384,8 @@ if len(files) != len(all_labels):
 Number of input files is {len(files)}. \
 Number of output labels is {len(all_labels)}")
 
-outpath = "/g/data3/w48/dm5220/data/figures"
-input_folder = "/g/data/w48/dm5220/data"
+outpath = "/g/data3/w40/dm5220/data/figures"
+input_folder = "/g/data/w40/dm5220/data"
 files = [control_file]+files
 # files=[
 #         "ctl",
