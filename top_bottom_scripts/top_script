@@ -1,4 +1,4 @@
 #!/bin/bash
 
-# . /g/data/w40/dm5220/scripts/top_bottom_scripts/delete_directories
+. /g/data/w40/dm5220/scripts/top_bottom_scripts/delete_directories
 . /g/data/w40/dm5220/scripts/top_bottom_scripts/compress_build

@@ -1,6 +1,9 @@
 #!/bin/bash
-if [[ $TYPE == "NRUN" ]]
+if [[ $TYPE == "NRUN" ]] 
 then
     rm /home/565/dm5220/um_output/$RUNID* $> /dev/null
-    rm -f /scratch/w40/dm5220/umui/$RUNID/* $> /dev/null
+    if [[ $PERTURB != 1 ]]
+    then
+        rm -f /scratch/w40/dm5220/umui/$RUNID/* $> /dev/null
+    fi
 fi

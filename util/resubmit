@@ -5,27 +5,16 @@ PROGNAME=$(basename $0)
 usage() {
   cat << EOF
 Script to resubmit a UM model run.
-Usage: $PROGNAME [-p <perturb_value>] <jobdir-to-resubmit>
+Usage: $PROGNAME <jobdir-to-resubmit>
 
 '$PROGNAME' copies the <jobdir-to-resubmit> folder to <jobdir-to-resubmit>_r and applies some changes to make it suitable for resubmission. In the end, it submits the job running:
 'qsub <jobdir-to-resubmit>_r/umuisubmit_run'.
-
-List of keys/options:
--p -> Before resubmitting, perturbes the multi-level boundary condition multiplying it by <perturb_value>, to avoid crashes. 
-The boundary condition file is taken from the 'USRMULTI' in the file <jobdir-to-resubmit>/INITHIS. In this case, the new folder will be called <jobdir-to-resubmit>_p.
-
 EOF
   exit 1
 }
 
-while getopts ":p:" opt; do
+while getopts ":" opt; do
     case $opt in
-        p)
-            add='_p'
-            perturb=true
-			pval=$OPTARG
-			shift 2
-            ;;
         \?) usage
     esac
 done
@@ -34,7 +23,7 @@ for exp in "$@"
 do
 	dir=/home/565/dm5220/umui_runs/$(basename ${exp%/})
 	jobid=$(basename ${exp%-*})
-	add=${add:='_r'}
+	add='_r'
 	newdir="${dir}${add}"
 	rm -r ${dir}_[rp] &> /dev/null
 	cp -r "$dir" "$newdir"
@@ -49,11 +38,6 @@ do
 	fi
 	ksh "$file" > /dev/null
 	
-	if [[ -z $perturb ]]
-	then
-		qsub ${newdir}/umuisubmit_run
-	else	
-		qsub -N perturb.${jobid}_${pval} -v newdir=$newdir,pval=$pval /g/data/w40/dm5220/scripts/tac_rad_change/perturb
-	fi
+	qsub ${newdir}/umuisubmit_run
 done
 exit

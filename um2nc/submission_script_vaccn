@@ -7,4 +7,4 @@
 #PBS -l mem=190gb
 #PBS -N um2nc.vaccn 
 
-python3 /g/data3/w40/dm5220/scripts/um2nc/convert_um2nc.py --id vaccn -o /g/data/w40/dm5220/data/vaccn --ncpus 48
+python3 /g/data3/w40/dm5220/scripts/um2nc/convert_um2nc.py --id vaccn --ncpus 48

@@ -1,0 +1,229 @@
+#!/bin/bash
+#PBS -l walltime=01:00:00
+#PBS -l ncpus=4
+#PBS -q normal
+#PBS -P w40
+#PBS -l storage=gdata/hh5+gdata/w40+scratch/w40+gdata/access
+#PBS -l mem=20gb
+
+ncdir=/g/data3/w40/dm5220/ancil/user_mlevel/tac_rad_change/files_for_xancil
+# Create NetCDF perturbed tac_file
+python3 /g/data/w40/dm5220/scripts/tac_rad_change/perturb_tac.py ${ncdir}/${tac_file}.nc ${value}
+
+# Create ancil perturbed tac_file
+filein=${ncdir}/${tac_file}_p.nc
+fileout=${ncdir%/*}/${tac_file%.nc}_p
+
+script=/g/data3/w40/dm5220/scripts/tac_rad_change/xancil_perturb_${tac_file}
+
+cat > $script <<EOS
+&nam_config
+  ICAL = 2,
+  ISIZE = 64,
+  L32BIT = .FALSE.,
+  VERSION = 7.3,
+  LBIGENDOUT = .TRUE.,
+  LWFIO = .TRUE.,
+  IWFIO_SIZE = 2048,
+  NNCFILES = 1
+  NCFILES = "$filein"
+ /
+
+ &nam_gridconfig
+  LVARGRID = .FALSE.,
+  IAVERT = 1,
+  NLEV = 38,
+  NO3LEV = 38,
+  LLEVSTOREUP = .TRUE.,
+  NAM_VERT = "/g/data/access/projects/access/umdir/vn7.3/ctldata/vert/vertlevs_G3",
+  IOVERT = 0,
+  LDEEPSOIL = .FALSE.
+ /
+
+ &nam_ozone
+ /
+
+ &nam_smow
+ /
+
+ &nam_slt
+ /
+
+ &nam_soil
+ /
+
+ &nam_veg
+ /
+
+ &nam_vegfrac
+ /
+
+ &nam_vegfunc
+ /
+
+ &nam_vegdist
+ /
+
+ &nam_sst
+ /
+
+ &nam_ice
+ /
+
+ &nam_orog
+ /
+
+ &nam_mask
+ /
+
+ &nam_lfrac
+ /
+
+ &nam_ausrmulti
+  LAUSRMULTI = .TRUE.,
+  AUSRMULTI_FILEOUT = "$fileout",
+  LAUSRMULTI_PERIODIC = .TRUE.,
+  LAUSRMULTI_CAL_INDEP = .FALSE.,
+  IAUSRMULTI_TIMEUSAGE1 = 1,
+  IAUSRMULTI_TIMEUSAGE2 = 0,
+  IAUSRMULTI_STARTDATE(1) = 0000,
+  IAUSRMULTI_STARTDATE(2) = 1,
+  IAUSRMULTI_STARTDATE(3) = 1,
+  IAUSRMULTI_STARTDATE(4) = 0,
+  IAUSRMULTI_STARTDATE(5) = 0,
+  IAUSRMULTI_STARTDATE(6) = 0,
+  IAUSRMULTI_NTIMES = 360,
+  IAUSRMULTI_INTERVAL = 1,
+  IAUSRMULTI_INTUNIT = 2,
+  LAUSRMULTI_MM = .TRUE.
+  IAUSRMULTI_NFIELD = 1
+  IAUSRMULTI_FILEINID(1) = 1,
+  IAUSRMULTI_STASHCODE(1) = 321,
+  IAUSRMULTI_PPCODE(1) = 0,
+  AUSRMULTI_NCNAME(1) = "mlev_ancil",
+  LAUSRMULTI_THETA(1) = .TRUE.
+  IAUSRMULTI_GRIDTYPE(1) = 1,
+  IAUSRMULTI_DATATYPE(1) = 1,
+  IAUSRMULTI_MASKTYPE(1) = 0,
+  IAUSRMULTI_MASK(1) = 0,
+ /
+
+ &nam_ausrancil
+ /
+
+ &nam_ts1
+ /
+
+ &nam_flux
+ /
+
+ &nam_ousrmulti
+ /
+
+ &nam_ousrancil
+ /
+
+ &nam_genanc_config
+  NANCFILES = 1
+ /
+
+ &nam_genanc
+  LGENANC_FILE(1) = .FALSE.,
+
+ /
+
+ &nam_astart
+ /
+EOS
+
+# Create ancil file
+/g/data/access/projects/access/apps/xancil/0.57/mkancil0.57 < $script
+
+# Change INITHIS file with new perturbed file
+sed -i "s|USRMULTI=.*|USRMULTI= 'USRMULTI : ${fileout}',|" ${newdir}/INITHIS
+
+# GET LAST DUMP FILE
+jobid=$(basename ${newdir%-*})
+outdir=/scratch/w40/dm5220/umui/$jobid
+dfs=($(ls -t $outdir/${jobid}?@da* 2> /dev/null | head -n2))
+df=${dfs[0]}
+df2=${dfs[1]}
+if ! [[ -z $df2 ]]
+then
+    du1=$(du -b $df2 | cut -f1)
+    du2=$(du -b $df | cut -f1)
+    if [[ $du1 = $du2 ]]
+    then
+        dumpfile=$df
+    else
+        dumpfile=$df2
+    fi
+fi
+
+# GET START YEAR
+start=$(grep -Po "MODEL_BASIS_TIME= \K.*" ${newdir}/CNTLALL)
+yst=$(echo $start | cut -d, -f1)
+mst=$(echo $start | cut -d, -f2)
+dst=$(echo $start | cut -d, -f3)
+
+# GET RUN LENGTH
+run_length=$(grep -Po "RUN_TARGET_END= \K.*" ${newdir}/CNTLALL)
+ylen=$(echo $run_length | cut -d, -f1)
+mlen=$(echo $run_length | cut -d, -f2)
+dlen=$(echo $run_length | cut -d, -f3)
+
+if ! [[ -z $dumpfile ]]
+then
+    # GET NEW START
+    str=$(basename ${dumpfile#*@d?})
+    yr=${str:0:3}
+    nmst=${str:3:1}
+    ndst=${str:4:1}
+    nyst=$(python3 - ${yr}<<EOF
+import myfuncs as my
+import sys
+yr=my.UM.from_um_filename_years(sys.argv[1])
+print(yr)
+EOF
+)
+    newstart="${nyst} , ${nmst} , ${ndst} , 0 , 0 , 0 ,"
+    # GET NEW RUN LENGTH
+    ndlen=$(( (dst+dlen-ndst) ))
+    nmlen=$(( (mst+mlen-nmst) + ndlen/30 ))
+    ndlen=$(( ndlen%30 ))
+    nylen=$(( yst+ylen-nyst + nmlen/12 ))
+    nmlen=$(( ndlen%12 ))
+    newlength="${nylen} , ${nmlen} , ${ndlen} , 0 , 0 , 0 ,"
+
+    # Change RUN START and RUN LENGTH
+    file=${newdir}/CNTLALL
+    sed -i "s|MODEL_BASIS_TIME=.*|MODEL_BASIS_TIME= ${nyst} , ${nmst} , ${ndst} , 0 , 0 , 0 ,|" $file
+    sed -i "s|RUN_TARGET_END=.*|RUN_TARGET_END= ${nylen} , ${nmlen} , ${ndlen} , 0 , 0 , 0 , |" $file
+    file=${newdir}/CONTCNTL
+    sed -i "s|MODEL_BASIS_TIME=.*|MODEL_BASIS_TIME= ${nyst} , ${nmst} , ${ndst} , 0 , 0 , 0 ,|" $file
+    sed -i "s|RUN_TARGET_END=.*|RUN_TARGET_END= ${nylen} , ${nmlen} , ${ndlen} , 0 , 0 , 0 , |" $file
+    file=${newdir}/INITHIS
+    sed -i "s|AINITIAL=.*|AINITIAL='AINITIAL: ${dumpfile}',|" $file    
+    file=${newdir}/RECONA
+    sed -i "s|FIXHD(21)=.*|FIXHD(21)=${nyst},|" $file
+    sed -i "s|FIXHD(28)=.*|FIXHD(28)=${nyst},|" $file
+    sed -i "s|RUN_TARGET_END=.*|RUN_TARGET_END= ${nylen} , ${nmlen} , ${ndlen} , 0 , 0 , 0 ,|" $file
+    file=${newdir}/SIZES
+    sed -i "s|RUN_TARGET_END=.*|RUN_TARGET_END= ${nylen} , ${nmlen} , ${ndlen} , 0 , 0 , 0 ,|" $file
+    file=${newdir}/SUBMIT
+    sed -i "s|^RUN_LEN_YEARS=.*|RUN_LEN_YEARS=${nylen}|" $file
+    sed -i "s|^RUN_LEN_MONTHS=.*|RUN_LEN_MONTHS=${nmlen}|" $file
+    sed -i "s|^RUN_LEN_DAYS=.*|RUN_LEN_DAYS=${ndlen}|" $file
+fi
+
+subid=${newdir#*${jobid}-}
+sed -i "s|^SUBMITID=.*|SUBMITID=${subid}|" ${newdir}/SUBMIT
+
+# Create new umuisubmit_run
+ksh ${newdir}/SUBMIT
+
+if [[ $run = 1 ]]
+then
+# Submit new job with perturbed file
+    qsub -v PERTURB=1 ${newdir}/umuisubmit_run
+fi

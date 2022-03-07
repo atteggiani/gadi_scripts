@@ -1,146 +1,66 @@
 #!/bin/bash
-#PBS -l walltime=01:00:00
-#PBS -l ncpus=4
-#PBS -q normal
-#PBS -P w40
-#PBS -l storage=gdata/hh5+gdata/w40+scratch/w40+gdata/access
-#PBS -l mem=20gb
 
-tac_file=$(basename $(grep -Po ".*USRMULTI= 'USRMULTI : \K.*" ${newdir}/INITHIS)) ; tac_file=${tac_file%\',}
-ncdir=/g/data3/w40/dm5220/ancil/user_mlevel/tac_rad_change/files_for_xancil
+PROGNAME=$(basename $0)
 
-# Create NetCDF perturbed tac_file
-python3 /g/data/w40/dm5220/scripts/tac_rad_change/perturb_tac.py $ncdir/${tac_file}.nc $pval
+usage() {
+  cat << EOF
+Script to resubmit one or more UM model run(s), with perturbed tac file.
+Usage: $PROGNAME [-n/--no-run] [-v/--value <value>] <jobdir1-to-resubmit> <jobdir2-to-resubmit> ...
 
-# Create ancil perturbed tac_file
-filein=$ncdir/${tac_file}_p.nc
-fileout=${ncdir%/*}/${tac_file%.nc}_p
+'$PROGNAME' copies each of the <jobdir-to-resubmit> folders to <jobdir-to-resubmit>_p_<value> and applies some changes to the run length and start dump file, to make it suitable for resubmission. 
+Then, it perturbs the multi-level boundary condition multiplying it by <value>.
+In the end, it submits the job running:
+'qsub <jobdir-to-resubmit>_p_value/umuisubmit_run' for each folder.
+If <value> is not specified, it is set to 0.9999.
 
-script=/g/data3/w40/dm5220/scripts/tac_rad_change/xancil_perturb_${tac_file}
-cat > $script <<EOF
-&nam_config
-  ICAL = 2,
-  ISIZE = 64,
-  L32BIT = .FALSE.,
-  VERSION = 7.3,
-  LBIGENDOUT = .TRUE.,
-  LWFIO = .TRUE.,
-  IWFIO_SIZE = 2048,
-  NNCFILES = 1
-  NCFILES = "$filein"
- /
+List of keys/options:
+-n/--no-run -> Perturbs the file and creates the new directory, without submitting the job.
+-v/--value <value> -> Set the value for the perturbation of the multi-level boundary condition file.
 
- &nam_gridconfig
-  LVARGRID = .FALSE.,
-  IAVERT = 1,
-  NLEV = 38,
-  NO3LEV = 38,
-  LLEVSTOREUP = .TRUE.,
-  NAM_VERT = "/g/data/access/projects/access/umdir/vn7.3/ctldata/vert/vertlevs_G3",
-  IOVERT = 0,
-  LDEEPSOIL = .FALSE.
- /
-
- &nam_ozone
- /
-
- &nam_smow
- /
-
- &nam_slt
- /
-
- &nam_soil
- /
-
- &nam_veg
- /
-
- &nam_vegfrac
- /
-
- &nam_vegfunc
- /
-
- &nam_vegdist
- /
-
- &nam_sst
- /
-
- &nam_ice
- /
-
- &nam_orog
- /
-
- &nam_mask
- /
-
- &nam_lfrac
- /
-
- &nam_ausrmulti
-  LAUSRMULTI = .TRUE.,
-  AUSRMULTI_FILEOUT = "$fileout",
-  LAUSRMULTI_PERIODIC = .TRUE.,
-  LAUSRMULTI_CAL_INDEP = .FALSE.,
-  IAUSRMULTI_TIMEUSAGE1 = 1,
-  IAUSRMULTI_TIMEUSAGE2 = 0,
-  IAUSRMULTI_STARTDATE(1) = 0000,
-  IAUSRMULTI_STARTDATE(2) = 1,
-  IAUSRMULTI_STARTDATE(3) = 1,
-  IAUSRMULTI_STARTDATE(4) = 0,
-  IAUSRMULTI_STARTDATE(5) = 0,
-  IAUSRMULTI_STARTDATE(6) = 0,
-  IAUSRMULTI_NTIMES = 360,
-  IAUSRMULTI_INTERVAL = 1,
-  IAUSRMULTI_INTUNIT = 2,
-  LAUSRMULTI_MM = .TRUE.
-  IAUSRMULTI_NFIELD = 1
-  IAUSRMULTI_FILEINID(1) = 1,
-  IAUSRMULTI_STASHCODE(1) = 321,
-  IAUSRMULTI_PPCODE(1) = 0,
-  AUSRMULTI_NCNAME(1) = "mlev_ancil",
-  LAUSRMULTI_THETA(1) = .TRUE.
-  IAUSRMULTI_GRIDTYPE(1) = 1,
-  IAUSRMULTI_DATATYPE(1) = 1,
-  IAUSRMULTI_MASKTYPE(1) = 0,
-  IAUSRMULTI_MASK(1) = 0,
- /
-
- &nam_ausrancil
- /
-
- &nam_ts1
- /
-
- &nam_flux
- /
-
- &nam_ousrmulti
- /
-
- &nam_ousrancil
- /
-
- &nam_genanc_config
-  NANCFILES = 1
- /
-
- &nam_genanc
-  LGENANC_FILE(1) = .FALSE.,
-
- /
-
- &nam_astart
- /
 EOF
+  exit 1
+}
 
-/g/data/access/projects/access/apps/xancil/0.57/mkancil0.57 < $script
+while getopts ":nv:-:" opt; do
+    case $opt in
+        -)
+            case "$OPTARG" in
+                no-run)
+                    run=0
+                ;;
+                value)
+                    value="${!OPTIND}"
+		    OPTIND=$((OPTIND+1))
+                ;;
+                 *)
+                    echo "Uknown option --${OPTARG}"
+                    usage
+                ;;
+            esac
+        ;;
+        n)
+            run=0
+        ;;
+        v)
+            value="$OPTARG"
+        ;;
+        \?) usage
+        ;;
+    esac
+done
+shift $((OPTIND-1))
+value=${value:=0.9999}
+run=${run:=1}
+add='_p'
 
-# Change INITHIS file with new perturbed file
-sed -i "s|USRMULTI= '[^']*|&_p|" ${newdir}/INITHIS
-
-# Submit new job with perturbed file
-qsub ${newdir}/umuisubmit_run
+for exp in "$@"
+do
+  dir=/home/565/dm5220/umui_runs/$(basename ${exp%/})
+  newdir="${dir}${add}_${value}"
+  rm -r ${dir}_[rp]* &> /dev/null
+  cp -r "$dir" "$newdir"
+  if [[ $? != 0 ]]; then exit; fi
+  tac_file=$(basename $(grep -Po ".*USRMULTI= 'USRMULTI : \K[^']*" ${newdir}/INITHIS)); tac_file=${tac_file%_p}
+  qsub -N perturb_$(basename ${newdir})_${value} -v run=${run},value=${value},tac_file=${tac_file},newdir=${newdir} /g/data3/w40/dm5220/scripts/tac_rad_change/submit_perturb
+done
+exit
