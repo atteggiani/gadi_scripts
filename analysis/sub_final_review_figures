@@ -1,0 +1,10 @@
+#!/bin/bash
+#PBS -l walltime=10:00:00
+#PBS -l ncpus=48
+#PBS -q normal
+#PBS -P w40
+#PBS -l storage=gdata/hh5+gdata/w40+scratch/w40
+#PBS -l mem=100gb
+#PBS -N plot_final_review
+
+python3 /g/data/w40/dm5220/scripts/analysis/final_review_figures.py

@@ -7,33 +7,41 @@ Script to plot anomalies for UM model output.
 Usage: $PROGNAME [-i <input folder name(s)>] [-o <output name(s)>] [-C <control file>]
 
 List of keys/options:
--i <input folder name(s)> -> name of the folder (inside /g/data3/w40/dm5220/data) where the input data is;
--o <output name(s)> -> identification name(s) of the output figures. If omitted, the identification
-                       name will be the same as the input folder name.
--C <control file name> -> Name of the folder (inside /g/data3/w40/dm5220/data) with the data to compute anomalies from.
-                          Default value = "ctl"                          
-
+-d <output directory> --> Saves the figures in the specfied directory.
+    If not provided, figures will be saved in /g/data3/w40/dm5220/data/figures/anomalies
+-i <input folder name(s)> --> name of the folder (inside /g/data3/w40/dm5220/data) where the input data is
+-n --> Perform normalization (Division by the std along time)
+-o <output name(s)> --> identification name(s) of the output figures.
+    If omitted, the identification name will be the same as the input folder name.
+-t --> Don't draw 95% confidence t_student test hatching on the anomalies.
+-C <control file name> --> Name of the folder (inside /g/data3/w40/dm5220/data) with the data to compute anomalies from.
+    Default value = "ctl" 
+                                        
 Example:
 $PROGNAME -i folder_name
 $PROGNAME -i folder_name -o out_name
-$PROGNAME -i "first_folder_name second_folder_name ..." -o "first_out_name second_out_name ..." -C other_control_file
+$PROGNAME -n -i "first_folder_name second_folder_name ..." -o "first_out_name second_out_name ..." -C other_control_file
 
 EOF
   exit 1
 }
 
-while getopts hi:o:C: opt; do
+while getopts ":i:o:C:n" opt; do
     case $opt in
         i)
-            options+=" -i "$OPTARG""
+            options+=" -i ${OPTARG}"
             status=ok
             ;;
-        [oC])
-            options+=" -$opt "$OPTARG""
+        [doC])
+            options+=" -$opt ${OPTARG}"
+            ;;
+        [nt])  
+            options+=" -$opt"
             ;;
         *) usage
     esac
 done
+shift $((OPTIND-1))
 
 if [ -z $status ]; then echo "No input given!!"; exit 1; fi
 cd /g/data3/w40/dm5220/scripts/plot_analyses
@@ -45,7 +53,7 @@ cat > "$script" <<EOF
 #PBS -q normal
 #PBS -P w40
 #PBS -l storage=gdata/hh5+gdata/w40+scratch/w40
-#PBS -l mem=10gb
+#PBS -l mem=50gb
 #PBS -N plot_anomal
 
 python /g/data/w40/dm5220/scripts/plot_analyses/plot_anomalies.py $options

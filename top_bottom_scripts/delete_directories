@@ -1,9 +1,16 @@
 #!/bin/bash
+file=$(grep -Po "USRMULTI= 'USRMULTI :\K.*" ${JOBDIR}/INITHIS)
+file=$(basename ${file%\',})
+
 if [[ $TYPE == "NRUN" ]] 
 then
     rm /home/565/dm5220/um_output/$RUNID* $> /dev/null
-    if [[ $PERTURB != 1 ]]
+    if ([[ $PERTURB != 1 ]] && [[ $file !~ .*_p$ ]])
     then
-        rm -f /scratch/w40/dm5220/umui/$RUNID/* $> /dev/null
+        cat > /home/565/dm5220/test<<OP
+JOBDIR=${JOBDIR}
+file=${file}
+OP
+        # rm -f /scratch/w40/dm5220/umui/$RUNID/* $> /dev/null
     fi
 fi

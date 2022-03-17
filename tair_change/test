@@ -1,0 +1,13 @@
+#!/bin/bash
+#PBS -l walltime=10:00:00
+#PBS -l ncpus=4
+#PBS -q normal
+#PBS -P w40
+#PBS -l storage=gdata/hh5+gdata/w40+scratch/w40+gdata/access
+#PBS -l mem=50gb
+
+/g/data/access/projects/access/apps/xancil/0.57/mkancil < /g/data/w40/dm5220/scripts/tair_change/xancil.namelist_noslab
+/g/data/w40/dm5220/scripts/util/fix_polar_anom /g/data/w40/dm5220/ancil/user_slevel/tair_change/tac_ctl_p
+
+/g/data/access/projects/access/apps/xancil/0.57/mkancil < /g/data/w40/dm5220/scripts/tair_change/xancil.namelist_slab
+/g/data/w40/dm5220/scripts/util/fix_polar_anom /g/data/w40/dm5220/ancil/user_slevel/tair_change/tac_slab_p

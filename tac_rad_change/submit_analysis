@@ -7,4 +7,4 @@
 #PBS -l mem=150gb
 #PBS -N submit_analysis
 
-python3 /g/data/w40/dm5220/scripts/tac_rad_change/analyse_tac_tests.py
+python3 /g/data/w40/dm5220/scripts/tac_rad_change/analyse_tac.py

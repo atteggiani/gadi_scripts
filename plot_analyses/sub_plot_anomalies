@@ -4,7 +4,7 @@
 #PBS -q normal
 #PBS -P w40
 #PBS -l storage=gdata/hh5+gdata/w40+scratch/w40
-#PBS -l mem=10gb
+#PBS -l mem=50gb
 #PBS -N plot_anomal
 
-python /g/data/w40/dm5220/scripts/plot_analyses/plot_anomalies.py  -i 4co2_fix_tsurf
+python /g/data/w40/dm5220/scripts/plot_analyses/plot_anomalies.py  -i 4co2_fix_tsurf_best_guess_3 -o 4co2_fix_best3 -n
