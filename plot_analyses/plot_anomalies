@@ -26,7 +26,7 @@ EOF
   exit 1
 }
 
-while getopts ":i:o:C:n" opt; do
+while getopts "d::i:o:C:n" opt; do
     case $opt in
         i)
             options+=" -i ${OPTARG}"
