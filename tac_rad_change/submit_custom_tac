@@ -5,7 +5,7 @@
 #PBS -P w40
 #PBS -l storage=gdata/hh5+gdata/w40+scratch/w40+gdata/access
 #PBS -l mem=150gb
-#PBS -N create_custom_tac
+#PBS -N custom_tac
 
 # PROGNAME=$(basename $0)
 # usage() {
@@ -43,23 +43,23 @@
 # script=/g/data3/w40/dm5220/scripts/tac_rad_change/custom_tac_submit
 # cat > $script <<EOF
 
-#!/bin/bash
-#PBS -l walltime=10:00:00
-#PBS -l ncpus=4
-#PBS -q normal
-#PBS -P w40
-#PBS -l storage=gdata/hh5+gdata/w40+scratch/w40+gdata/access
-#PBS -l mem=150gb
-#PBS -N create_custom_tac
+# !/bin/bash
+# PBS -l walltime=10:00:00
+# PBS -l ncpus=4
+# PBS -q normal
+# PBS -P w40
+# PBS -l storage=gdata/hh5+gdata/w40+scratch/w40+gdata/access
+# PBS -l mem=150gb
+# PBS -N create_custom_tac
 
-name=best_1
+name=best1
 dir=/g/data3/w40/dm5220/ancil/user_mlevel/tac_rad_change
 file=${dir}/${name}
 i=1
 while [[ -f ${file} ]]
 do
     ((i++))
-    name=best_${i}
+    name=best${i}
     file=${dir}/${name}
 done
 python3 /g/data/w40/dm5220/scripts/tac_rad_change/create_custom_tac.py "$name"

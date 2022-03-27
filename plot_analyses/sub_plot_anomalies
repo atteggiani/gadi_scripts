@@ -7,4 +7,4 @@
 #PBS -l mem=50gb
 #PBS -N plot_anomal
 
-python /g/data/w40/dm5220/scripts/plot_analyses/plot_anomalies.py  -d /g/data3/w40/dm5220/data/final_review_figures -i 4co2 4co2_fix_taurf 4co2_solar50- 4co2_sw-_x0.9452_offset ctl_solar50+_sw-_x0.9489_offset -o 4co2 4co2_fix 4co2_solar50- 4co2_sw- solar50+_sw-
+python /g/data/w40/dm5220/scripts/plot_analyses/plot_anomalies.py  -d /g/data3/w40/dm5220/data/final_review_figures -i ctl_fix_tsurf_solar50+ -C 4co2_fix_tsurf -o solar50+_fix_D.4co2_fix
