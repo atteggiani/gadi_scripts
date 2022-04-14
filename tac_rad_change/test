@@ -1,0 +1,75 @@
+#!/bin/bash
+
+PROGNAME=$(basename $0)
+usage() {
+  cat << EOF
+Script to create a custom atmospheric flux, by defining value, latitude, longitude and level extent.
+
+Usage: $PROGNAME -c <change-file> [-n <output-name>] [-f <output-folder>]
+
+'$PROGNAME' create a custom atmospheric flux based on the <change-file> provided. 
+
+List of keys/options:
+-c <change-file> -> File to define the atmospheric flux. 
+    The change-file needs to be a text file WITH or WITHOUT header, with the following format:
+    Each line represents a flux change and needs to have the format of a python dictionary, with the following keys:
+    'val': <flux value> -> The value of the flux change
+    'lat': [[min-lat1,max-lat1],[min-lat2,max-lat2],...] -> Comma-separated list of the latitude costraint(s) (between -90 and 90).
+                                                            If only one costraint is present, remember to include double square brackets around it
+                                                            (e.g. 'lat':[[min-lat,max-lat]])
+    'lon': [[min-lon1,max-lon1],[min-lon2,max-lon2],...] -> Comma-separated list of the longitude costraint(s) (between 0 and 360).
+                                                            If only one costraint is present, remember to include double square brackets around it
+                                                            (e.g. 'lat':[[min-lon,max-lon]])
+    'lev': [min-lev,max-lev] -> Model level costraint (between 1 and 21).
+
+    Example: {'val':-0.01,'lat':[[-20,20]],'lon':[[0,40],[310,360]],'lev':[7,13]}
+    
+    If more than one line is present, that would be treated as another change to apply:
+    Example: {'val':-0.009,'lat':[[-20,20]],'lon':[[310,360],[0,40]],'lev':[7,13]}
+             {'val':-0.001,'lat':[[-55,-30]],'lon':[[0,360]],'lev':[7,13]}
+
+    The presence of spaces within each line doesn't influence it, as it is read as a python code.
+    The curly brackets at the beginning and end of each line can be omitted.
+    If a Header is present, the first line accounted for the change will be the first one that starts with: 'val': or {'val':
+
+-n <output-name> -> Name for the ancillary file which will be created.
+    If not provided, the ancillary file will be called "bestX", where X is the first available number for which an ancillary file doesn't exist already in the output-folder.
+
+-f <output-folder> -> Path to the folder under which the output file will be created.
+    If not provided, the folder used will be /g/data3/w40/dm5220/ancil/user_mlevel/tac_rad_change
+
+--no-filter -> Don't apply smoothing filter to the generated atmospheric flux. 
+EOF
+  exit 1
+}
+
+while getopts ":c:n:f:-:" opt; do
+    case $opt in
+        -)
+            case $OPTARG in
+            no-filter)
+                filter=False
+            ;;
+            *)  echo Invalid option --$OPTARG
+                usage
+            ;;
+            esac
+        ;;
+        c) 
+            change_file=$(readlink -m "$OPTARG")
+        ;;
+        n)
+            name="$OPTARG"
+        ;;
+        f)
+            dir=$(readlink -f "$OPTARG")
+        ;;
+        \?) option=$((OPTIND-1))
+            echo Invalid option ${!option}
+            usage
+        ;;
+    esac
+done
+shift $((OPTIND-1))
+
+echo "$@"

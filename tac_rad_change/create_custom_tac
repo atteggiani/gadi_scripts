@@ -1,0 +1,272 @@
+#!/bin/bash
+
+PROGNAME=$(basename $0)
+usage() {
+  cat << EOF
+Script to create a custom atmospheric flux, by defining value, latitude, longitude and level extent.
+
+Usage: $PROGNAME -c <change-file> [-n <output-name>] [-f <output-folder>]
+
+'$PROGNAME' create a custom atmospheric flux based on the <change-file> provided. 
+
+List of keys/options:
+-c <change-file> -> File to define the atmospheric flux. 
+    The change-file needs to be a text file WITH or WITHOUT header, with the following format:
+    Each line represents a flux change and needs to have the format of a python dictionary, with the following keys:
+    'val': <flux value> -> The value of the flux change
+    'lat': [[min-lat1,max-lat1],[min-lat2,max-lat2],...] -> Comma-separated list of the latitude costraint(s) (between -90 and 90).
+                                                            If only one costraint is present, remember to include double square brackets around it
+                                                            (e.g. 'lat':[[min-lat,max-lat]])
+    'lon': [[min-lon1,max-lon1],[min-lon2,max-lon2],...] -> Comma-separated list of the longitude costraint(s) (between 0 and 360).
+                                                            If only one costraint is present, remember to include double square brackets around it
+                                                            (e.g. 'lat':[[min-lon,max-lon]])
+    'lev': [min-lev,max-lev] -> Model level costraint (between 1 and 21).
+
+    Example: {'val':-0.01,'lat':[[-20,20]],'lon':[[0,40],[310,360]],'lev':[7,13]}
+    
+    If more than one line is present, that would be treated as another change to apply:
+    Example: {'val':-0.009,'lat':[[-20,20]],'lon':[[310,360],[0,40]],'lev':[7,13]}
+             {'val':-0.001,'lat':[[-55,-30]],'lon':[[0,360]],'lev':[7,13]}
+
+    The presence of spaces within each line doesn't influence it, as it is read as a python code.
+    The curly brackets at the beginning and end of each line can be omitted.
+    If a Header is present, the first line accounted for the change will be the first one that starts with: 'val': or {'val':
+
+-n <output-name> -> Name for the ancillary file which will be created.
+    If not provided, the ancillary file will be called "bestX", where X is the first available number for which an ancillary file doesn't exist already in the output-folder.
+
+-f <output-folder> -> Path to the folder under which the output file will be created.
+    If not provided, the folder used will be /g/data3/w40/dm5220/ancil/user_mlevel/tac_rad_change
+
+-b <path-to-basefile> -> Path to the NetCDF file to use as base for the atmospheric flux changes.
+
+--no-filter -> Don't apply smoothing filter to the generated atmospheric flux. 
+EOF
+  exit 1
+}
+
+while getopts ":hb:c:n:f:-:" opt; do
+    case $opt in
+        -)
+            case $OPTARG in
+            no-filter)
+                options+="--no-filter "
+            ;;
+            *)  echo Invalid option --$OPTARG 
+                usage
+            ;;
+            esac
+        ;;
+        b)
+            base=$(readlink -m "$OPTARG")
+            if ! [[ -e $base ]];
+            then
+                echo ${base} does not exist!
+                exit 1
+            elif (! [[ -f $base ]] || ! grep -Eq ".*\.nc$" <<< ${base})
+            then
+                echo ${base} is not a NetCDF file!
+                exit 1
+            fi
+            options+="-b ${base} "
+        ;;
+        c) 
+            change_file=$(readlink -m "$OPTARG")
+        ;;
+        n)
+            name="$OPTARG"
+        ;;
+        f)
+            dir=$(readlink -f "$OPTARG")
+        ;;
+        h)
+            usage
+        ;;
+        \?) option=$((OPTIND-1))
+            echo Invalid option ${!option}
+            usage
+        ;;
+    esac
+done
+shift $((OPTIND-1))
+
+if [[ -z "$change_file" ]]
+then
+cat << EOF
+Change-file not provided! 
+Please provide change-file with the -c option. 
+
+Example: $PROGNAME -c <path-to-change-file>
+
+For more info: $PROGNAME -h
+EOF
+exit 1
+elif ! [[ -f "$change_file" ]]
+then
+echo Change file "$change_file" does not exist!
+exit 1
+fi
+
+change_file_tmp=$(mktemp)
+cat > $change_file_tmp < "$change_file"
+options+="-c ${change_file_tmp} "
+
+dir=${dir:=/g/data3/w40/dm5220/ancil/user_mlevel/tac_rad_change}
+mkdir -p $dir
+
+if [[ -z $name ]]
+then
+    name=best1
+    file=${dir}/${name}
+    i=1
+    while [[ -f ${file} ]]
+    do
+        ((i++))
+        name=best${i}
+        file=${dir}/${name}
+    done
+fi
+options+="-n ${name} "
+
+script=/g/data/w40/dm5220/scripts/tac_rad_change/xancil.namelist_${name}
+cat > $script <<EOS
+&nam_config
+  ICAL = 2,
+  ISIZE = 64,
+  L32BIT = .FALSE.,
+  VERSION = 7.3,
+  LBIGENDOUT = .TRUE.,
+  LWFIO = .TRUE.,
+  IWFIO_SIZE = 2048,
+  NNCFILES = 1
+  NCFILES = "${dir}/files_for_xancil/${name}.nc"
+ /
+
+ &nam_gridconfig
+  LVARGRID = .FALSE.,
+  IAVERT = 1,
+  NLEV = 38,
+  NO3LEV = 38,
+  LLEVSTOREUP = .TRUE.,
+  NAM_VERT = "/g/data/access/projects/access/umdir/vn7.3/ctldata/vert/vertlevs_G3",
+  IOVERT = 0,
+  LDEEPSOIL = .FALSE.
+ /
+
+ &nam_ozone
+ /
+
+ &nam_smow
+ /
+
+ &nam_slt
+ /
+
+ &nam_soil
+ /
+
+ &nam_veg
+ /
+
+ &nam_vegfrac
+ /
+
+ &nam_vegfunc
+ /
+
+ &nam_vegdist
+ /
+
+ &nam_sst
+ /
+
+ &nam_ice
+ /
+
+ &nam_orog
+ /
+
+ &nam_mask
+ /
+
+ &nam_lfrac
+ /
+
+ &nam_ausrmulti
+  LAUSRMULTI = .TRUE.,
+  AUSRMULTI_FILEOUT = "${dir}/${name}",
+  LAUSRMULTI_PERIODIC = .TRUE.,
+  LAUSRMULTI_CAL_INDEP = .FALSE.,
+  IAUSRMULTI_TIMEUSAGE1 = 1,
+  IAUSRMULTI_TIMEUSAGE2 = 0,
+  IAUSRMULTI_STARTDATE(1) = 0000,
+  IAUSRMULTI_STARTDATE(2) = 1,
+  IAUSRMULTI_STARTDATE(3) = 1,
+  IAUSRMULTI_STARTDATE(4) = 0,
+  IAUSRMULTI_STARTDATE(5) = 0,
+  IAUSRMULTI_STARTDATE(6) = 0,
+  IAUSRMULTI_NTIMES = 360,
+  IAUSRMULTI_INTERVAL = 1,
+  IAUSRMULTI_INTUNIT = 2,
+  LAUSRMULTI_MM = .TRUE.
+  IAUSRMULTI_NFIELD = 1
+  IAUSRMULTI_FILEINID(1) = 1,
+  IAUSRMULTI_STASHCODE(1) = 321,
+  IAUSRMULTI_PPCODE(1) = 0,
+  AUSRMULTI_NCNAME(1) = "mlev_ancil",
+  LAUSRMULTI_THETA(1) = .TRUE.
+  IAUSRMULTI_GRIDTYPE(1) = 1,
+  IAUSRMULTI_DATATYPE(1) = 1,
+  IAUSRMULTI_MASKTYPE(1) = 0,
+  IAUSRMULTI_MASK(1) = 0,
+ /
+
+ &nam_ausrancil
+ /
+
+ &nam_ts1
+ /
+
+ &nam_flux
+ /
+
+ &nam_ousrmulti
+ /
+
+ &nam_ousrancil
+ /
+
+ &nam_genanc_config
+  NANCFILES = 1
+ /
+
+ &nam_genanc
+  LGENANC_FILE(1) = .FALSE.,
+
+ /
+
+ &nam_astart
+ /
+EOS
+
+sub_script=/g/data3/w40/dm5220/scripts/tac_rad_change/custom_tac_submit
+cat > $sub_script <<EOF
+#!/bin/bash
+#PBS -l walltime=10:00:00
+#PBS -l ncpus=4
+#PBS -q normal
+#PBS -P w40
+#PBS -l storage=gdata/hh5+gdata/w40+scratch/w40+gdata/access
+#PBS -l mem=150gb
+#PBS -N custom_tac_${name}
+#PBS -o /g/data3/w40/dm5220/scripts/tac_rad_change/custom_tac_${name}.out
+#PBS -e /g/data3/w40/dm5220/scripts/tac_rad_change/custom_tac_${name}.err
+
+python3 /g/data/w40/dm5220/scripts/tac_rad_change/create_custom_tac.py ${options}
+rm $change_file_tmp
+
+/g/data/access/projects/access/apps/xancil/0.57/mkancil < "$script"
+
+EOF
+
+qsub $sub_script

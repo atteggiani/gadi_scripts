@@ -11,22 +11,7 @@ import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 from scipy.signal import savgol_filter
 from matplotlib.ticker import (MultipleLocator, FormatStrFormatter, AutoMinorLocator)
-
-# vals = {"p":0.015,"m":-0.015}
-# lat = [-20,20]
-# lons = {"Pacific":[165,255],
-#         "Amazon":[255,345],
-#         "Atlantic":[288.75,356.25,18.75],
-#         "Africa":[341.25,356.25,71.25],
-#         "Indian":[33.75,123.75]}
-
-change = [
-    {'val':-0.009,'lat':[[-20,20]],'lon':[[310,360],[0,40]],'lev':[7,13]},
-    {'val':-0.001,'lat':[[-55,-30]],'lon':[[0,360]],'lev':[7,13]}, 
-    # {'val': 0.015,'lat':[[-90,-60]],'lon':[[0,360]],'lev':[7,13],},
-    # {'val':-0.013,'lat':[[35,80]],'lon':[[0,360]],'lev':[7,13]},
-]
-(latl,lonl,levl)=(0,0,9)
+from argparse import ArgumentParser
 
 # # PLOT 3D
 def pp(data,lat=0,lon=0,lev=9):
@@ -51,16 +36,19 @@ def pp(data,lat=0,lon=0,lev=9):
         norm=colors.TwoSlopeNorm(vmin=-0.02,vmax=0.02,vcenter=0))
     plt.colorbar(img)
     # xaxis
+    ax.set_xlabel("Latitude")
     ax.set_xlim(-90,90)
     ax.xaxis.set_major_locator(MultipleLocator(30))
     ax.xaxis.set_major_formatter(FormatStrFormatter('%d'))
     ax.xaxis.set_minor_locator(MultipleLocator(10))
     # yaxis
+    ax.set_ylabel("Longitude")
     ax.set_ylim(0,360)
     ax.yaxis.set_major_locator(MultipleLocator(60))
     ax.yaxis.set_major_formatter(FormatStrFormatter('%d'))
     ax.yaxis.set_minor_locator(MultipleLocator(30))
     # zaxis
+    ax.set_zlabel("Model Level Number")
     ax.set_zlim(0,21)
     ax.zaxis.set_major_locator(MultipleLocator(7))
     ax.zaxis.set_major_formatter(FormatStrFormatter('%d'))
@@ -82,6 +70,7 @@ def pp(data,lat=0,lon=0,lev=9):
     z1 = (lev,lev)
     ax.plot(x1,y1,z1,ls='--',alpha=0.8, lw=1,color='black')
     # plt.show()
+    # pickle.dump(fig,open(os.path.join(figure_output_folder,f"{outname}_flux3d_bin"),'wb'))
     plt.savefig(os.path.join(figure_output_folder,f"{outname}_flux3d"),
         bbox_inches='tight',dpi=300)
 # PLOT LEV
@@ -133,8 +122,40 @@ def plat(x,lon=0,lev=9):
     # plt.show()
     plt.savefig(os.path.join(figure_output_folder,f"{outname}_latprof"),
         bbox_inches='tight',dpi=300)
-   
-outname = sys.argv[1]
+
+# Argument parsing
+parser=ArgumentParser()
+parser.add_argument('-n','--name',type=str)
+parser.add_argument('-c','--change',type=str)
+parser.add_argument('-b','--base',type=str,default=False)
+parser.add_argument('--no-filter',action="store_false")
+args=parser.parse_args()
+
+outname=args.name
+change_file=args.change
+base=args.base
+filter=args.no_filter
+changestr=''
+with open(change_file) as f:
+    lines = f.readlines()
+for l in lines:
+    line=l.strip()
+    print(line)
+    if line.startswith("'val':"):
+        line="{"+line
+    if line.startswith("{'val':"): 
+        if line.endswith("}"):
+            changestr=changestr+f"{line},"
+        elif line.endswith("},"):
+            changestr=changestr+line
+        else:
+            changestr=changestr+f"{line}}},"
+    else:
+        continue
+changestr="["+changestr+"]"
+try: 
+    change=eval(changestr)
+except SyntaxError: exit(1)
 
 base_dir = '/g/data3/w40/dm5220/ancil/user_mlevel/tac_rad_change'
 file_output_folder = os.path.join(base_dir,"files_for_xancil")
@@ -145,9 +166,12 @@ os.makedirs(figure_output_folder,exist_ok=True)
 
 name = "mlev_ancil"
 data=dask.array.from_array(np.zeros([360,38,73,96]),name=name)
-da=my.DataArray(data,
-    dims=('time', 'model_level_number', 'latitude', 'longitude'),
-    coords=[np.arange(1,361),np.arange(1,39),my.UM.latitude,my.UM.longitude])
+if base:
+    da=my.open_dataarray(base)
+else:
+    da=my.DataArray(data,
+        dims=('time', 'model_level_number', 'latitude', 'longitude'),
+        coords=[np.arange(1,361),np.arange(1,39),my.UM.latitude,my.UM.longitude])
 
 # Create new dataarray based on change
 for ch in change:
@@ -155,9 +179,11 @@ for ch in change:
     clat=False
     clon=False
     for lat in ch['lat']:
+        lat.sort()
         clat=np.logical_or(clat,np.logical_and(da.latitude>=lat[0],da.latitude<=lat[1]))
     # Condition for longitude
     for lon in ch['lon']:
+        lon.sort()
         clon=np.logical_or(clon,np.logical_and(da.longitude>=lon[0],da.longitude<=lon[1]))
     ctot = np.logical_and(clat,clon)
     # Condition for model levels
@@ -167,31 +193,34 @@ for ch in change:
     notcond=np.logical_not(cond)    
     da=my.DataArray(da.where(notcond,ch['val']))
 
-# Apply filter
-# LEV
-func=lambda x: savgol_filter(x,
-    window_length=3,
-    polyorder = 1,
-    axis = da.dims.index('model_level_number'),
-    mode='nearest')
-new=xr.apply_ufunc(func,da,dask='parallelized')
-new=xr.apply_ufunc(func,new,dask='parallelized')
-# LON
-func=lambda x: savgol_filter(x,
-    window_length=5,
-    polyorder = 1,
-    axis = new.dims.index('longitude'),
-    mode='nearest')
-new=xr.apply_ufunc(func,new,dask='parallelized')
-new=xr.apply_ufunc(func,new,dask='parallelized')
-# LAT
-func=lambda x: savgol_filter(x,
-    window_length=3,
-    polyorder = 1,
-    axis = new.dims.index('latitude'),
-    mode='nearest')
-new=xr.apply_ufunc(func,new,dask='parallelized')
-new=xr.apply_ufunc(func,new,dask='parallelized')
+if filter:
+    # Apply filter
+    # LEV
+    func=lambda x: savgol_filter(x,
+        window_length=3,
+        polyorder = 1,
+        axis = da.dims.index('model_level_number'),
+        mode='nearest')
+    new=xr.apply_ufunc(func,da,dask='parallelized')
+    new=xr.apply_ufunc(func,new,dask='parallelized')
+    # LON
+    func=lambda x: savgol_filter(x,
+        window_length=5,
+        polyorder = 1,
+        axis = new.dims.index('longitude'),
+        mode='nearest')
+    new=xr.apply_ufunc(func,new,dask='parallelized')
+    new=xr.apply_ufunc(func,new,dask='parallelized')
+    # LAT
+    func=lambda x: savgol_filter(x,
+        window_length=3,
+        polyorder = 1,
+        axis = new.dims.index('latitude'),
+        mode='nearest')
+    new=xr.apply_ufunc(func,new,dask='parallelized')
+    new=xr.apply_ufunc(func,new,dask='parallelized')
+else:
+    new=da
 
 # Write dataarray
 out=os.path.join(file_output_folder,f"{outname}.nc")
@@ -199,13 +228,14 @@ new.to_netcdf(os.path.join(file_output_folder,f"{outname}.nc"))
 
 # Write logfile to keep track of changes
 with open(logfile,'w') as f:
-    f.write('='*15 + '\n')
     f.write(f'FILE: {out}\n')
+    if base:
+        f.write(f'BASE: {base}\n')
     for i,ch in enumerate(change):
-        f.write(' '*4 + f"val:{ch['val']} | lat:{ch['lat']} | lon:{ch['lon']} | lev:{ch['lev']}\n")
-    f.write('='*15 + '\n'*2)
+        f.write(' '*4 + f"{{'val':{ch['val']}, 'lat':{ch['lat']}, 'lon':{ch['lon']}, 'lev':{ch['lev']}}}\n")
  
 # PLOT
+(latl,lonl,levl)=(0,0,9)
 pp(new,lat=latl,lon=lonl,lev=levl)
 plev(new,lat=latl,lon=lonl)
 plon(new,lat=latl,lev=levl)
