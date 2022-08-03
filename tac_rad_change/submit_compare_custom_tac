@@ -1,0 +1,13 @@
+#!/bin/bash
+#PBS -l walltime=10:00:00
+#PBS -l ncpus=4
+#PBS -q normal
+#PBS -P w40
+#PBS -l storage=gdata/hh5+gdata/w40+scratch/w40+gdata/access
+#PBS -l mem=150gb
+#PBS -N submit_custom_tac
+#PBS -o /g/data3/w40/dm5220/scripts/tac_rad_change/submit_compare_custom_tac.o
+#PBS -e /g/data3/w40/dm5220/scripts/tac_rad_change/submit_compare_custom_tac.e
+
+
+python3 /g/data/w40/dm5220/scripts/tac_rad_change/compare_custom_tac.py

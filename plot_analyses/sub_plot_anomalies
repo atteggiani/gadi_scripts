@@ -7,4 +7,4 @@
 #PBS -l mem=50gb
 #PBS -N plot_anomal
 
-python /g/data/w40/dm5220/scripts/plot_analyses/plot_anomalies.py  -i vaccg -n
+python /g/data/w40/dm5220/scripts/plot_analyses/plot_anomalies.py  -i 4co2_fix_tsurf_best35 -o 4co2_fix_best35 -n

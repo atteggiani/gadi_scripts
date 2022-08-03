@@ -5,12 +5,12 @@
 #PBS -P w40
 #PBS -l storage=gdata/hh5+gdata/w40+scratch/w40+gdata/access
 #PBS -l mem=150gb
-#PBS -N custom_tac_best13
-#PBS -o /g/data3/w40/dm5220/scripts/tac_rad_change/custom_tac_best13.out
-#PBS -e /g/data3/w40/dm5220/scripts/tac_rad_change/custom_tac_best13.err
+#PBS -N custom_tac_best40
+#PBS -o /g/data3/w40/dm5220/scripts/tac_rad_change/custom_tac_best40.out
+#PBS -e /g/data3/w40/dm5220/scripts/tac_rad_change/custom_tac_best40.err
 
-python3 /g/data/w40/dm5220/scripts/tac_rad_change/create_custom_tac.py -b /g/data/w40/dm5220/ancil/user_mlevel/tac_rad_change/files_for_xancil/best4.nc --no-filter -c /scratch/w40/dm5220/tmp/tmp.8bhswkmWoZ -n best13 
-rm /scratch/w40/dm5220/tmp/tmp.8bhswkmWoZ
+python3 /g/data/w40/dm5220/scripts/tac_rad_change/create_custom_tac.py -c /scratch/w40/dm5220/tmp/tmp.Qz1HStGw15 -n best40 
+rm /scratch/w40/dm5220/tmp/tmp.Qz1HStGw15
 
-/g/data/access/projects/access/apps/xancil/0.57/mkancil < "/g/data/w40/dm5220/scripts/tac_rad_change/xancil.namelist_best13"
+/g/data/access/projects/access/apps/xancil/0.57/mkancil < "/g/data/w40/dm5220/scripts/tac_rad_change/xancil.namelist_best40"
 

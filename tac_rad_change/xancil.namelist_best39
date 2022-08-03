@@ -7,7 +7,7 @@
   LWFIO = .TRUE.,
   IWFIO_SIZE = 2048,
   NNCFILES = 1
-  NCFILES = "/g/data3/w40/dm5220/ancil/user_mlevel/tac_rad_change/files_for_xancil/best13.nc"
+  NCFILES = "/g/data3/w40/dm5220/ancil/user_mlevel/tac_rad_change/files_for_xancil/best39.nc"
  /
 
  &nam_gridconfig
@@ -62,7 +62,7 @@
 
  &nam_ausrmulti
   LAUSRMULTI = .TRUE.,
-  AUSRMULTI_FILEOUT = "/g/data3/w40/dm5220/ancil/user_mlevel/tac_rad_change/best13",
+  AUSRMULTI_FILEOUT = "/g/data3/w40/dm5220/ancil/user_mlevel/tac_rad_change/best39",
   LAUSRMULTI_PERIODIC = .TRUE.,
   LAUSRMULTI_CAL_INDEP = .FALSE.,
   IAUSRMULTI_TIMEUSAGE1 = 1,

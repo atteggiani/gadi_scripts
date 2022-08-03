@@ -1,0 +1,10 @@
+#!/bin/bash
+#PBS -l walltime=01:00:00
+#PBS -l ncpus=48
+#PBS -q normal
+#PBS -P w40
+#PBS -l storage=gdata/hh5+gdata/w40+scratch/w40
+#PBS -l mem=190gb
+#PBS -N um2nc.vacck 
+
+python3 /g/data3/w40/dm5220/scripts/um2nc/convert_um2nc.py --id vacck -o /g/data/w40/dm5220/data/vacck --ncpus 48

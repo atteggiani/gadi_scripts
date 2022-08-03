@@ -1,0 +1,22 @@
+{'val':-0.008, 'lat':[[-20, 20]], 'lon':[[310, 360], [0, 40]], 'lev':[7, 13]}
+{'val':-0.01, 'lat':[[-55, -30]], 'lon':[[0, 360]], 'lev':[7, 13]}
+{'val':+0.012, 'lat':[[-10, 10]], 'lon':[[10, 25]], 'lev':[7, 13]}
+{'val':+0.02, 'lat':[[-15,0]], 'lon':[[260,310]], 'lev':[13,19]}
+{'val':-0.01, 'lat':[[40,60]], 'lon':[[0,360]], 'lev':[7,13]}
+ Writing Multi-level User ancillary file 
+ /g/data3/w40/dm5220/ancil/user_mlevel/tac_rad_change/best39
+ End of mkancil
+ 
+
+======================================================================================
+                  Resource Usage on 2022-05-31 02:15:42:
+   Job Id:             41808384.gadi-pbs
+   Project:            w40
+   Exit Status:        0
+   Service Units:      2.19
+   NCPUs Requested:    4                      NCPUs Used: 4               
+                                           CPU Time Used: 00:01:43                                   
+   Memory Requested:   150.0GB               Memory Used: 8.82GB          
+   Walltime requested: 10:00:00            Walltime Used: 00:01:45        
+   JobFS requested:    100.0MB                JobFS used: 0B              
+======================================================================================

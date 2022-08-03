@@ -71,7 +71,7 @@ def pp(data,lat=0,lon=0,lev=9):
     ax.plot(x1,y1,z1,ls='--',alpha=0.8, lw=1,color='black')
     # plt.show()
     # pickle.dump(fig,open(os.path.join(figure_output_folder,f"{outname}_flux3d_bin"),'wb'))
-    plt.savefig(os.path.join(figure_output_folder,f"{outname}_flux3d"),
+    plt.savefig(os.path.join(figure_output_folder,f"{outname}_3dflux"),
         bbox_inches='tight',dpi=300)
 # PLOT LEV
 def plev(x,lat=0,lon=0):

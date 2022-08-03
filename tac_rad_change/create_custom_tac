@@ -5,7 +5,7 @@ usage() {
   cat << EOF
 Script to create a custom atmospheric flux, by defining value, latitude, longitude and level extent.
 
-Usage: $PROGNAME -c <change-file> [-n <output-name>] [-f <output-folder>]
+Usage: $PROGNAME -c <change-file> [-n <output-name>] [-f <output-folder>] [-b <path-to-basefile>] [--no-filter]
 
 '$PROGNAME' create a custom atmospheric flux based on the <change-file> provided. 
 
@@ -33,7 +33,8 @@ List of keys/options:
     If a Header is present, the first line accounted for the change will be the first one that starts with: 'val': or {'val':
 
 -n <output-name> -> Name for the ancillary file which will be created.
-    If not provided, the ancillary file will be called "bestX", where X is the first available number for which an ancillary file doesn't exist already in the output-folder.
+    If not provided, the ancillary file will be called "bestX", where X is the first available number for which an ancillary file
+    doesn't exist already in the output-folder.
 
 -f <output-folder> -> Path to the folder under which the output file will be created.
     If not provided, the folder used will be /g/data3/w40/dm5220/ancil/user_mlevel/tac_rad_change
