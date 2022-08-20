@@ -1,0 +1,11 @@
+#!/bin/bash
+#PBS -l walltime=01:00:00
+#PBS -l ncpus=4
+#PBS -q normal
+#PBS -P w40
+#PBS -l storage=gdata/hh5+gdata/w40+scratch/w40
+#PBS -l mem=10gb
+#PBS -N thesis_figures
+
+python /g/data3/w40/dm5220/scripts/analysis/thesis_figures/co2_vs_solar.py
+python /g/data3/w40/dm5220/scripts/analysis/thesis_figures/srm.py
