@@ -31,24 +31,34 @@ P = lambda x,var: my.DataArray(x[var]).t_student_probability(my.DataArray(ctl[va
 #====================================================#
 # ANOMALIES
 def plot_anom(data,var="surface_temperature",
-    func=lambda x: x, ctrl=ctl, **kwargs):
-    t=P(data,var)
-    kwargs.setdefault("t_student",t)
+    func=lambda x: x, ctrl=ctl, analysis='amean', **kwargs):
     d=func(anomalies(data,var,ctrl=ctrl))
-    im=d.annual_mean(12*nyears).plotvar(**kwargs)
+    if analysis == 'amean':
+        t=P(data,var)
+        kwargs.setdefault("t_student",t)
+        im=d.annual_mean(12*nyears).plotvar(**kwargs)
+    elif analysis == 'seascyc':
+        im=d.seasonal_cycle(12*nyears).plotvar(**kwargs)
+    else:
+        raise Exception("Type of analysis not understood")
     return im
 
 def plot_vert(data,mean="lon",var="air_temperature_0_plev",
-    func=lambda x: x, ctrl=ctl, **kwargs):
+    func=lambda x: x, ctrl=ctl, analysis='amean', **kwargs):
     if mean == "lon":
         fmean=lambda x: x.longitude_mean()
     else:
         fmean=lambda x: x.latitude_mean()
-    t=fmean(P(data,var))
-    kwargs.setdefault("t_student",t)
     d=func(anomalies(data,var,ctrl=ctrl))
+    if analysis == 'amean':
+        t=fmean(P(data,var))
+        kwargs.setdefault("t_student",t)
+        im=fmean(d.annual_mean(12*nyears)).plotlev(**kwargs)
+    elif analysis == 'seascyc':
+        im=fmean(d.seasonal_cycle(12*nyears)).plotlev(**kwargs)
+    else:
+        raise Exception("Type of analysis not understood")
     
-    im=fmean(d.annual_mean(12*nyears)).plotlev(**kwargs)
     return im
 
 # TSURF ANOMALIES
@@ -68,7 +78,6 @@ def tsurf_anom():
     fig.suptitle("Surface Temperature Change",fontsize=16)
     kwargs=dict(levels=np.linspace(-3,3,20),
         du=0.5,
-        title="",
         cmap=my.Colormaps.div_tsurf,
         add_colorbar=False,
         statistics={'value':'all','fontsize':11,"position":(0.5,-0.15)},
@@ -78,6 +87,7 @@ def tsurf_anom():
     # plot 1
         im=plot_anom(SRM[i],
             ax=axes[i],
+            title=SRM_titles[i],
             **kwargs,
             )
     # plot colorbar   
@@ -94,6 +104,49 @@ def tsurf_anom():
                 dpi=300,bbox_inches='tight')
 tsurf_anom()
 
+def tsurf_anom_seascyc():
+    grid = GridSpec(3,4,
+            left=0.05, right=0.95, top=0.95, bottom=0.12,
+            wspace=0.5,hspace=0.10)
+    gridcb = GridSpec(1, 4,
+            left=0.05, right=0.95, top=0.08, bottom=0.05)
+    fig = plt.figure(figsize=np.multiply((3,3.2),3))
+    axes=[fig.add_subplot(grid[0,:2],projection=ccrs.PlateCarree()),
+          fig.add_subplot(grid[0,2:],projection=ccrs.PlateCarree())] +\
+         [fig.add_subplot(grid[1,:2],projection=ccrs.PlateCarree()),
+          fig.add_subplot(grid[1,2:],projection=ccrs.PlateCarree()),
+          fig.add_subplot(grid[2,1:3],projection=ccrs.PlateCarree()),] +\
+         [fig.add_subplot(gridcb[:,:])]
+    fig.suptitle("Surface Temperature Change",fontsize=16)
+    kwargs=dict(levels=np.linspace(-2,2,20),
+        du=0.5,
+        cmap=my.Colormaps.div_precip_r,
+        add_colorbar=False,
+        statistics={'value':'rms','fontsize':11,"position":(0.5,-0.15)},
+        extend='both',
+        )
+    for i in range(5):
+    # plot 1
+        im=plot_anom(SRM[i],
+            ax=axes[i],
+            title=SRM_titles[i],
+            analysis='seascyc',
+            **kwargs,
+            )
+    # plot colorbar   
+    plt.colorbar(im,cax=axes[-1],
+        orientation="horizontal",
+        label="$[K]$",
+        ticks=np.arange(-2,2+0.5,0.5),
+        )
+    # Label subplots
+    label=iter(axes_labels)
+    for ax in axes[:-1]:
+        ax.set_title(next(label), fontfamily='serif', loc='left', fontsize='large')
+    plt.savefig(os.path.join(output_folder,'SRM_tsurf_anom_seascyc'),
+                dpi=300,bbox_inches='tight')
+tsurf_anom_seascyc()
+
 def tsurf_anom_season():
     grid = GridSpec(5,4,
             left=0.05, right=0.95, top=0.93, bottom=0.12,
@@ -101,7 +154,7 @@ def tsurf_anom_season():
     gridcb = GridSpec(1, 2,
             left=0.05, right=0.95, top=0.08, bottom=0.05)
     fig = plt.figure(figsize=np.multiply((3,3),3))
-    axes=[fig.add_subplot(grid[i,j],projection=ccrs.PlateCarree()) for i in range(4) for j in range(4)] + [fig.add_subplot(gridcb[:,:])]
+    axes=[fig.add_subplot(grid[i,j],projection=ccrs.PlateCarree()) for i in range(5) for j in range(4)] + [fig.add_subplot(gridcb[:,:])]
     fig.suptitle("Surface Temperature Change",fontsize=16)
     kwargs=dict(levels=np.linspace(-3,3,20),
         du=0.5,
@@ -124,7 +177,6 @@ def tsurf_anom_season():
                 )
             if i > 0:
                 ax.set_title("")        
-    
     # plot colorbar   
     plt.colorbar(im,cax=axes[-1],
         orientation="horizontal",
@@ -157,8 +209,7 @@ def precip_anom():
     kwargs=dict(func=lambda x: x.to_mm_per_day(),
         var="precipitation_flux",
         levels=np.linspace(-2,2,20),
-        du=0.25,
-        title="",
+        du=0.5,
         cmap=my.Colormaps.div_precip,
         add_colorbar=False,
         extend='both',
@@ -168,13 +219,14 @@ def precip_anom():
     # plot 1
         im=plot_anom(SRM[i],
             ax=axes[i],
+            title=SRM_titles[i],
             **kwargs,
             )
     # plot colorbar   
     plt.colorbar(im,cax=axes[-1],
         orientation="horizontal",
         label="$[mm \cdot d^{-1}]$",
-        ticks=np.arange(-2,2+0.25,0.25),
+        ticks=np.arange(-2,2+0.5,0.5),
         )   
     # Label subplots
     label=iter(axes_labels)
@@ -184,11 +236,102 @@ def precip_anom():
                 dpi=300,bbox_inches='tight')
 precip_anom()
 
+def precip_anom_seascyc():
+    grid = GridSpec(3,4,
+            left=0.05, right=0.95, top=0.95, bottom=0.12,
+            wspace=0.5,hspace=0.10)
+    gridcb = GridSpec(1, 4,
+            left=0.05, right=0.95, top=0.08, bottom=0.05)
+    fig = plt.figure(figsize=np.multiply((3,3.2),3))
+    axes=[fig.add_subplot(grid[0,:2],projection=ccrs.PlateCarree()),
+          fig.add_subplot(grid[0,2:],projection=ccrs.PlateCarree())] +\
+         [fig.add_subplot(grid[1,:2],projection=ccrs.PlateCarree()),
+          fig.add_subplot(grid[1,2:],projection=ccrs.PlateCarree()),
+          fig.add_subplot(grid[2,1:3],projection=ccrs.PlateCarree()),] +\
+         [fig.add_subplot(gridcb[:,:])]
+    fig.suptitle("Precipitation Change",fontsize=16)
+    kwargs=dict(func=lambda x: x.to_mm_per_day(),
+        var="precipitation_flux",
+        levels=np.linspace(-2,2,20),
+        du=0.5,
+        cmap=my.Colormaps.div_precip_r,
+        add_colorbar=False,
+        extend='both',
+        statistics={'value':'rms','fontsize':11,"position":(0.5,-0.15)},
+        )
+    for i in range(5):
+    # plot 1
+        im=plot_anom(SRM[i],
+            ax=axes[i],
+            title=SRM_titles[i],
+            analysis='seascyc',
+            **kwargs,
+            )
+    # plot colorbar   
+    plt.colorbar(im,cax=axes[-1],
+        orientation="horizontal",
+        label="$[mm \cdot d^{-1}]$",
+        ticks=np.arange(-2,2+0.5,0.5),
+        )   
+    # Label subplots
+    label=iter(axes_labels)
+    for ax in axes[:-1]:
+        ax.set_title(next(label), fontfamily='serif', loc='left', fontsize='large')
+    plt.savefig(os.path.join(output_folder,'SRM_precip_anomseascyc'),
+                dpi=300,bbox_inches='tight')
+precip_anom_seascyc()
+
+def precip_anom_season():
+    grid = GridSpec(5,4,
+            left=0.05, right=0.95, top=0.93, bottom=0.12,
+            wspace=0.17,hspace=0.10)
+    gridcb = GridSpec(1, 2,
+            left=0.05, right=0.95, top=0.08, bottom=0.05)
+    fig = plt.figure(figsize=np.multiply((3,3),3))
+    axes=[fig.add_subplot(grid[i,j],projection=ccrs.PlateCarree()) for i in range(5) for j in range(4)] + [fig.add_subplot(gridcb[:,:])]
+    fig.suptitle("Precipitation Change",fontsize=16)
+    kwargs=dict(
+        var="precipitation_flux",
+        levels=np.linspace(-2,2,20),
+        du=0.5,
+        cmap=my.Colormaps.div_precip,
+        add_colorbar=False,
+        extend='both',
+        statistics={'value':'all','fontsize':8,"position":(0.5,-0.15)},
+        grid=False,
+        )
+    # plots
+    axit=iter(axes)
+    for i,_ in enumerate(SRM):
+        for season in seasons:
+            ax=next(axit)
+            im=plot_anom(SRM[i],
+                ax=ax,
+                func=lambda x: x.group_by("season",num=12*nyears).sel(time=season).to_mm_per_day(),
+                title=season,
+                **kwargs,
+                )
+            if i > 0:
+                ax.set_title("")
+    # plot colorbar   
+    plt.colorbar(im,cax=axes[-1],
+        orientation="horizontal",
+        label="$[mm \cdot d^{-1}]$",
+        ticks=np.arange(-2,2+0.5,0.5),
+        )
+    # Label subplots
+    label=iter(axes_labels)
+    for ax in axes[:-1]:
+        ax.set_title(next(label), fontfamily='serif', loc='left', fontsize='large')
+    plt.savefig(os.path.join(output_folder,'SRM_precip_anom_season'),
+                dpi=300,bbox_inches='tight')
+precip_anom_season()
+
 # TAIR ANOMALIES
 def tair_anom():
     grid = GridSpec(3,4,
             left=0.05, right=0.95, top=0.91, bottom=0.13,
-            wspace=1.2,hspace=0.3)
+            wspace=1.7,hspace=0.3)
     gridcb = GridSpec(1, 4,
             left=0.05, right=0.95, top=0.08, bottom=0.05)
     # ============== LONGMEAN ==================
@@ -202,16 +345,16 @@ def tair_anom():
     fig.suptitle("Air Temperature Change",fontsize=16)
     kwargs=dict(levels=np.linspace(-3,3,20),
         du=0.5,
-        title="",
         cmap=my.Colormaps.div_tsurf,
         add_colorbar=False,
-        double_axis=True,
+        double_axis="height",
         extend='both',
         )
     for i in range(5):
     # plot 1
         im=plot_vert(SRM[i],
             ax=axes[i],
+            title=SRM_titles[i],
             **kwargs,
             )
     # plot colorbar   
@@ -226,9 +369,9 @@ def tair_anom():
         ax.set_title(next(label), fontfamily='serif', loc='left', fontsize='large')
     plt.savefig(os.path.join(output_folder,'SRM_tair_anom_lonmean'),
                 dpi=300,bbox_inches='tight')
-    return
+    
     # ============== LATMEAN ==================
-    fig = plt.figure(figsize=np.multiply((3,3.3),3))
+    fig = plt.figure(figsize=np.multiply((3,3.5),3))
     axes=[fig.add_subplot(grid[0,:2]),
           fig.add_subplot(grid[0,2:])] +\
          [fig.add_subplot(grid[1,:2]),
@@ -238,10 +381,9 @@ def tair_anom():
     fig.suptitle("Air Temperature Change",fontsize=16)
     kwargs=dict(levels=np.linspace(-3,3,20),
         du=0.5,
-        title="",
         cmap=my.Colormaps.div_tsurf,
         add_colorbar=False,
-        double_axis=True,
+        double_axis="height",
         extend='both',
         mean="lat",
         )
@@ -249,6 +391,7 @@ def tair_anom():
     # plot 1
         im=plot_vert(SRM[i],
             ax=axes[i],
+            title=SRM_titles[i],
             **kwargs,
             )
     # plot colorbar   
@@ -264,6 +407,182 @@ def tair_anom():
     plt.savefig(os.path.join(output_folder,'SRM_tair_anom_latmean'),
                 dpi=300,bbox_inches='tight')
 tair_anom()
+
+def tair_anom_seascyc():
+    grid = GridSpec(3,4,
+            left=0.05, right=0.95, top=0.91, bottom=0.13,
+            wspace=1.7,hspace=0.3)
+    gridcb = GridSpec(1, 4,
+            left=0.05, right=0.95, top=0.08, bottom=0.05)
+    # ============== LONGMEAN ==================
+    fig = plt.figure(figsize=np.multiply((3,3.5),3))
+    axes=[fig.add_subplot(grid[0,:2]),
+          fig.add_subplot(grid[0,2:])] +\
+         [fig.add_subplot(grid[1,:2]),
+          fig.add_subplot(grid[1,2:]),
+          fig.add_subplot(grid[2,1:3]),] +\
+         [fig.add_subplot(gridcb[:,:])]
+    fig.suptitle("Air Temperature Change",fontsize=16)
+    kwargs=dict(levels=np.linspace(-2,2,20),
+        du=0.5,
+        cmap=my.Colormaps.div_precip_r,
+        add_colorbar=False,
+        double_axis="height",
+        extend='both',
+        )
+    for i in range(5):
+    # plot 1
+        im=plot_vert(SRM[i],
+            ax=axes[i],
+            title=SRM_titles[i],
+            analysis='seascyc',
+            **kwargs,
+            )
+    # plot colorbar   
+    plt.colorbar(im,cax=axes[-1],
+        orientation="horizontal",
+        label="$[K]$",
+        ticks=np.arange(-2,2+0.5,0.5),
+        )
+    # Label subplots
+    label=iter(axes_labels)
+    for ax in axes[:-1]:
+        ax.set_title(next(label), fontfamily='serif', loc='left', fontsize='large')
+    plt.savefig(os.path.join(output_folder,'SRM_tair_anom_lonmean_seascyc'),
+                dpi=300,bbox_inches='tight')
+
+    # ============== LATMEAN ==================
+    fig = plt.figure(figsize=np.multiply((3,3.5),3))
+    axes=[fig.add_subplot(grid[0,:2]),
+          fig.add_subplot(grid[0,2:])] +\
+         [fig.add_subplot(grid[1,:2]),
+          fig.add_subplot(grid[1,2:]),
+          fig.add_subplot(grid[2,1:3]),] +\
+         [fig.add_subplot(gridcb[:,:])]
+    fig.suptitle("Air Temperature Change",fontsize=16)
+    kwargs=dict(levels=np.linspace(-2,2,20),
+        du=0.5,
+        cmap=my.Colormaps.div_precip_r,
+        add_colorbar=False,
+        double_axis="height",
+        extend='both',
+        mean="lat",
+        )
+    for i in range(5):
+    # plot 1
+        im=plot_vert(SRM[i],
+            ax=axes[i],
+            title=SRM_titles[i],
+            analysis='seascyc',
+            **kwargs,
+            )
+    # plot colorbar   
+    plt.colorbar(im,cax=axes[-1],
+        orientation="horizontal",
+        label="$[K]$",
+        ticks=np.arange(-2,2+0.5,0.5),
+        )
+    # Label subplots
+    label=iter(axes_labels)
+    for ax in axes[:-1]:
+        ax.set_title(next(label), fontfamily='serif', loc='left', fontsize='large')
+    plt.savefig(os.path.join(output_folder,'SRM_tair_anom_latmean_seascyc'),
+                dpi=300,bbox_inches='tight')
+tair_anom_seascyc()
+
+def tair_anom_season():
+    grid = GridSpec(5,4,
+            left=0.05, right=0.95, top=0.93, bottom=0.12,
+            wspace=0.17,hspace=0.2)
+    gridcb = GridSpec(1, 2,
+            left=0.05, right=0.95, top=0.08, bottom=0.05)
+    # ============== LONGMEAN ==================
+    fig = plt.figure(figsize=np.multiply((3,4),3))
+    axes=[fig.add_subplot(grid[i,j]) for i in range(5) for j in range(4)] + [fig.add_subplot(gridcb[:,:])]
+    fig.suptitle("Air Temperature Change",fontsize=16)
+    kwargs=dict(levels=np.linspace(-3,3,20),
+        du=0.5,
+        cmap=my.Colormaps.div_tsurf,
+        add_colorbar=False,
+        extend='both',
+        )
+    # plots
+    axit=iter(axes)
+    for i,_ in enumerate(SRM):
+        for season in seasons:
+            ax=next(axit)
+            im=plot_vert(SRM[i],
+                ax=ax,
+                func=lambda x: x.group_by("season",num=12*nyears).sel(time=season),
+                title=season,
+                **kwargs,
+                )
+            if i > 0:
+                ax.set_title("")
+    for ax in axes[:-5]:
+        ax.set_xticklabels("")
+    for i in range(5):
+        for ax in axes[4*i+1:4*(i+1)]:
+            ax.set_yticklabels("")
+            ax.set_ylabel("")
+    # plot colorbar   
+    plt.colorbar(im,cax=axes[-1],
+        orientation="horizontal",
+        label="$[K]$",
+        ticks=np.arange(-3,3+0.5,0.5),
+        )
+    # Label subplots
+    label=iter(axes_labels)
+    for ax in axes[:-1]:
+        ax.set_title(next(label), fontfamily='serif', loc='left', fontsize='large')
+    plt.savefig(os.path.join(output_folder,'SRM_tair_anom_lonmean_season'),
+                dpi=300,bbox_inches='tight')
+    
+    # ============== LATMEAN ==================
+    fig = plt.figure(figsize=np.multiply((3,4),3))
+    axes=[fig.add_subplot(grid[i,j]) for i in range(5) for j in range(4)] + [fig.add_subplot(gridcb[:,:])]
+    fig.suptitle("Air Temperature Change",fontsize=16)
+    kwargs=dict(levels=np.linspace(-3,3,20),
+        du=0.5,
+        cmap=my.Colormaps.div_tsurf,
+        add_colorbar=False,
+        extend='both',
+        mean="lat",
+        )
+    # plots
+    axit=iter(axes)
+    for i,_ in enumerate(SRM):
+        for season in seasons:
+            ax=next(axit)
+            im=plot_vert(SRM[i],
+                ax=ax,
+                func=lambda x: x.group_by("season",num=12*nyears).sel(time=season),
+                title=season,
+                **kwargs,
+                )
+            if i > 0:
+                ax.set_title("")
+    for ax in axes[:-5]:
+        ax.set_xticklabels("")
+    for ax in axes[-5:-1]:
+        ax.set_xticklabels(ax.get_xticklabels(),fontsize=7.5)
+    for i in range(5):
+        for ax in axes[4*i+1:4*(i+1)]:
+            ax.set_yticklabels("")
+            ax.set_ylabel("")
+    # plot colorbar   
+    plt.colorbar(im,cax=axes[-1],
+        orientation="horizontal",
+        label="$[K]$",
+        ticks=np.arange(-3,3+0.5,0.5),
+        )
+    # Label subplots
+    label=iter(axes_labels)
+    for ax in axes[:-1]:
+        ax.set_title(next(label), fontfamily='serif', loc='left', fontsize='large')
+    plt.savefig(os.path.join(output_folder,'SRM_tair_anom_latmean_season'),
+                dpi=300,bbox_inches='tight')
+tair_anom_season()
 
 #====================================================#
 # PLOT TIME SERIES
@@ -306,7 +625,7 @@ def tsurf_tseries():
             color=SRM_colors[i],label=SRM_titles[i])
     plt.ylabel('[K]')
     plt.xlabel('Year of simulation')
-    # plt.ylim(-0.2,0.1)
+    plt.ylim(-0.5,0.5)
     # plt.legend(loc='upper left',bbox_to_anchor=(0.99,1.02))
     plt.legend()
     plt.title('Surface Temperature Change')
@@ -357,7 +676,7 @@ def plot_airprof(data,
 def air_prof_zoom():
     grid = GridSpec(4, 5,
         left=0.05, bottom=0.05, right=0.95, top=0.88,
-        wspace=2)
+        wspace=2.8)
     fig = plt.figure(figsize=np.multiply((5,3),1.7))
     fig.suptitle("Air Temperature",fontsize=16)
     axm = fig.add_subplot(grid[1:3,0:2])
@@ -366,7 +685,7 @@ def air_prof_zoom():
     plot_airprof(data=ctl,other_data=SRM,
             colors=['black']+SRM_colors,
             labels=['Control']+SRM_titles,
-            double_axis=True,
+            double_axis="height",
             legend=False,
             ax=axm,
             title="")
@@ -375,7 +694,7 @@ def air_prof_zoom():
     plot_airprof(ax=axz,data=ctl,other_data=SRM,
             colors=['black']+SRM_colors,
             labels=['Control']+SRM_titles,
-            double_axis=False,
+            double_axis="height",
             title="")
     axz.set_xlim((200,220))
     axz.set_ylim(200,50)
@@ -403,7 +722,7 @@ def air_prof_anom():
     var='air_temperature_0_plev'
     data=[anomalies(x,var).global_mean().annual_mean(12*nyears) for x in SRM]
     data[0].plotprof(other_data=data[1:],
-        double_axis=True,
+        double_axis="height",
         colors=SRM_colors,
         labels=SRM_titles,
         units='[K]',

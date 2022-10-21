@@ -26,27 +26,41 @@ def anomalies(x,var,ctrl=ctl):
      return my.DataArray(x[var] - ctrl[var])
 def P(x,var,ctrl=ctl):
      return my.DataArray(x[var]).t_student_probability(my.DataArray(ctrl[var]),num_years=nyears)
+def rad_forcing(x,ctrl=ctl):
+    rad = lambda x: x["toa_incoming_shortwave_flux"] - (x["toa_outgoing_longwave_flux"] + x["toa_outgoing_shortwave_flux"])  
+    return my.DataArray(rad(x) - rad(ctrl))
 #====================================================#
 #====================================================#
 # ANOMALIES
 def plot_anom(data,var="surface_temperature",
-    func=lambda x: x, ctrl=ctl, **kwargs):
+    func=lambda x: x, ctrl=ctl, analysis='amean', **kwargs):
     d=func(anomalies(data,var,ctrl=ctrl))
-    t=P(data,var)
-    kwargs.setdefault("t_student",t)
-    im=d.annual_mean(12*nyears).plotvar(**kwargs)
+    if analysis == 'amean':
+        t=P(data,var)
+        kwargs.setdefault("t_student",t)
+        im=d.annual_mean(12*nyears).plotvar(**kwargs)
+    elif analysis == 'seascyc':
+        im=d.seasonal_cycle(12*nyears).plotvar(**kwargs)
+    else:
+        raise Exception("Type of analysis not understood")
     return im
 
 def plot_vert(data,mean="lon",var="air_temperature_0_plev",
-    func=lambda x: x, ctrl=ctl, **kwargs):
+    func=lambda x: x, ctrl=ctl, analysis='amean', **kwargs):
     if mean == "lon":
         fmean=lambda x: x.longitude_mean()
     else:
         fmean=lambda x: x.latitude_mean()
     d=func(anomalies(data,var,ctrl=ctrl))
-    t=fmean(P(data,var))
-    kwargs.setdefault("t_student",t)
-    im=fmean(d.annual_mean(12*nyears)).plotlev(**kwargs)
+    if analysis == 'amean':
+        t=fmean(P(data,var))
+        kwargs.setdefault("t_student",t)
+        im=fmean(d.annual_mean(12*nyears)).plotlev(**kwargs)
+    elif analysis == 'seascyc':
+        im=fmean(d.seasonal_cycle(12*nyears)).plotlev(**kwargs)
+    else:
+        raise Exception("Type of analysis not understood")
+    
     return im
 
 # TSURF ANOMALIES
@@ -62,7 +76,6 @@ def tsurf_anom():
     fig.suptitle("Surface Temperature Change",fontsize=16)
     kwargs=dict(levels=np.linspace(-3,3,20),
         du=0.5,
-        title="",
         cmap=my.Colormaps.div_tsurf,
         add_colorbar=False,
         statistics={'value':'all','fontsize':11,"position":(0.5,-0.15)},
@@ -72,12 +85,14 @@ def tsurf_anom():
     for i,_ in enumerate(CO2_SOLAR):
         plot_anom(CO2_SOLAR[i],
             ax=axes[i],
+            title=CO2_SOLAR_titles[i],
             **kwargs,
             )
     # plot 5
     plot_anom(CO2_SOLAR[2],
         ctrl=CO2_SOLAR[0],
         ax=axes[4],
+        title=f"{CO2_SOLAR_titles[2]} - {CO2_SOLAR_titles[0]}",
         t_student=False,
         **kwargs,
         )
@@ -85,6 +100,7 @@ def tsurf_anom():
     im=plot_anom(CO2_SOLAR[3],
         ctrl=CO2_SOLAR[1],
         ax=axes[5],
+        title=f"{CO2_SOLAR_titles[3]} - {CO2_SOLAR_titles[1]}",
         t_student=False,
         **kwargs,
         )
@@ -101,6 +117,62 @@ def tsurf_anom():
     plt.savefig(os.path.join(output_folder,'CO2_tsurf_anom'),
                 dpi=300,bbox_inches='tight')
 tsurf_anom()
+
+def tsurf_anom_seascyc():
+    grid = GridSpec(3,2,
+            left=0.05, right=0.95, top=0.95, bottom=0.12,
+            wspace=0.17,hspace=0.10)
+    gridcb = GridSpec(1, 2,
+            left=0.05, right=0.95, top=0.08, bottom=0.05)
+    fig = plt.figure(figsize=np.multiply((3,3.3),3))
+    axes=[fig.add_subplot(grid[i,j],projection=ccrs.PlateCarree()) for i in range(3) for j in range(2)] + [fig.add_subplot(gridcb[:,:])]
+    fig.suptitle("Surface Temperature Change",fontsize=16)
+    kwargs=dict(levels=np.linspace(-2,2,20),
+        du=0.5,
+        cmap=my.Colormaps.div_precip_r,
+        add_colorbar=False,
+        statistics={'value':'rms','fontsize':11,"position":(0.5,-0.15)},
+        extend='both',
+        )
+    # plots
+    for i,_ in enumerate(CO2_SOLAR):
+        plot_anom(CO2_SOLAR[i],
+            ax=axes[i],
+            title=CO2_SOLAR_titles[i],
+            analysis='seascyc',
+            **kwargs,
+            )
+    # plot 5
+    plot_anom(CO2_SOLAR[2],
+        ctrl=CO2_SOLAR[0],
+        ax=axes[4],
+        title=f"{CO2_SOLAR_titles[2]} - {CO2_SOLAR_titles[0]}",
+        t_student=False,
+        analysis='seascyc',
+        **kwargs,
+        )
+    # plot 6
+    im=plot_anom(CO2_SOLAR[3],
+        ctrl=CO2_SOLAR[1],
+        title=f"{CO2_SOLAR_titles[3]} - {CO2_SOLAR_titles[1]}",
+        ax=axes[5],
+        t_student=False,
+        analysis='seascyc',
+        **kwargs,
+        )
+    # plot colorbar   
+    plt.colorbar(im,cax=axes[-1],
+        orientation="horizontal",
+        label="$[K]$",
+        ticks=np.arange(-2,2+0.5,0.5),
+        )
+    # Label subplots
+    label=iter(axes_labels)
+    for ax in axes[:-1]:
+        ax.set_title(next(label), fontfamily='serif', loc='left', fontsize='large')
+    plt.savefig(os.path.join(output_folder,'CO2_tsurf_anom_seascyc'),
+                dpi=300,bbox_inches='tight')
+tsurf_anom_seascyc()
 
 def tsurf_anom_season():
     grid = GridSpec(4,4,
@@ -132,8 +204,6 @@ def tsurf_anom_season():
                 )
             if i > 0:
                 ax.set_title("")
-        
-    
     # plot colorbar   
     plt.colorbar(im,cax=axes[-1],
         orientation="horizontal",
@@ -161,8 +231,7 @@ def precip_anom():
     kwargs=dict(func=lambda x: x.to_mm_per_day(),
         var="precipitation_flux",
         levels=np.linspace(-2,2,20),
-        du=0.25,
-        title="",
+        du=0.5,
         cmap=my.Colormaps.div_precip,
         add_colorbar=False,
         extend='both',
@@ -172,12 +241,14 @@ def precip_anom():
     for i,_ in enumerate(CO2_SOLAR):
         plot_anom(CO2_SOLAR[i],
             ax=axes[i],
+            title=CO2_SOLAR_titles[i],
             **kwargs,
             )
     # plot 5
     plot_anom(CO2_SOLAR[2],
         ctrl=CO2_SOLAR[0],
         ax=axes[4],
+        title=f"{CO2_SOLAR_titles[2]} - {CO2_SOLAR_titles[0]}",
         t_student=False,
         **kwargs,
         )
@@ -185,6 +256,7 @@ def precip_anom():
     im=plot_anom(CO2_SOLAR[3],
         ctrl=CO2_SOLAR[1],
         ax=axes[5],
+        title=f"{CO2_SOLAR_titles[3]} - {CO2_SOLAR_titles[1]}",
         t_student=False,
         **kwargs,
         )
@@ -192,7 +264,7 @@ def precip_anom():
     plt.colorbar(im,cax=axes[-1],
         orientation="horizontal",
         label="$[mm \cdot d^{-1}]$",
-        ticks=np.arange(-2,2+0.25,0.25),
+        ticks=np.arange(-2,2+0.5,0.5),
         )
     # Label subplots
     label=iter(axes_labels)
@@ -201,6 +273,64 @@ def precip_anom():
     plt.savefig(os.path.join(output_folder,'CO2_precip_anom'),
                 dpi=300,bbox_inches='tight')
 precip_anom()
+
+def precip_anom_seascyc():
+    grid = GridSpec(3,2,
+            left=0.05, right=0.95, top=0.95, bottom=0.12,
+            wspace=0.17,hspace=0.10)
+    gridcb = GridSpec(1, 2,
+            left=0.05, right=0.95, top=0.08, bottom=0.05)
+    fig = plt.figure(figsize=np.multiply((3,3.3),3))
+    axes=[fig.add_subplot(grid[i,j],projection=ccrs.PlateCarree()) for i in range(3) for j in range(2)] + [fig.add_subplot(gridcb[:,:])]
+    fig.suptitle("Precipitation Change",fontsize=16)
+    kwargs=dict(func=lambda x: x.to_mm_per_day(),
+        var="precipitation_flux",
+        levels=np.linspace(-2,2,20),
+        du=0.5,
+        cmap=my.Colormaps.div_precip_r,
+        add_colorbar=False,
+        extend='both',
+        statistics={'value':'rms','fontsize':11,"position":(0.5,-0.15)},
+        )
+    # plots
+    for i,_ in enumerate(CO2_SOLAR):
+        plot_anom(CO2_SOLAR[i],
+            ax=axes[i],
+            title=CO2_SOLAR_titles[i],
+            analysis='seascyc',
+            **kwargs,
+            )
+    # plot 5
+    plot_anom(CO2_SOLAR[2],
+        ctrl=CO2_SOLAR[0],
+        ax=axes[4],
+        title=f"{CO2_SOLAR_titles[2]} - {CO2_SOLAR_titles[0]}",
+        t_student=False,
+        analysis='seascyc',
+        **kwargs,
+        )
+    # plot 6
+    im=plot_anom(CO2_SOLAR[3],
+        ctrl=CO2_SOLAR[1],
+        ax=axes[5],
+        title=f"{CO2_SOLAR_titles[3]} - {CO2_SOLAR_titles[1]}",
+        t_student=False,
+        analysis='seascyc',
+        **kwargs,
+        )
+    # plot colorbar   
+    plt.colorbar(im,cax=axes[-1],
+        orientation="horizontal",
+        label="$[mm \cdot d^{-1}]$",
+        ticks=np.arange(-2,2+0.5,0.5),
+        )
+    # Label subplots
+    label=iter(axes_labels)
+    for ax in axes[:-1]:
+        ax.set_title(next(label), fontfamily='serif', loc='left', fontsize='large')
+    plt.savefig(os.path.join(output_folder,'CO2_precip_anom_seascyc'),
+                dpi=300,bbox_inches='tight')
+precip_anom_seascyc()
 
 def precip_anom_season():
     grid = GridSpec(4,4,
@@ -214,7 +344,7 @@ def precip_anom_season():
     kwargs=dict(
         var="precipitation_flux",
         levels=np.linspace(-2,2,20),
-        du=0.25,
+        du=0.5,
         cmap=my.Colormaps.div_precip,
         add_colorbar=False,
         extend='both',
@@ -238,7 +368,7 @@ def precip_anom_season():
     plt.colorbar(im,cax=axes[-1],
         orientation="horizontal",
         label="$[mm \cdot d^{-1}]$",
-        ticks=np.arange(-2,2+0.25,0.25),
+        ticks=np.arange(-2,2+0.5,0.5),
         )
     # Label subplots
     label=iter(axes_labels)
@@ -252,7 +382,7 @@ precip_anom_season()
 def tair_anom():
     grid = GridSpec(3,2,
             left=0.05, right=0.95, top=0.91, bottom=0.13,
-            wspace=0.38,hspace=0.3)
+            wspace=0.43,hspace=0.3)
     gridcb = GridSpec(1, 2,
             left=0.05, right=0.95, top=0.08, bottom=0.05)
     # ============== LONGMEAN ==================
@@ -261,22 +391,23 @@ def tair_anom():
     fig.suptitle("Air Temperature Change",fontsize=16)
     kwargs=dict(levels=np.linspace(-3,3,20),
         du=0.5,
-        title="",
         cmap=my.Colormaps.div_tsurf,
         add_colorbar=False,
-        double_axis=True,
+        double_axis="height",
         extend='both',
         )
     # plots
     for i,_ in enumerate(CO2_SOLAR):
         plot_vert(CO2_SOLAR[i],
             ax=axes[i],
+            title=CO2_SOLAR_titles[i],
             **kwargs,
             )
     # plot 5
     plot_vert(CO2_SOLAR[2],
         ctrl=CO2_SOLAR[0],
         ax=axes[4],
+        title=f"{CO2_SOLAR_titles[2]} - {CO2_SOLAR_titles[0]}",
         t_student=False,
         **kwargs,
         )
@@ -284,6 +415,8 @@ def tair_anom():
     im=plot_vert(CO2_SOLAR[3],
         ctrl=CO2_SOLAR[1],
         ax=axes[5],
+        title={"label":f"{CO2_SOLAR_titles[3]} - {CO2_SOLAR_titles[1]}",
+               "fontsize":10},
         t_student=False,
         **kwargs,
         )
@@ -299,17 +432,16 @@ def tair_anom():
         ax.set_title(next(label), fontfamily='serif', loc='left', fontsize='large')
     plt.savefig(os.path.join(output_folder,'CO2_tair_anom_lonmean'),
                 dpi=300,bbox_inches='tight')
-                
+    
     # ============== LATMEAN ==================
     fig = plt.figure(figsize=np.multiply((3,3.3),3))
     axes=[fig.add_subplot(grid[i,j]) for i in range(3) for j in range(2)] + [fig.add_subplot(gridcb[:,:])]
     fig.suptitle("Air Temperature Change",fontsize=16)
     kwargs=dict(levels=np.linspace(-3,3,20),
         du=0.5,
-        title="",
         cmap=my.Colormaps.div_tsurf,
         add_colorbar=False,
-        double_axis=True,
+        double_axis="height",
         extend='both',
         mean="lat",
         )
@@ -317,12 +449,14 @@ def tair_anom():
     for i,_ in enumerate(CO2_SOLAR):
         plot_vert(CO2_SOLAR[i],
             ax=axes[i],
+            title=CO2_SOLAR_titles[i],
             **kwargs,
             )
     # plot 5
     plot_vert(CO2_SOLAR[2],
         ctrl=CO2_SOLAR[0],
         ax=axes[4],
+        title=f"{CO2_SOLAR_titles[2]} - {CO2_SOLAR_titles[0]}",
         t_student=False,
         **kwargs,
         )
@@ -330,6 +464,8 @@ def tair_anom():
     im=plot_vert(CO2_SOLAR[3],
         ctrl=CO2_SOLAR[1],
         ax=axes[5],
+        title={"label":f"{CO2_SOLAR_titles[3]} - {CO2_SOLAR_titles[1]}",
+               "fontsize":10},
         t_student=False,
         **kwargs,
         )
@@ -346,6 +482,112 @@ def tair_anom():
     plt.savefig(os.path.join(output_folder,'CO2_tair_anom_latmean'),
                 dpi=300,bbox_inches='tight')
 tair_anom()
+
+def tair_anom_seascyc():
+    grid = GridSpec(3,2,
+            left=0.05, right=0.95, top=0.91, bottom=0.13,
+            wspace=0.43,hspace=0.3)
+    gridcb = GridSpec(1, 2,
+            left=0.05, right=0.95, top=0.08, bottom=0.05)
+    # ============== LONGMEAN ==================
+    fig = plt.figure(figsize=np.multiply((3,3.3),3))
+    axes=[fig.add_subplot(grid[i,j]) for i in range(3) for j in range(2)] + [fig.add_subplot(gridcb[:,:])]
+    fig.suptitle("Air Temperature Change",fontsize=16)
+    kwargs=dict(levels=np.linspace(-2,2,20),
+        du=0.5,
+        cmap=my.Colormaps.div_precip_r,
+        add_colorbar=False,
+        double_axis="height",
+        extend='both',
+        )
+    # plots
+    for i,_ in enumerate(CO2_SOLAR):
+        plot_vert(CO2_SOLAR[i],
+            ax=axes[i],
+            title=CO2_SOLAR_titles[i],
+            analysis='seascyc',
+            **kwargs,
+            )
+    # plot 5
+    plot_vert(CO2_SOLAR[2],
+        ctrl=CO2_SOLAR[0],
+        ax=axes[4],
+        title=f"{CO2_SOLAR_titles[2]} - {CO2_SOLAR_titles[0]}",
+        t_student=False,
+        analysis='seascyc',
+        **kwargs,
+        )
+    # plot 6
+    im=plot_vert(CO2_SOLAR[3],
+        ctrl=CO2_SOLAR[1],
+        ax=axes[5],
+        title=f"{CO2_SOLAR_titles[3]} - {CO2_SOLAR_titles[1]}",
+        t_student=False,
+        analysis='seascyc',
+        **kwargs,
+        )
+    # plot colorbar   
+    plt.colorbar(im,cax=axes[-1],
+        orientation="horizontal",
+        label="$[K]$",
+        ticks=np.arange(-2,2+0.5,0.5),
+        )
+    # Label subplots
+    label=iter(axes_labels)
+    for ax in axes[:-1]:
+        ax.set_title(next(label), fontfamily='serif', loc='left', fontsize='large')
+    plt.savefig(os.path.join(output_folder,'CO2_tair_anom_lonmean_seascyc'),
+                dpi=300,bbox_inches='tight')
+                
+    # ============== LATMEAN ==================
+    fig = plt.figure(figsize=np.multiply((3,3.3),3))
+    axes=[fig.add_subplot(grid[i,j]) for i in range(3) for j in range(2)] + [fig.add_subplot(gridcb[:,:])]
+    fig.suptitle("Air Temperature Change",fontsize=16)
+    kwargs=dict(levels=np.linspace(-2,2,20),
+        du=0.5,
+        title="",
+        cmap=my.Colormaps.div_precip_r,
+        add_colorbar=False,
+        double_axis="height",
+        extend='both',
+        mean="lat",
+        )
+    # plots
+    for i,_ in enumerate(CO2_SOLAR):
+        plot_vert(CO2_SOLAR[i],
+            ax=axes[i],
+            analysis='seascyc',
+            **kwargs,
+            )
+    # plot 5
+    plot_vert(CO2_SOLAR[2],
+        ctrl=CO2_SOLAR[0],
+        ax=axes[4],
+        t_student=False,
+        analysis='seascyc',
+        **kwargs,
+        )
+    # plot 6
+    im=plot_vert(CO2_SOLAR[3],
+        ctrl=CO2_SOLAR[1],
+        ax=axes[5],
+        t_student=False,
+        analysis='seascyc',
+        **kwargs,
+        )
+    # plot colorbar   
+    plt.colorbar(im,cax=axes[-1],
+        orientation="horizontal",
+        label="$[K]$",
+        ticks=np.arange(-2,2+0.5,0.5),
+        )
+    # Label subplots
+    label=iter(axes_labels)
+    for ax in axes[:-1]:
+        ax.set_title(next(label), fontfamily='serif', loc='left', fontsize='large')
+    plt.savefig(os.path.join(output_folder,'CO2_tair_anom_latmean_seascyc'),
+                dpi=300,bbox_inches='tight')
+tair_anom_seascyc()
 
 def tair_anom_season():
     grid = GridSpec(4,4,
@@ -441,6 +683,55 @@ def tair_anom_season():
                 dpi=300,bbox_inches='tight')
 tair_anom_season()
 
+
+# EFFECTIVE RADIATIVE FORCING
+def eff_rad():
+    grid = GridSpec(3,1,
+            left=0.05, right=0.95, top=0.92, bottom=0.15,
+            wspace=0.17,hspace=0.40)
+    gridcb = GridSpec(1, 1,
+            left=0.05, right=0.95, top=0.08, bottom=0.05)
+    fig = plt.figure(figsize=np.multiply((3,3.3),3))
+    axes=[fig.add_subplot(grid[i,0],projection=ccrs.PlateCarree()) for i in range(3)] +\
+         [fig.add_subplot(gridcb[:,:])]
+    fig.suptitle("Effective Radiative Forcing",fontsize=16)
+    kwargs=dict(levels=np.linspace(-16,16,20),
+        du=4,
+        cmap=my.Colormaps.div_tsurf,
+        add_colorbar=False,
+        statistics={'value':'all','fontsize':11,"position":(0.5,-0.15)},
+        extend='both',
+        )
+    # plot
+    rad_forcing(CO2_SOLAR[1]).annual_mean().plotvar(
+        ax=axes[0],
+        title=CO2_SOLAR_titles[1],
+        **kwargs,
+        )
+    rad_forcing(CO2_SOLAR[3]).annual_mean().plotvar(
+        ax=axes[1],
+        title=CO2_SOLAR_titles[3],
+        **kwargs,
+        )
+    im=rad_forcing(CO2_SOLAR[3],ctrl=CO2_SOLAR[1]).annual_mean().plotvar(
+        ax=axes[2],
+        title=f"{CO2_SOLAR_titles[3]} - {CO2_SOLAR_titles[1]}",
+        **kwargs,
+        )
+    # plot colorbar   
+    plt.colorbar(im,cax=axes[-1],
+        orientation="horizontal",
+        label="$[W \cdot m^2]$",
+        ticks=np.arange(-16,16+4,4),
+        )
+    # Label subplots
+    label=iter(axes_labels)
+    for ax in axes[:-1]:
+        ax.set_title(next(label), fontfamily='serif', loc='left', fontsize='large')
+    plt.savefig(os.path.join(output_folder,'Rad_forcing'),
+                dpi=300,bbox_inches='tight')
+eff_rad()
+
 #====================================================#
 # PLOT TIME SERIES
 def time_series(data,var="surface_temperature",
@@ -533,7 +824,7 @@ def plot_airprof(data,
 def air_prof_zoom():
     grid = GridSpec(4, 5,
         left=0.05, bottom=0.05, right=0.95, top=0.88,
-        wspace=2)
+        wspace=2.8)
     fig = plt.figure(figsize=np.multiply((5,3),1.7))
     fig.suptitle("Air Temperature",fontsize=16)
     axm = fig.add_subplot(grid[1:3,0:2])
@@ -542,7 +833,7 @@ def air_prof_zoom():
     plot_airprof(data=ctl,other_data=CO2_SOLAR,
             colors=['black']+CO2_SOLAR_colors,
             labels=['Control']+CO2_SOLAR_titles,
-            double_axis=True,
+            double_axis="height",
             legend=False,
             ax=axm,
             title="")
@@ -551,7 +842,7 @@ def air_prof_zoom():
     plot_airprof(ax=axz,data=ctl,other_data=CO2_SOLAR,
             colors=['black']+CO2_SOLAR_colors,
             labels=['Control']+CO2_SOLAR_titles,
-            double_axis=False,
+            double_axis="height",
             title="")
     axz.set_xlim((200,220))
     axz.set_ylim(200,50)
@@ -579,7 +870,7 @@ def air_prof_anom():
     var='air_temperature_0_plev'
     data=[anomalies(x,var).global_mean().annual_mean(12*nyears) for x in CO2_SOLAR]
     data[0].plotprof(other_data=data[1:],
-        double_axis=True,
+        double_axis="height",
         colors=CO2_SOLAR_colors,
         labels=CO2_SOLAR_titles,
         units='[K]',
@@ -592,3 +883,9 @@ def air_prof_anom():
 air_prof_anom()
 
 #====================================================#
+
+
+
+
+
+

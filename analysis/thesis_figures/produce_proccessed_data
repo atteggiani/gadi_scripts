@@ -1,0 +1,10 @@
+#!/bin/bash
+#PBS -l walltime=10:00:00
+#PBS -l ncpus=48
+#PBS -q normal
+#PBS -P w40
+#PBS -l storage=gdata/hh5+gdata/w40+scratch/w40
+#PBS -l mem=100gb
+#PBS -N processed_data
+
+python /g/data3/w40/dm5220/scripts/analysis/thesis_figures/processed_data.py
