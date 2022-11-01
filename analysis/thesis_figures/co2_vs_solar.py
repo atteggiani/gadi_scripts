@@ -8,7 +8,7 @@ import cartopy.crs as ccrs
 import string
 
 nyears = 20
-output_folder="/g/data/w40/dm5220/data/thesis_figures"
+output_folder="/g/data/w40/dm5220/data/thesis_figures/ch3"
 
 # DATA
 ctl=xr.open_dataset("/g/data/w40/dm5220/data/processed_data/ctl.nc")
